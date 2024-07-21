@@ -1,11 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import Logo from './assets/logo.svg';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import Box from '@mui/material/Box';
 import ListItemButton from '@mui/material/ListItemButton';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
+import Logo from './assets/logo.svg';
 
 export const SIDEBAR_WIDTH = 280;
 
@@ -26,30 +26,22 @@ const Sidebar = () => {
       }}
     >
       <Box px={0.5} sx={{ display: 'flex', justifyContent: 'center' }}>
-        <img src={Logo} alt='logo' width={256} onClick={() => {navigate('/')}} style={{cursor: 'pointer'}} />
+        <img
+          src={Logo}
+          alt="logo"
+          width={256}
+          onClick={() => {
+            navigate('/');
+          }}
+          style={{ cursor: 'pointer' }}
+        />
       </Box>
 
       <Stack>
-        <Navigation
-          title='Home'
-          path='/'
-          icon={<AssessmentOutlinedIcon />}
-        />
-        <Navigation
-          title='Sessions'
-          path='/sessions'
-          icon={<AssessmentOutlinedIcon />}
-        />
-        <Navigation
-          title='Users'
-          path='/users'
-          icon={<AssessmentOutlinedIcon />}
-        />
-        <Navigation
-          title='Attendances'
-          path='/attendances'
-          icon={<AssessmentOutlinedIcon />}
-        />
+        <Navigation title="Home" path="/" icon={<AssessmentOutlinedIcon />} />
+        <Navigation title="Sessions" path="/sessions" icon={<AssessmentOutlinedIcon />} />
+        <Navigation title="Users" path="/users" icon={<AssessmentOutlinedIcon />} />
+        <Navigation title="Attendances" path="/attendances" icon={<AssessmentOutlinedIcon />} />
       </Stack>
     </Stack>
   );
@@ -67,51 +59,44 @@ const Navigation = ({
   path: string;
   icon?: JSX.Element;
   expandable?: boolean;
-}) => {
-  return (
-    <ListItemButton
-      key={title}
-      component={NavLink}
-      end
-      to={path}
-      sx={{
-        minHeight: 44,
-        borderRadius: '6px',
-        typography: 'body2',
-        color: 'text.secondary',
-        fontWeight: 'fontWeightMedium',
-        '&.active': {
-          color: 'primary.main',
-          fontWeight: 'fontWeightSemiBold',
-          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-          '&:hover': {
-            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.16),
-          },
+}) => (
+  <ListItemButton
+    key={title}
+    component={NavLink}
+    end
+    to={path}
+    sx={{
+      minHeight: 44,
+      borderRadius: '6px',
+      typography: 'body2',
+      color: 'text.secondary',
+      fontWeight: 'fontWeightMedium',
+      '&.active': {
+        color: 'primary.main',
+        fontWeight: 'fontWeightSemiBold',
+        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+        '&:hover': {
+          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.16),
         },
-        marginBottom: 0.5,
-      }}
-    >
-      <Stack sx={{ width: 24, height: 24, mr: 1.5 }}>{icon}</Stack>
+      },
+      marginBottom: 0.5,
+    }}
+  >
+    <Stack sx={{ width: 24, height: 24, mr: 1.5 }}>{icon}</Stack>
 
-      <Stack
-        direction='row'
-        alignItems='center'
-        justifyContent='space-between'
-        sx={{ flex: 1 }}
+    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flex: 1 }}>
+      <Box
+        sx={{
+          width: 132,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
       >
-        <Box
-          sx={{
-            width: 132,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {title}
-        </Box>
+        {title}
+      </Box>
 
-        {expandable && <ExpandMoreRoundedIcon />}
-      </Stack>
-    </ListItemButton>
-  );
-};
+      {expandable && <ExpandMoreRoundedIcon />}
+    </Stack>
+  </ListItemButton>
+);

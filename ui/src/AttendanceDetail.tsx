@@ -1,5 +1,14 @@
-import React from 'react';
-import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 
 // Mock Data
 interface User {
@@ -24,7 +33,6 @@ interface Attendance {
   attendanceRecords: { [userId: string]: { [sessionId: string]: 'v' | '' } };
 }
 
-
 const AttendanceDetail: React.FC = () => {
   const detail: Attendance = makeMockAttendanceRecords(mockUsers, mockSessions);
 
@@ -48,13 +56,17 @@ const AttendanceDetail: React.FC = () => {
               <TableCell>User Name</TableCell>
               <TableCell>User Gen</TableCell>
               {detail.sessions.map((session) => (
-                <TableCell key={session.id}>{session.name}<br />{session.date}</TableCell>
+                <TableCell key={session.id}>
+                  {session.name}
+                  <br />
+                  {session.date}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {detail.users.map((user, userIndex) => (
-              <TableRow key={userIndex}>
+            {detail.users.map((user) => (
+              <TableRow key={user.name}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.gen}</TableCell>
                 {detail.sessions.map((session) => (
@@ -70,31 +82,31 @@ const AttendanceDetail: React.FC = () => {
 };
 
 const makeMockAttendanceRecords = (users: User[], sessions: Session[]) => {
-    const attendanceRecords: { [userId: string]: { [sessionId: string]: 'v' | '' } } = {};
-    users.forEach((user) => {
-        attendanceRecords[user.name] = {};
-        sessions.forEach((session) => {
-        attendanceRecords[user.name][session.id] = Math.random() < 0.5 ? 'v' : '';
-        });
+  const attendanceRecords: { [userId: string]: { [sessionId: string]: 'v' | '' } } = {};
+  users.forEach((user) => {
+    attendanceRecords[user.name] = {};
+    sessions.forEach((session) => {
+      attendanceRecords[user.name][session.id] = Math.random() < 0.5 ? 'v' : '';
     });
-    
-    return {
-        id: '1',
-        name: 'Rush 2023 상반기',
-        createdAt: new Date('2023-02-01'),
-        startDate: new Date('2023-03-01'),
-        endDate: new Date('2024-08-14'),
-        users,
-        sessions,
-        attendanceRecords,
-    };
+  });
+
+  return {
+    id: '1',
+    name: 'Rush 2023 상반기',
+    createdAt: new Date('2023-02-01'),
+    startDate: new Date('2023-03-01'),
+    endDate: new Date('2024-08-14'),
+    users,
+    sessions,
+    attendanceRecords,
+  };
 };
 
 const mockUsers = [
-    { name: 'User1', gen: 1 },
-    { name: 'User2', gen: 2 },
-    { name: 'User3', gen: 3 },
-    { name: 'User4', gen: 4 },
+  { name: 'User1', gen: 1 },
+  { name: 'User2', gen: 2 },
+  { name: 'User3', gen: 3 },
+  { name: 'User4', gen: 4 },
   { name: 'User5', gen: 5 },
   { name: 'User6', gen: 6 },
   { name: 'User7', gen: 7 },
@@ -106,12 +118,12 @@ const mockUsers = [
   { name: 'User13', gen: 13 },
   { name: 'User14', gen: 14 },
   { name: 'User15', gen: 15 },
-  ];
+];
 const mockSessions = [
-    { id: '1', name: '한강공원', date: '2023-03-01' },
-    { id: '2', name: '러쉬마라톤', date: '2023-04-01' },
-    { id: '3', name: '어쩌고', date: '2023-05-01' },
-    { id: '4', name: '저쩌고', date: '2023-06-01' },
+  { id: '1', name: '한강공원', date: '2023-03-01' },
+  { id: '2', name: '러쉬마라톤', date: '2023-04-01' },
+  { id: '3', name: '어쩌고', date: '2023-05-01' },
+  { id: '4', name: '저쩌고', date: '2023-06-01' },
   { id: '5', name: '대충가짜세션1', date: '2023-07-01' },
   { id: '6', name: '대충가짜세션2', date: '2023-08-01' },
   { id: '7', name: '대충가짜세션3', date: '2023-09-01' },
@@ -123,6 +135,6 @@ const mockSessions = [
   { id: '13', name: '대충가짜세션9', date: '2024-03-01' },
   { id: '14', name: '대충가짜세션10', date: '2024-04-01' },
   { id: '15', name: '대충가짜세션11', date: '2024-05-01' },
-    ];
+];
 
 export default AttendanceDetail;

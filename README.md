@@ -1,2 +1,3 @@
 # RUSH
+
 Rush attendance check

@@ -1,13 +1,3 @@
-function Home() {
+const Home = () => <div>삘 더 러쉬~</div>;
 
-    return (
-      <>
-       <div>
-        삘 더 러쉬~
-       </div>
-      </>
-    )
-  }
-  
-  export default Home
-  
+export default Home;

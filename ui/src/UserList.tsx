@@ -1,5 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Container, Typography, TablePagination } from '@mui/material';
+import { useEffect, useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container,
+  Typography,
+  TablePagination,
+} from '@mui/material';
 import { User, getUsers } from './client/http';
 
 const UserList: React.FC = () => {
@@ -12,15 +23,14 @@ const UserList: React.FC = () => {
     const init = async () => {
       try {
         setIsLoading(true);
-        const users = await getUsers();
-        setUsers(users);
+        setUsers(await getUsers());
         setIsLoading(false);
       } catch (e) {
         console.error(e);
       } finally {
         setIsLoading(false);
       }
-    }
+    };
     init();
   }, []);
 
@@ -36,7 +46,7 @@ const UserList: React.FC = () => {
   if (!isLoading) {
     return (
       <Container>
-        <Typography variant='h4' sx={{ mb: 5 }}>
+        <Typography variant="h4" sx={{ mb: 5 }}>
           Users
         </Typography>
         <Typography>Loading...</Typography>
@@ -46,7 +56,7 @@ const UserList: React.FC = () => {
 
   return (
     <Container>
-      <Typography variant='h4' sx={{ mb: 5 }}>
+      <Typography variant="h4" sx={{ mb: 5 }}>
         Users
       </Typography>
       <TableContainer component={Paper}>
@@ -59,8 +69,8 @@ const UserList: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user, index) => (
-              <TableRow key={index}>
+            {users.map((user) => (
+              <TableRow key={user.name}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.generation}</TableCell>
                 <TableCell>{user.isActive ? 'Yes' : 'No'}</TableCell>
