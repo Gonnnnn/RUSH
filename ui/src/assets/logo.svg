@@ -1,0 +1,17 @@
+<svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .rect {
+      fill: #1E88E5; /* Blue color */
+      rx: 20; /* Rounded corners */
+      ry: 20; /* Rounded corners */
+    }
+    .text {
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      font-size: 48px;
+      fill: white;
+    }
+  </style>
+  <rect x="0" y="0" width="300" height="100" class="rect"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="text">RU:SH</text>
+</svg>
