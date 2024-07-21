@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
@@ -20,8 +20,8 @@ const SessionDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const attendanceUploaded = id === '1';
-  const [session, setSession] = React.useState<Session>();
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [session, setSession] = useState<Session>();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -93,8 +93,8 @@ const SessionDetail = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {session.joinningUsers.map((user, index) => (
-                <TableRow key={index}>
+              {session.joinningUsers.map((user: string) => (
+                <TableRow key={user}>
                   <TableCell>{user}</TableCell>
                 </TableRow>
               ))}

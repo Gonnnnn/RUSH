@@ -59,46 +59,44 @@ const Navigation = ({
   path: string;
   icon?: JSX.Element;
   expandable?: boolean;
-}) => {
-  return (
-    <ListItemButton
-      key={title}
-      component={NavLink}
-      end
-      to={path}
-      sx={{
-        minHeight: 44,
-        borderRadius: '6px',
-        typography: 'body2',
-        color: 'text.secondary',
-        fontWeight: 'fontWeightMedium',
-        '&.active': {
-          color: 'primary.main',
-          fontWeight: 'fontWeightSemiBold',
-          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-          '&:hover': {
-            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.16),
-          },
+}) => (
+  <ListItemButton
+    key={title}
+    component={NavLink}
+    end
+    to={path}
+    sx={{
+      minHeight: 44,
+      borderRadius: '6px',
+      typography: 'body2',
+      color: 'text.secondary',
+      fontWeight: 'fontWeightMedium',
+      '&.active': {
+        color: 'primary.main',
+        fontWeight: 'fontWeightSemiBold',
+        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+        '&:hover': {
+          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.16),
         },
-        marginBottom: 0.5,
-      }}
-    >
-      <Stack sx={{ width: 24, height: 24, mr: 1.5 }}>{icon}</Stack>
+      },
+      marginBottom: 0.5,
+    }}
+  >
+    <Stack sx={{ width: 24, height: 24, mr: 1.5 }}>{icon}</Stack>
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flex: 1 }}>
-        <Box
-          sx={{
-            width: 132,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {title}
-        </Box>
+    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flex: 1 }}>
+      <Box
+        sx={{
+          width: 132,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {title}
+      </Box>
 
-        {expandable && <ExpandMoreRoundedIcon />}
-      </Stack>
-    </ListItemButton>
-  );
-};
+      {expandable && <ExpandMoreRoundedIcon />}
+    </Stack>
+  </ListItemButton>
+);

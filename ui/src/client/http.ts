@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_SERVER_ENDPOINT;
 
 // set cors
 const client: AxiosInstance = axios.create({
-  baseURL: BASE_URL.replace(/\/$/, '') + '/api',
+  baseURL: `${BASE_URL.replace(/\/$/, '')}/api`,
   headers: {
     'Content-Type': 'application/json',
   },

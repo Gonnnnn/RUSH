@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -30,8 +30,7 @@ const SessionList: React.FC = () => {
     const init = async () => {
       try {
         setIsLoading(true);
-        const sessions = await getSessions();
-        setSessions(sessions);
+        setSessions(await getSessions());
       } catch (e) {
         console.error(e);
       } finally {
@@ -96,8 +95,8 @@ const SessionList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedSessions.map((session, index) => (
-                  <TableRow key={index} onClick={() => handleRowClick(session)} style={{ cursor: 'pointer' }}>
+                {paginatedSessions.map((session) => (
+                  <TableRow key={session.id} onClick={() => handleRowClick(session)} style={{ cursor: 'pointer' }}>
                     <TableCell>{session.name}</TableCell>
                     <TableCell>{session.startsAt.toISOString()}</TableCell>
                     <TableCell>{session.score}</TableCell>

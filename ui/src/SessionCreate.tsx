@@ -54,7 +54,7 @@ const SessionCreate = () => {
           type="number"
           name="score"
           value={score}
-          onChange={(e) => setScore(parseInt(e.target.value))}
+          onChange={(e) => setScore(parseInt(e.target.value, 10))}
           fullWidth
           sx={{ mb: 2 }}
         />

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Container,
   Typography,
@@ -66,8 +65,8 @@ const AttendanceDetail: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {detail.users.map((user, userIndex) => (
-              <TableRow key={userIndex}>
+            {detail.users.map((user) => (
+              <TableRow key={user.name}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.gen}</TableCell>
                 {detail.sessions.map((session) => (

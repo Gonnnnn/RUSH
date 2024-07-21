@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -25,8 +25,7 @@ const AttendanceList: React.FC = () => {
     const init = async () => {
       try {
         setIsLoading(true);
-        const attendances = await getAttendances();
-        setAttendances(attendances);
+        setAttendances(await getAttendances());
       } catch (e) {
         console.error(e);
       } finally {
@@ -77,8 +76,8 @@ const AttendanceList: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedAttendances.map((attendance, index) => (
-              <TableRow key={index} onClick={() => handleRowClick(attendance)} style={{ cursor: 'pointer' }}>
+            {paginatedAttendances.map((attendance) => (
+              <TableRow key={attendance.id} onClick={() => handleRowClick(attendance)} style={{ cursor: 'pointer' }}>
                 <TableCell>{attendance.name}</TableCell>
                 <TableCell>{attendance.createdAt.toISOString()}</TableCell>
               </TableRow>

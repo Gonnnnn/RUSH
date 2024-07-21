@@ -1,9 +1,3 @@
-function Home() {
-  return (
-    <>
-      <div>삘 더 러쉬~</div>
-    </>
-  );
-}
+const Home = () => <div>삘 더 러쉬~</div>;
 
 export default Home;
