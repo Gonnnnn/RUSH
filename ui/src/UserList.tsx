@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Container, Typography, TablePagination } from '@mui/material';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container,
+  Typography,
+  TablePagination,
+} from '@mui/material';
 import { User, getUsers } from './client/http';
 
 const UserList: React.FC = () => {
@@ -20,7 +31,7 @@ const UserList: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
     init();
   }, []);
 
@@ -36,7 +47,7 @@ const UserList: React.FC = () => {
   if (!isLoading) {
     return (
       <Container>
-        <Typography variant='h4' sx={{ mb: 5 }}>
+        <Typography variant="h4" sx={{ mb: 5 }}>
           Users
         </Typography>
         <Typography>Loading...</Typography>
@@ -46,7 +57,7 @@ const UserList: React.FC = () => {
 
   return (
     <Container>
-      <Typography variant='h4' sx={{ mb: 5 }}>
+      <Typography variant="h4" sx={{ mb: 5 }}>
         Users
       </Typography>
       <TableContainer component={Paper}>

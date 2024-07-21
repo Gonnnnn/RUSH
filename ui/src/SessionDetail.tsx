@@ -1,6 +1,18 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Button } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+  Button,
+} from '@mui/material';
 import QrCode from './assets/qr.png';
 import { Session, getSession } from './client/http';
 
@@ -28,10 +40,10 @@ const SessionDetail = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
 
     init();
-  }, [id]);
+  }, [navigate, id]);
 
   if (isLoading || !session) {
     return (
@@ -46,10 +58,16 @@ const SessionDetail = () => {
 
   return (
     <Container>
-      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1, mb: 3 }}>
-        <Typography variant="h4">
-          Session Detail
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: 1,
+          mb: 3,
+        }}
+      >
+        <Typography variant="h4">Session Detail</Typography>
         <Button variant="outlined" onClick={() => navigate('/sessions')} sx={{ alignSelf: 'flex-start' }}>
           Back
         </Button>
@@ -62,44 +80,47 @@ const SessionDetail = () => {
         <Typography>Score: {session.score}</Typography>
         <Typography>Created At: {session.createdAt.toISOString()}</Typography>
       </Paper>
-      <Typography variant='h6' sx={{ mb: 5 }}>
+      <Typography variant="h6" sx={{ mb: 5 }}>
         User attendance
       </Typography>
-      {attendanceUploaded ? (<TableContainer component={Paper} >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>User Name</TableCell>
-              <TableCell>User Gen</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {session.joinningUsers.map((user, index) => (
-              <TableRow key={index}>
-                <TableCell>{user}</TableCell>
+      {attendanceUploaded ? (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>User Name</TableCell>
+                <TableCell>User Gen</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>) : 
-      (<>
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Typography variant="h6">QR to the form</Typography>
-          <Typography>Scan the QR code to fill the attendance form</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <img src={QrCode} alt="QR Code" height="200" />
-          </Box>
-        </Paper>
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Typography variant="h6">Upload Attendance</Typography>
-          <Typography>Drag and drop your attendance file here</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button variant="contained" color="primary">
-              Upload
-            </Button>
-          </Box>
-        </Paper>
-      </>)}
+            </TableHead>
+            <TableBody>
+              {session.joinningUsers.map((user, index) => (
+                <TableRow key={index}>
+                  <TableCell>{user}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <>
+          <Paper sx={{ p: 2, mb: 3 }}>
+            <Typography variant="h6">QR to the form</Typography>
+            <Typography>Scan the QR code to fill the attendance form</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <img src={QrCode} alt="QR Code" height="200" />
+            </Box>
+          </Paper>
+          <Paper sx={{ p: 2, mb: 3 }}>
+            <Typography variant="h6">Upload Attendance</Typography>
+            <Typography>Drag and drop your attendance file here</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Button variant="contained" color="primary">
+                Upload
+              </Button>
+            </Box>
+          </Paper>
+        </>
+      )}
     </Container>
   );
 };

@@ -1,8 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Container, Typography, TablePagination, Button, Box, Modal } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Session, getSessions } from './client/http';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container,
+  Typography,
+  TablePagination,
+  Button,
+  Box,
+  Modal,
+} from '@mui/material';
 import SessionCreate from './SessionCreate';
+import { Session, getSessions } from './client/http';
 
 const SessionList: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +37,7 @@ const SessionList: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
 
     init();
   }, []);
@@ -31,7 +45,7 @@ const SessionList: React.FC = () => {
   if (isLoading) {
     return (
       <Container>
-        <Typography variant='h4' sx={{ mb: 5 }}>
+        <Typography variant="h4" sx={{ mb: 5 }}>
           Sessions
         </Typography>
         <Typography>Loading...</Typography>
@@ -48,23 +62,28 @@ const SessionList: React.FC = () => {
     setPage(0);
   };
 
-
   const handleRowClick = (session: Session) => {
     navigate(`/sessions/${session.id}`);
   };
-
 
   const paginatedSessions = sessions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <>
       <Container>
-        <Typography variant='h4' sx={{ mb: 5 }}>
+        <Typography variant="h4" sx={{ mb: 5 }}>
           Sessions
         </Typography>
-        <Box display='flex' flexDirection='column' gap={2}>
-          <Box display='flex' justifyContent='flex-end'>
-            <Button variant='outlined' onClick={() => {setIsModalOpen(true)}}>New Session</Button>
+        <Box display="flex" flexDirection="column" gap={2}>
+          <Box display="flex" justifyContent="flex-end">
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setIsModalOpen(true);
+              }}
+            >
+              New Session
+            </Button>
           </Box>
           <TableContainer component={Paper}>
             <Table>
@@ -113,9 +132,8 @@ const SessionList: React.FC = () => {
   );
 };
 
-
 const ModalStyle = {
-  position: 'absolute' as 'absolute',
+  position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',

@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Container, Typography, TablePagination } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container,
+  Typography,
+  TablePagination,
+} from '@mui/material';
 import { Attendance, getAttendances } from './client/http';
 
 const AttendanceList: React.FC = () => {
@@ -21,7 +32,7 @@ const AttendanceList: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
 
     init();
   }, []);
@@ -29,7 +40,7 @@ const AttendanceList: React.FC = () => {
   if (isLoading) {
     return (
       <Container>
-        <Typography variant='h4' sx={{ mb: 5 }}>
+        <Typography variant="h4" sx={{ mb: 5 }}>
           Attendance List
         </Typography>
         <Typography>Loading...</Typography>
@@ -54,7 +65,7 @@ const AttendanceList: React.FC = () => {
 
   return (
     <Container>
-      <Typography variant='h4' sx={{ mb: 5 }}>
+      <Typography variant="h4" sx={{ mb: 5 }}>
         Attendance List
       </Typography>
       <TableContainer component={Paper}>
