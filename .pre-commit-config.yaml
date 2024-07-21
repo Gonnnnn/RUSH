@@ -1,0 +1,42 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        # Helm charts utilize Go templates for YAML files. This hook doesn't let them pass.
+        exclude: .*/helm/.*\.yaml$
+      - id: check-added-large-files
+        args: ['--maxkb=600']
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.0-alpha.4
+    hooks:
+      - id: prettier
+        additional_dependencies:
+          - prettier@3.3.3
+          - prettier-plugin-go-template
+          - '@trivago/prettier-plugin-sort-imports@4.3.0'
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    # TODO(#2393): Update to the latest version when handling the issue.
+    rev: v8.56.0
+    hooks:
+      - id: eslint
+        files: \.[jt]sx?$ # *.js, *.jsx, *.ts and *.tsx
+        types: [file]
+        additional_dependencies:
+          - eslint@8.57.0
+          - eslint-config-airbnb@19.0.4
+          - eslint-config-airbnb-typescript@18.0.0
+          - eslint-config-prettier@9.1.0
+          - eslint-plugin-import@2.29.1
+          - eslint-plugin-jsx-a11y@6.9.0
+          - eslint-plugin-react@7.34.3
+          - eslint-plugin-react-hooks@4.6.2
+          - eslint-plugin-react-refresh@0.4.6
