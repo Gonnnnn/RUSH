@@ -9,7 +9,7 @@ import (
 
 func fromUser(user *user.User) *User {
 	return &User{
-		Id:         strconv.Itoa(user.Id),
+		Id:         user.Id,
 		Name:       user.Name,
 		University: user.University,
 		Phone:      user.Phone,

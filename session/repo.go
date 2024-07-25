@@ -33,7 +33,7 @@ type sqliteRepo struct {
 	db *sql.DB
 }
 
-func NewMongoDBRepo(collection *mongo.Collection) *mongodbRepo {
+func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	return &mongodbRepo{
 		collection: collection,
 	}

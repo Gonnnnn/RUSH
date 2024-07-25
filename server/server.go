@@ -4,7 +4,6 @@ import (
 	"rush/attendance"
 	"rush/session"
 	"rush/user"
-	"strings"
 	"time"
 )
 
@@ -129,7 +128,7 @@ func (s *Server) GetAllAttendanceReports() ([]AttendanceReport, error) {
 			Id:          string(report.Id),
 			Name:        report.Name,
 			Description: report.Description,
-			SessionIds:  strings.Split(string(report.SessionIds), ","),
+			SessionIds:  report.SessionIds,
 			CreatedAt:   report.CreatedAt,
 			CreatedBy:   string(report.CreatedBy),
 		})
