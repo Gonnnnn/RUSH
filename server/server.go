@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"rush/attendance"
 	"rush/session"
 	"rush/user"
@@ -54,17 +55,24 @@ type attendanceRepo interface {
 	Add(name string, description string, sessionIds []string, createdBy int) error
 }
 
-type Server struct {
-	userRepo       userRepo
-	sessionRepo    sessionRepo
-	attendanceRepo attendanceRepo
+type sessionFormHandler interface {
+	GenerateForm(title string, description string, users []user.User) (string, error)
+	ReadUsers(formId string) ([]string, error)
 }
 
-func New(userRepo userRepo, sessionRepo sessionRepo, attendanceRepo attendanceRepo) *Server {
+type Server struct {
+	userRepo           userRepo
+	sessionRepo        sessionRepo
+	attendanceRepo     attendanceRepo
+	sessionFormHandler sessionFormHandler
+}
+
+func New(userRepo userRepo, sessionRepo sessionRepo, attendanceRepo attendanceRepo, sessionFormHandler sessionFormHandler) *Server {
 	return &Server{
-		userRepo:       userRepo,
-		sessionRepo:    sessionRepo,
-		attendanceRepo: attendanceRepo,
+		userRepo:           userRepo,
+		sessionRepo:        sessionRepo,
+		attendanceRepo:     attendanceRepo,
+		sessionFormHandler: sessionFormHandler,
 	}
 }
 
@@ -110,6 +118,11 @@ func (s *Server) GetAllSessions() ([]*Session, error) {
 		converted = append(converted, fromSession(&session))
 	}
 	return converted, nil
+}
+
+func (s *Server) CreateSessionForm(sessionId string, formTitle string, formDescription string) (string, error) {
+	// TODO(#10): Generate the form and add the form info to the session.
+	return "", errors.New("not implemented")
 }
 
 func (s *Server) AddSession(name string, description string, startsAt time.Time, score int) (string, error) {

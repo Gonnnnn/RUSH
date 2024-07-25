@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/user"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -12,13 +15,16 @@ import (
 	"github.com/ridge/must/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/forms/v1"
+	"google.golang.org/api/option"
 
 	"rush/attendance"
 	"rush/golang/env"
 	rushHttp "rush/http"
 	"rush/server"
 	"rush/session"
-	"rush/user"
+	rushUser "rush/user"
 )
 
 func main() {
@@ -46,7 +52,11 @@ func main() {
 	userCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbUserColName)
 	attendanceReportCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceReportColName)
 
-	server := server.New(user.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection), attendance.NewMongoDbRepo(attendanceReportCollection))
+	googleCreds := getGoogleCredentials(ctx, env.GetRequiredStringVariable("ENVIRONMENT"))
+	formsService := must.OK1(forms.NewService(ctx, option.WithCredentials(googleCreds)))
+
+	server := server.New(rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
+		attendance.NewMongoDbRepo(attendanceReportCollection), session.NewFormHandler(formsService))
 
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -59,4 +69,32 @@ func main() {
 
 	log.Println("Starting server")
 	router.Run(":8080")
+}
+
+func getGoogleCredentials(ctx context.Context, environment string) *google.Credentials {
+	if environment == "local" {
+		googleCredsPath := must.OK1(getAbsolutePath((env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_PATH"))))
+		jsonCreds := must.OK1(os.ReadFile(googleCredsPath))
+		return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope))
+	}
+
+	jsonCreds := []byte(env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_JSON"))
+	return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope))
+}
+
+func getAbsolutePath(path string) (string, error) {
+	if filepath.IsAbs(path) {
+		return path, nil
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	if path[:1] == "~" {
+		return filepath.Join(usr.HomeDir, path[1:]), nil
+	}
+
+	return filepath.Abs(path)
 }
