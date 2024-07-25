@@ -70,18 +70,9 @@ const SessionDetail = () => {
 
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6">QR code to the form</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
           {/* TODO(#8): Replace the value with the actual form URL. */}
           <QRCode value="www.naver.com" />
-        </Box>
-      </Paper>
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6">Upload Attendance</Typography>
-        <Typography>Drag and drop your attendance file here</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-          <Button variant="contained" color="primary">
-            Upload
-          </Button>
         </Box>
       </Paper>
     </Container>
