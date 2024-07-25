@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/ridge/must/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -33,36 +33,20 @@ func main() {
 	password := env.GetRequiredStringVariable("MONGODB_PASSWORD")
 	mongoDbEndpoint := fmt.Sprintf("mongodb://%s:%s@%s:%s", username, password, mongodbHost, mongodbPort)
 	clientOptions := options.Client().ApplyURI(mongoDbEndpoint)
-	log.Println("Connecting to MongoDB")
-	mongodbClient, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	err = mongodbClient.Ping(ctx, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Println("Connecting to MongoDB")
+	mongodbClient := must.OK1(mongo.Connect(ctx, clientOptions))
+	must.OK(mongodbClient.Ping(ctx, nil))
 
 	mongodbDatabaseName := env.GetRequiredStringVariable("MONGODB_DB_NAME")
-	mongodbCollectionName := env.GetRequiredStringVariable("MONGODB_SESSION_COLLECTION_NAME")
-	sessionCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbCollectionName)
+	mongodbSessionColName := env.GetRequiredStringVariable("MONGODB_SESSION_COLLECTION_NAME")
+	mongodbUserColName := env.GetRequiredStringVariable("MONGODB_USER_COLLECTION_NAME")
+	mongodbAttendanceReportColName := env.GetRequiredStringVariable("MONGODB_ATTENDANCE_REPORT_COLLECTION_NAME")
+	sessionCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbSessionColName)
+	userCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbUserColName)
+	attendanceReportCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceReportColName)
 
-	log.Println("Connecting to SQLite")
-	db, err := sql.Open("sqlite3", "./sqlite/database.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	if err := createTables(db); err != nil {
-		log.Fatal(err)
-	}
-	if err := createDummyData(db); err != nil {
-		log.Fatal(err)
-	}
-
-	server := server.New(user.NewRepo(db), session.NewMongoDBRepo(sessionCollection), attendance.NewRepo(db))
+	server := server.New(user.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection), attendance.NewMongoDbRepo(attendanceReportCollection))
 
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
