@@ -20,7 +20,7 @@ func fromUser(user *user.User) *User {
 
 func fromSession(session *session.Session) *Session {
 	return &Session{
-		Id:            strconv.Itoa(session.Id),
+		Id:            session.Id,
 		Name:          session.Name,
 		Description:   session.Description,
 		HostedBy:      strconv.Itoa(session.HostedBy),

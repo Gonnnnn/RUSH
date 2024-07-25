@@ -1,3 +1,4 @@
 node_modules
 .venv
 ui/dist
+.env.local
