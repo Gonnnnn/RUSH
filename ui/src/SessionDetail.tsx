@@ -1,25 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Container,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Box,
-  Button,
-} from '@mui/material';
-import QrCode from './assets/qr.png';
+import { Container, Typography, Paper, Box, Button } from '@mui/material';
+import QRCode from 'qrcode.react';
 import { Session, getSession } from './client/http';
 
 const SessionDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const attendanceUploaded = id === '1';
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -80,47 +67,14 @@ const SessionDetail = () => {
         <Typography>Score: {session.score}</Typography>
         <Typography>Created At: {session.createdAt.toISOString()}</Typography>
       </Paper>
-      <Typography variant="h6" sx={{ mb: 5 }}>
-        User attendance
-      </Typography>
-      {attendanceUploaded ? (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>User Name</TableCell>
-                <TableCell>User Gen</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {session.joinningUsers.map((user: string) => (
-                <TableRow key={user}>
-                  <TableCell>{user}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <>
-          <Paper sx={{ p: 2, mb: 3 }}>
-            <Typography variant="h6">QR to the form</Typography>
-            <Typography>Scan the QR code to fill the attendance form</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <img src={QrCode} alt="QR Code" height="200" />
-            </Box>
-          </Paper>
-          <Paper sx={{ p: 2, mb: 3 }}>
-            <Typography variant="h6">Upload Attendance</Typography>
-            <Typography>Drag and drop your attendance file here</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Button variant="contained" color="primary">
-                Upload
-              </Button>
-            </Box>
-          </Paper>
-        </>
-      )}
+
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="h6">QR code to the form</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+          {/* TODO(#8): Replace the value with the actual form URL. */}
+          <QRCode value="www.naver.com" />
+        </Box>
+      </Paper>
     </Container>
   );
 };
