@@ -26,6 +26,11 @@ type SessionsPostRequest struct {
 	Score       int         `json:"score"`
 }
 
+type SessionAttendanceFormPostRequest struct {
+	FormTitle       string `json:"form_title"`
+	FormDescription string `json:"form_description"`
+}
+
 type customTime struct {
 	Year  int `json:"year"`
 	Month int `json:"month"`
@@ -108,6 +113,23 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			}
 
 			c.JSON(http.StatusOK, gin.H{"id": id})
+		})
+
+		api.POST("/sessions/:id/attendance-form", func(c *gin.Context) {
+			var req SessionAttendanceFormPostRequest
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			sessionId := c.Param("id")
+			formUrl, err := server.CreateSessionForm(sessionId, req.FormTitle, req.FormDescription)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"form_url": formUrl})
 		})
 
 		api.GET("/attendances", func(c *gin.Context) {
