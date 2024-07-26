@@ -13,6 +13,7 @@ type Session struct {
 	Description   string      `json:"description"`
 	HostedBy      int         `json:"hosted_by"`
 	CreatedBy     int         `json:"created_by"`
+	GoogleFormUri string      `json:"google_form_uri"`
 	JoinningUsers integerList `json:"joinning_users"`
 	CreatedAt     time.Time   `json:"created_at"`
 	StartsAt      time.Time   `json:"starts_at"`

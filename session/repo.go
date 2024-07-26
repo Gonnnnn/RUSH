@@ -18,6 +18,7 @@ type mongodbSession struct {
 	Description   string             `bson:"description"`
 	HostedBy      int                `bson:"hosted_by"`
 	CreatedBy     int                `bson:"created_by"`
+	GoogleFormUri string             `bson:"google_form_uri"`
 	JoinningUsers string             `bson:"joinning_users"`
 	CreatedAt     time.Time          `bson:"created_at"`
 	StartsAt      time.Time          `bson:"starts_at"`
@@ -88,6 +89,7 @@ func (r *mongodbRepo) Add(name string, description string, hostedBy int, created
 		Description:   description,
 		HostedBy:      hostedBy,
 		CreatedBy:     createdBy,
+		GoogleFormUri: "",
 		JoinningUsers: "",
 		CreatedAt:     time.Now(),
 		StartsAt:      startsAt,
@@ -116,7 +118,7 @@ func (r *sqliteRepo) Get(id string) (*Session, error) {
 	}
 
 	if r.db.QueryRow(`SELECT * FROM sessions WHERE id = ?`, intId).Scan(
-		&session.Id, &session.Name, &session.Description, &session.HostedBy, &session.CreatedBy, &session.JoinningUsers, &session.CreatedAt, &session.StartsAt, &session.Score, &session.IsClosed,
+		&session.Id, &session.Name, &session.Description, &session.HostedBy, &session.CreatedBy, &session.GoogleFormUri, &session.JoinningUsers, &session.CreatedAt, &session.StartsAt, &session.Score, &session.IsClosed,
 	); err != nil {
 		return nil, fmt.Errorf("failed to get session: %w", err)
 	}
@@ -134,7 +136,7 @@ func (r *sqliteRepo) GetAll() ([]Session, error) {
 	sessions := []Session{}
 	for rows.Next() {
 		var session Session
-		err := rows.Scan(&session.Id, &session.Name, &session.Description, &session.HostedBy, &session.CreatedBy, &session.JoinningUsers, &session.CreatedAt, &session.StartsAt, &session.Score, &session.IsClosed)
+		err := rows.Scan(&session.Id, &session.Name, &session.Description, &session.HostedBy, &session.CreatedBy, &session.GoogleFormUri, &session.JoinningUsers, &session.CreatedAt, &session.StartsAt, &session.Score, &session.IsClosed)
 		if err != nil {
 			return nil, err
 		}
@@ -146,8 +148,8 @@ func (r *sqliteRepo) GetAll() ([]Session, error) {
 
 func (r *sqliteRepo) Add(name string, description string, hostedBy int, createdBy int, startsAt time.Time, score int) (string, error) {
 	result, err := r.db.Exec(
-		`INSERT INTO sessions (name, description, hosted_by, created_by, joinning_users, created_at, starts_at, score, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		name, description, hostedBy, createdBy, "", time.Now(), startsAt, score, false,
+		`INSERT INTO sessions (name, description, hosted_by, created_by, google_form_uri, joinning_users, created_at, starts_at, score, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		name, description, hostedBy, createdBy, "", "", time.Now(), startsAt, score, false,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to insert session: %w", err)
@@ -167,6 +169,7 @@ func fromMongodbSession(session *mongodbSession) *Session {
 		Description:   session.Description,
 		HostedBy:      session.HostedBy,
 		CreatedBy:     session.CreatedBy,
+		GoogleFormUri: session.GoogleFormUri,
 		JoinningUsers: integerList(session.JoinningUsers),
 		CreatedAt:     session.CreatedAt,
 		StartsAt:      session.StartsAt,
