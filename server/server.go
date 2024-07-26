@@ -1,7 +1,7 @@
 package server
 
 import (
-	"errors"
+	"fmt"
 	"rush/attendance"
 	"rush/session"
 	"rush/user"
@@ -120,9 +120,32 @@ func (s *Server) GetAllSessions() ([]*Session, error) {
 	return converted, nil
 }
 
-func (s *Server) CreateSessionForm(sessionId string, formTitle string, formDescription string) (string, error) {
-	// TODO(#10): Generate the form and add the form info to the session.
-	return "", errors.New("not implemented")
+func (s *Server) CreateSessionForm(sessionId string) (string, error) {
+	users, err := s.userRepo.GetAll()
+	if err != nil {
+		return "", fmt.Errorf("failed to get users: %w", err)
+	}
+
+	session, err := s.sessionRepo.Get(sessionId)
+	if err != nil {
+		return "", fmt.Errorf("failed to get session: %w", err)
+	}
+
+	if session.GoogleFormUri != "" {
+		return "", fmt.Errorf("form already created: %s", session.GoogleFormUri)
+	}
+
+	formTitle := fmt.Sprintf("[출석] %s", session.Name)
+	startsAt := session.StartsAt
+	expiresAt := startsAt.Add(-time.Second)
+	formDescription := fmt.Sprintf(`%s을(를) 위한 출석용 구글폼입니다.
+폼 마감 시각은 %s입니다. %s 이후 요청은 무시됩니다.`, session.Name, expiresAt.Format("2006-01-02 15:04:05"), startsAt.Format("2006-01-02 15:04:05"))
+
+	formUri, err := s.sessionFormHandler.GenerateForm(formTitle, formDescription, users)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate form: %w", err)
+	}
+	return formUri, nil
 }
 
 func (s *Server) AddSession(name string, description string, startsAt time.Time, score int) (string, error) {
