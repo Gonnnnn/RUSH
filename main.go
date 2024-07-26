@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -53,6 +54,7 @@ func main() {
 	attendanceReportCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceReportColName)
 
 	googleCreds := getGoogleCredentials(ctx, env.GetRequiredStringVariable("ENVIRONMENT"))
+	log.Printf("project id: %s", googleCreds.ProjectID)
 	formsService := must.OK1(forms.NewService(ctx, option.WithCredentials(googleCreds)))
 
 	server := server.New(rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
@@ -78,7 +80,10 @@ func getGoogleCredentials(ctx context.Context, environment string) *google.Crede
 		return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope))
 	}
 
-	jsonCreds := []byte(env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_JSON"))
+	base64UrlEncodedFile := env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_JSON_BASE64URL_ENCODED")
+	encoding := base64.RawURLEncoding
+	decoded := must.OK1(encoding.DecodeString(base64UrlEncodedFile))
+	jsonCreds := []byte(decoded)
 	return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope))
 }
 
