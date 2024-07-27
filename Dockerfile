@@ -28,8 +28,6 @@ FROM gcr.io/distroless/base-debian12
 
 COPY --from=ui-build /app/ui/dist /app/ui/dist
 COPY --from=server-build /go/src/app/rush /app
-# TODO: Remove it after migrating to MongoDB.
-COPY sqlite /app/sqlite
 
 WORKDIR /app
 
