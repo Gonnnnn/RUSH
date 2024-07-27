@@ -38,10 +38,8 @@ const Sidebar = () => {
       </Box>
 
       <Stack>
-        <Navigation title="Home" path="/" icon={<AssessmentOutlinedIcon />} />
         <Navigation title="Sessions" path="/sessions" icon={<AssessmentOutlinedIcon />} />
         <Navigation title="Users" path="/users" icon={<AssessmentOutlinedIcon />} />
-        <Navigation title="Attendances" path="/attendances" icon={<AssessmentOutlinedIcon />} />
       </Stack>
     </Stack>
   );
