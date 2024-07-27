@@ -25,6 +25,7 @@ func fromSession(session *session.Session) *Session {
 		Description:   session.Description,
 		HostedBy:      strconv.Itoa(session.HostedBy),
 		CreatedBy:     strconv.Itoa(session.CreatedBy),
+		GoogleFormUri: session.GoogleFormUri,
 		JoinningUsers: strings.Split(string(session.JoinningUsers), ","),
 		CreatedAt:     session.CreatedAt,
 		StartsAt:      session.StartsAt,

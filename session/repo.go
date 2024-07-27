@@ -34,6 +34,21 @@ type sqliteRepo struct {
 	db *sql.DB
 }
 
+type UpdateForm struct {
+	Title         *string
+	Description   *string
+	HostedBy      *int
+	GoogleFormUri *string
+	JoinningUsers *string
+	// It should be updated with the form's description.
+	StartsAt *time.Time
+	Score    *int
+	IsClosed *bool
+
+	// Indicator to return the updated session.
+	ReturnUpdatedSession bool
+}
+
 func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	return &mongodbRepo{
 		collection: collection,
@@ -108,6 +123,49 @@ func (r *mongodbRepo) Add(name string, description string, hostedBy int, created
 	}
 
 	return id.Hex(), nil
+}
+
+func (r *mongodbRepo) Update(id string, updateForm *UpdateForm) (*Session, error) {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid id: %w", err)
+	}
+
+	update := bson.M{}
+	if updateForm.Title != nil {
+		update["name"] = *updateForm.Title
+	}
+	if updateForm.Description != nil {
+		update["description"] = *updateForm.Description
+	}
+	if updateForm.HostedBy != nil {
+		update["hosted_by"] = *updateForm.HostedBy
+	}
+	if updateForm.GoogleFormUri != nil {
+		update["google_form_uri"] = *updateForm.GoogleFormUri
+	}
+	if updateForm.JoinningUsers != nil {
+		update["joinning_users"] = *updateForm.JoinningUsers
+	}
+	if updateForm.StartsAt != nil {
+		update["starts_at"] = *updateForm.StartsAt
+	}
+	if updateForm.Score != nil {
+		update["score"] = *updateForm.Score
+	}
+	if updateForm.IsClosed != nil {
+		update["is_closed"] = *updateForm.IsClosed
+	}
+
+	if _, err = r.collection.UpdateOne(context.Background(), bson.M{"_id": objectID}, bson.M{"$set": update}); err != nil {
+		return nil, fmt.Errorf("failed to update session: %w", err)
+	}
+
+	if updateForm.ReturnUpdatedSession {
+		return r.Get(id)
+	}
+
+	return nil, nil
 }
 
 func (r *sqliteRepo) Get(id string) (*Session, error) {

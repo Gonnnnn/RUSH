@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Paper, Box, Button } from '@mui/material';
+import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
 import QRCode from 'qrcode.react';
-import { Session, getSession } from './client/http';
+import { Session, createSessionForm, getSession } from './client/http';
 
 const SessionDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingForm, setIsCreatingForm] = useState(false);
 
   useEffect(() => {
     if (!id) {
-      alert('Invalid session ID');
       navigate('/sessions');
       return;
     }
@@ -31,6 +31,23 @@ const SessionDetail = () => {
 
     init();
   }, [navigate, id]);
+
+  if (!id) {
+    navigate('/sessions');
+    return null;
+  }
+
+  const onQrCodeCreateClick = async () => {
+    try {
+      setIsCreatingForm(true);
+      await createSessionForm(id);
+      setSession(await getSession(id));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsCreatingForm(false);
+    }
+  };
 
   if (isLoading || !session) {
     return (
@@ -69,11 +86,24 @@ const SessionDetail = () => {
       </Paper>
 
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6">QR code to the form</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
-          {/* TODO(#8): Replace the value with the actual form URL. */}
-          <QRCode value="www.naver.com" />
-        </Box>
+        {session.googleFormUri ? (
+          <>
+            <Typography variant="h6">QR code to the form</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+              {/* TODO(#8): Replace the value with the actual form URL. */}
+              <QRCode value={session.googleFormUri} />
+            </Box>
+          </>
+        ) : (
+          <>
+            <Typography variant="h6">No form is associated</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+              <Button variant="contained" onClick={onQrCodeCreateClick} disabled={isCreatingForm}>
+                {isCreatingForm ? <CircularProgress /> : 'Create QR code'}
+              </Button>
+            </Box>
+          </>
+        )}
       </Paper>
     </Container>
   );
