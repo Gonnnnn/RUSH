@@ -36,6 +36,7 @@ const SessionSchema = z
     description: z.string(),
     hosted_by: z.string(),
     created_by: z.string(),
+    google_form_uri: z.string(),
     joinning_users: z.array(z.string()),
     created_at: z.string().transform((str) => new Date(str)),
     starts_at: z.string().transform((str) => new Date(str)),
@@ -46,6 +47,7 @@ const SessionSchema = z
     ...data,
     hostedBy: data.hosted_by,
     createdBy: data.created_by,
+    googleFormUri: data.google_form_uri,
     joinningUsers: data.joinning_users,
     createdAt: data.created_at,
     startsAt: data.starts_at,
@@ -131,6 +133,11 @@ export const createSession = async (
     score,
   });
   return response.data.id;
+};
+
+export const createSessionForm = async (id: string): Promise<string> => {
+  const response = await client.post(`/sessions/${id}/attendance-form`);
+  return response.data.form_url;
 };
 
 export const getAttendances = async (): Promise<Attendance[]> => {
