@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { User, getUsers } from './client/http';
 
-const UserList: React.FC = () => {
+const UserList = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [users, setUsers] = useState<User[]>([]);
@@ -43,7 +43,7 @@ const UserList: React.FC = () => {
     setPage(0);
   };
 
-  if (!isLoading) {
+  if (isLoading) {
     return (
       <Container>
         <Typography variant="h4" sx={{ mb: 5 }}>

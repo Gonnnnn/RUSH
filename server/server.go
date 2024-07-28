@@ -87,6 +87,7 @@ func (s *Server) GetAllUsers() ([]*User, error) {
 	converted := []*User{}
 	for _, user := range users {
 		converted = append(converted, fromUser(&user))
+		fmt.Printf("user: %v\n", user)
 	}
 	return converted, nil
 }
