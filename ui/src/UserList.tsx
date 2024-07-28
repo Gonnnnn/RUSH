@@ -70,7 +70,7 @@ const UserList = () => {
           </TableHead>
           <TableBody>
             {users.map((user) => (
-              <TableRow key={user.name}>
+              <TableRow key={user.id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.generation}</TableCell>
                 <TableCell>{user.isActive ? 'Yes' : 'No'}</TableCell>
