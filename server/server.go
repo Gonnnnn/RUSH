@@ -5,6 +5,7 @@ import (
 	"rush/attendance"
 	"rush/session"
 	"rush/user"
+	"sort"
 	"time"
 )
 
@@ -153,6 +154,13 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get users: %w", err)
 	}
+
+	sort.Slice(users, func(i, j int) bool {
+		if users[i].Generation != users[j].Generation {
+			return users[i].Generation > users[j].Generation
+		}
+		return users[i].Name < users[j].Name
+	})
 
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
