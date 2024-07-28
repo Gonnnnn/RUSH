@@ -1,9 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import Box from '@mui/material/Box';
-import ListItemButton from '@mui/material/ListItemButton';
-import Stack from '@mui/material/Stack';
+import { Box, ListItemButton, Stack } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import Logo from './assets/logo.svg';
 
