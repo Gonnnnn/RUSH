@@ -86,6 +86,7 @@ const SessionList = () => {
           </Button>
         </Box>
         <TableContainer component={Paper}>
+          {/* TODO(#31): Implements the common table UI with a loader. */}
           <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
           <Table>
             <TableHead>
