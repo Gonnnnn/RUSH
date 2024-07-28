@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
 import QRCode from 'qrcode.react';
 import { Session, createSessionForm, getSession } from './client/http';
+import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const SessionDetail = () => {
   const navigate = useNavigate();
@@ -82,9 +83,9 @@ const SessionDetail = () => {
         <Typography variant="h6">Details</Typography>
         <Typography>Name: {session.name}</Typography>
         <Typography>Description: {session.description}</Typography>
-        <Typography>Start Time: {session.startsAt.toISOString()}</Typography>
+        <Typography>Starts At: {toYYYY년MM월DD일HH시MM분(session.startsAt)}</Typography>
         <Typography>Score: {session.score}</Typography>
-        <Typography>Created At: {session.createdAt.toISOString()}</Typography>
+        <Typography>Created At: {toYYYY년MM월DD일HH시MM분(session.createdAt)}</Typography>
       </Paper>
 
       <Paper sx={{ p: 2, mb: 3 }}>

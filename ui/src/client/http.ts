@@ -132,16 +132,11 @@ export const createSession = async (
   startsAt: Date,
   score: number,
 ): Promise<Session> => {
+  console.log(startsAt.getHours(), startsAt.getMinutes());
   const response = await client.post('/sessions', {
     name,
     description,
-    starts_at: {
-      year: startsAt.getFullYear(),
-      month: startsAt.getMonth() + 1,
-      day: startsAt.getDate(),
-      hour: startsAt.getHours(),
-      minute: startsAt.getMinutes(),
-    },
+    starts_at: startsAt.toISOString(),
     score,
   });
   return response.data.id;

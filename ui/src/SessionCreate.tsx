@@ -7,7 +7,7 @@ const SessionCreate = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [startsAt, setStartsAt] = useState(new Date());
+  const { dateInputValue, onDateInputValueChange, date: startsAt } = useDateTimeLocalInput();
   const [score, setScore] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,8 +45,8 @@ const SessionCreate = () => {
         <Input
           type="datetime-local"
           name="startsAt"
-          value={startsAt.toISOString().slice(0, 16)}
-          onChange={(e) => setStartsAt(new Date(e.target.value))}
+          value={dateInputValue}
+          onChange={(e) => onDateInputValueChange(e.target.value)}
           fullWidth
           sx={{ mb: 2 }}
         />
@@ -66,6 +66,32 @@ const SessionCreate = () => {
       </form>
     </Container>
   );
+};
+
+const useDateTimeLocalInput = (initialDate = new Date()) => {
+  const [date, setDate] = useState(initialDate);
+
+  const formatDateToInput = (newDate: Date) => {
+    const pad = (number: number) => number.toString().padStart(2, '0');
+
+    const year = newDate.getFullYear();
+    const month = pad(newDate.getMonth() + 1);
+    const day = pad(newDate.getDate());
+    const hours = pad(newDate.getHours());
+    const minutes = pad(newDate.getMinutes());
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const handleChange = (newInputValue: string) => {
+    setDate(new Date(newInputValue));
+  };
+
+  return {
+    dateInputValue: formatDateToInput(date),
+    onDateInputValueChange: handleChange,
+    date,
+  };
 };
 
 export default SessionCreate;

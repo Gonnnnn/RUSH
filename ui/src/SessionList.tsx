@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import SessionCreate from './SessionCreate';
 import { Session, getSessions } from './client/http';
+import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const SessionList: React.FC = () => {
   const navigate = useNavigate();
@@ -92,18 +93,16 @@ const SessionList: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Name</TableCell>
-                  <TableCell>Start Time</TableCell>
+                  <TableCell>Starts At</TableCell>
                   <TableCell>Score</TableCell>
-                  <TableCell>Created At</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedSessions.map((session) => (
                   <TableRow key={session.id} onClick={() => handleRowClick(session)} style={{ cursor: 'pointer' }}>
                     <TableCell>{session.name}</TableCell>
-                    <TableCell>{session.startsAt.toISOString()}</TableCell>
+                    <TableCell>{toYYYY년MM월DD일HH시MM분(session.startsAt)}</TableCell>
                     <TableCell>{session.score}</TableCell>
-                    <TableCell>{session.createdAt.toISOString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
