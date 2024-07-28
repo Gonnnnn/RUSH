@@ -91,9 +91,22 @@ const SessionDetail = () => {
         {session.googleFormUri ? (
           <>
             <Typography variant="h6">QR code to the form</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                justifyContent: 'center',
+                alignItems: 'center',
+                mt: 2,
+                mb: 2,
+              }}
+            >
               {/* TODO(#8): Replace the value with the actual form URL. */}
               <QRCode value={session.googleFormUri} />
+              <Button variant="outlined" onClick={() => window.open(session.googleFormUri, '_blank')}>
+                Open the form
+              </Button>
             </Box>
           </>
         ) : (
