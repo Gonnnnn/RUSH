@@ -55,7 +55,9 @@ const SessionDetail = () => {
         <Typography variant="h4" sx={{ mb: 3 }}>
           Session Detail
         </Typography>
-        <Typography>Loading...</Typography>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }
