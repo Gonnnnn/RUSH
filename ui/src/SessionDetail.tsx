@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
-import QRCode from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { Session, createSessionForm, getSession } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
 
@@ -11,6 +11,8 @@ const SessionDetail = () => {
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingForm, setIsCreatingForm] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
+  const qrSizePx = 128;
 
   useEffect(() => {
     if (!id) {
@@ -104,7 +106,15 @@ const SessionDetail = () => {
               }}
             >
               {/* TODO(#8): Replace the value with the actual form URL. */}
-              <QRCode value={session.googleFormUri} />
+              <div ref={qrRef}>
+                <QRCodeCanvas value={session.googleFormUri} size={qrSizePx} />
+              </div>
+              <Button
+                variant="outlined"
+                onClick={() => onQrDownload(qrRef, qrSizePx, toYYYY년MM월DD일HH시MM분(session.startsAt))}
+              >
+                Download QR code
+              </Button>
               <Button variant="outlined" onClick={() => window.open(session.googleFormUri, '_blank')}>
                 Open the form
               </Button>
@@ -123,6 +133,48 @@ const SessionDetail = () => {
       </Paper>
     </Container>
   );
+};
+
+// https://github.com/zpao/qrcode.react/issues/233
+const onQrDownload = (qrRef: React.RefObject<HTMLDivElement>, qrSize: number, text: string) => {
+  if (!qrRef.current) {
+    return;
+  }
+
+  const canvas = qrRef.current.querySelector('canvas');
+  if (!canvas) {
+    return;
+  }
+
+  const newCanvas = document.createElement('canvas');
+  const ctx = newCanvas.getContext('2d');
+  if (!ctx) {
+    return;
+  }
+
+  const newWidth = qrSize + 512;
+  const newHeight = qrSize + 630;
+
+  newCanvas.width = newWidth;
+  newCanvas.height = newHeight;
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+
+  const newQrSize = 256;
+  const qrYoffset = (newHeight - newQrSize) / 2;
+  const qrXoffset = (newWidth - newQrSize) / 2;
+  ctx.drawImage(canvas, qrXoffset, qrYoffset, 256, 256);
+
+  ctx.font = '32px Arial';
+  ctx.fillStyle = 'black';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, newWidth / 2, Math.min(qrYoffset + newQrSize + 128, newHeight - 32));
+
+  const a = document.createElement('a');
+  a.href = newCanvas.toDataURL('image/png');
+  // replace all spaces with underscores and add .png extension
+  a.download = `${text.replace(/ /g, '_')}.png`;
+  a.click();
 };
 
 export default SessionDetail;
