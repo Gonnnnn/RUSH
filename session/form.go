@@ -3,6 +3,8 @@ package session
 import (
 	"errors"
 	"fmt"
+	"math"
+	"strconv"
 
 	"google.golang.org/api/forms/v1"
 
@@ -80,5 +82,12 @@ func (f *formHandler) ReadUsers(formId string) ([]string, error) {
 }
 
 func (f *formHandler) attendanceOption(user user.User) string {
-	return fmt.Sprintf("%s%s%s", user.Generation, f.userOptionDelimiter, user.Name)
+	var generationStr string
+	if math.Trunc(user.Generation) == user.Generation {
+		generationStr = strconv.Itoa(int(user.Generation))
+	} else {
+		generationStr = fmt.Sprintf("%.1f", user.Generation)
+	}
+
+	return fmt.Sprintf("%s%s%s", generationStr, f.userOptionDelimiter, user.Name)
 }
