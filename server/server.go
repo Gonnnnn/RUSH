@@ -42,6 +42,7 @@ type AttendanceReport struct {
 
 type userRepo interface {
 	GetAll() ([]user.User, error)
+	List(pageToken string, pageSize int) ([]user.User, string, error)
 	Add(user *user.User) error
 }
 
@@ -89,6 +90,19 @@ func (s *Server) GetAllUsers() ([]*User, error) {
 		converted = append(converted, fromUser(&user))
 	}
 	return converted, nil
+}
+
+func (s *Server) ListUsers(pageToken string, pageSize int) ([]*User, string, error) {
+	users, nextToken, err := s.userRepo.List(pageToken, pageSize)
+	if err != nil {
+		return nil, "", err
+	}
+
+	converted := []*User{}
+	for _, user := range users {
+		converted = append(converted, fromUser(&user))
+	}
+	return converted, nextToken, nil
 }
 
 func (s *Server) AddUser(name string, university string, phone string, generation string, isActive bool) error {

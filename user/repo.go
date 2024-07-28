@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongodbUser struct {
@@ -34,9 +35,7 @@ func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 }
 
 func NewRepo(db *sql.DB) *repo {
-	return &repo{
-		db: db,
-	}
+	return &repo{db: db}
 }
 
 func (r *mongodbRepo) GetAll() ([]User, error) {
@@ -65,6 +64,51 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 	}
 
 	return converted, nil
+}
+
+func (r *mongodbRepo) List(pageToken string, pageSize int) ([]User, string, error) {
+	ctx := context.Background()
+
+	filter := bson.M{}
+	if pageToken != "" {
+		objectID, err := primitive.ObjectIDFromHex(pageToken)
+		if err != nil {
+			return nil, "", fmt.Errorf("invalid page token: %w", err)
+		}
+		filter["_id"] = bson.M{"$lt": objectID}
+	}
+
+	// Fetch pageSize + 1 to check if there are more pages.
+	cursor, err := r.collection.Find(ctx, filter, options.Find().SetLimit(int64(pageSize+1)).SetSort(bson.D{{Key: "generation", Value: -1}}))
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to find users: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var users []mongodbUser
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, "", fmt.Errorf("failed to decode users: %w", err)
+	}
+
+	nextPageToken := ""
+	if len(users) > pageSize {
+		nextPageToken = users[len(users)-1].Id.Hex()
+		users = users[:pageSize]
+	}
+
+	converted := make([]User, len(users))
+	for i, u := range users {
+		converted[i] = User{
+			Id:         u.Id.Hex(),
+			Name:       u.Name,
+			University: u.University,
+			Phone:      u.Phone,
+			Generation: u.Generation,
+			IsActive:   u.IsActive,
+		}
+	}
+
+	return converted, nextPageToken, nil
 }
 
 func (r *mongodbRepo) Add(u *User) error {

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -38,13 +39,26 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 	api := router.Group("/api")
 	{
 		api.GET("/users", func(c *gin.Context) {
-			users, err := server.GetAllUsers()
+			pageToken := c.Query("pageToken")
+			pageSize, err := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+			if err != nil || pageSize <= 0 {
+				pageSize = 20
+			}
+
+			users, nextPageToken, err := server.ListUsers(pageToken, pageSize)
 			if err != nil {
-				log.Printf("Error getting users: %v", err)
+				log.Printf("Error listing users: %v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
-			c.JSON(http.StatusOK, users)
+
+			response := gin.H{
+				"users":           users,
+				"next_page_token": nextPageToken,
+				"is_end":          nextPageToken == "",
+			}
+
+			c.JSON(http.StatusOK, response)
 		})
 
 		api.POST("/users", func(c *gin.Context) {
