@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
+import { Box, Container } from '@mui/material';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
 
 export const HEADER_HEIGHT = 64;
