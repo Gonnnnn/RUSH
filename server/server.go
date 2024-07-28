@@ -42,7 +42,8 @@ type AttendanceReport struct {
 
 type userRepo interface {
 	GetAll() ([]user.User, error)
-	List(pageToken string, pageSize int) ([]user.User, string, error)
+	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
+	List(offset int, pageSize int) (*user.ListResult, error)
 	Add(user *user.User) error
 }
 
@@ -92,17 +93,28 @@ func (s *Server) GetAllUsers() ([]*User, error) {
 	return converted, nil
 }
 
-func (s *Server) ListUsers(pageToken string, pageSize int) ([]*User, string, error) {
-	users, nextToken, err := s.userRepo.List(pageToken, pageSize)
+type ListUsersResult struct {
+	Users      []User `json:"users"`
+	IsEnd      bool   `json:"is_end"`
+	TotalCount int    `json:"total_count"`
+}
+
+func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
+	listResult, err := s.userRepo.List(offset, pageSize)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	converted := []*User{}
-	for _, user := range users {
-		converted = append(converted, fromUser(&user))
+	converted := []User{}
+	for _, user := range listResult.Users {
+		converted = append(converted, *fromUser(&user))
 	}
-	return converted, nextToken, nil
+
+	return &ListUsersResult{
+		Users:      converted,
+		IsEnd:      listResult.IsEnd,
+		TotalCount: listResult.TotalCount,
+	}, nil
 }
 
 func (s *Server) AddUser(name string, university string, phone string, generation string, isActive bool) error {
