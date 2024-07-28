@@ -11,55 +11,48 @@ import {
   Typography,
   TablePagination,
   Box,
-  CircularProgress,
+  LinearProgress,
 } from '@mui/material';
-import { User, getUsers } from './client/http';
+import { User, listUsers } from './client/http';
 
 const UserList = () => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const pageSize = 10;
   const [users, setUsers] = useState<User[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isEnd, setIsEnd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const fetchUsers = async (page: number) => {
+    try {
+      setIsLoading(true);
+      const offset = page * pageSize;
+      const listUsersResponse = await listUsers(offset, pageSize);
+      setUsers(listUsersResponse.users);
+      setIsEnd(listUsersResponse.isEnd);
+      setTotalCount(listUsersResponse.totalCount);
+      setCurrentPage(page);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const init = async () => {
-      try {
-        setIsLoading(true);
-        setUsers(await getUsers());
-        setIsLoading(false);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    init();
+    fetchUsers(0);
   }, []);
 
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
+  const handleChangePage = async (_: unknown, newPage: number) => {
+    if (isEnd && newPage > currentPage) {
+      return;
+    }
+    fetchUsers(newPage);
   };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  if (isLoading) {
-    return (
-      <Container>
-        <Typography variant="h4" sx={{ mb: 5 }}>
-          Users
-        </Typography>
-        <Box display="flex" justifyContent="center" alignItems="center">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
 
   return (
     <Container>
+      <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
       <Typography variant="h4" sx={{ mb: 5 }}>
         Users
       </Typography>
@@ -83,13 +76,18 @@ const UserList = () => {
           </TableBody>
         </Table>
         <TablePagination
-          rowsPerPageOptions={[10, 20, 30]}
+          rowsPerPageOptions={[]}
           component="div"
-          count={users.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
+          rowsPerPage={pageSize}
+          page={currentPage}
           onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          count={totalCount}
+          slotProps={{
+            actions: {
+              previousButton: { disabled: currentPage === 0 },
+              nextButton: { disabled: isEnd },
+            },
+          }}
         />
       </TableContainer>
     </Container>
