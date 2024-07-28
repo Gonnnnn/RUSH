@@ -13,11 +13,11 @@ import (
 )
 
 type UsersPostRequest struct {
-	Name       string `json:"name"`
-	University string `json:"university"`
-	Phone      string `json:"phone"`
-	Generation string `json:"generation"`
-	IsActive   bool   `json:"is_active"`
+	Name       string  `json:"name"`
+	University string  `json:"university"`
+	Phone      string  `json:"phone"`
+	Generation float64 `json:"generation"`
+	IsActive   bool    `json:"is_active"`
 }
 
 type SessionsPostRequest struct {

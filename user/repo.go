@@ -16,7 +16,7 @@ type mongodbUser struct {
 	Name       string             `bson:"name"`
 	University string             `bson:"university"`
 	Phone      string             `bson:"phone"`
-	Generation string             `bson:"generation"`
+	Generation float64            `bson:"generation"`
 	IsActive   bool               `bson:"is_active"`
 }
 
