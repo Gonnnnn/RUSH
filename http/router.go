@@ -21,18 +21,10 @@ type UsersPostRequest struct {
 }
 
 type SessionsPostRequest struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	StartsAt    *customTime `json:"starts_at"`
-	Score       int         `json:"score"`
-}
-
-type customTime struct {
-	Year  int `json:"year"`
-	Month int `json:"month"`
-	Day   int `json:"day"`
-	Hour  int `json:"hour"`
-	Min   int `json:"min"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	StartsAt    time.Time `json:"starts_at"`
+	Score       int       `json:"score"`
 }
 
 func SetUpRouter(router *gin.Engine, server *server.Server) {
@@ -115,12 +107,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 				return
 			}
 
-			id, err := server.AddSession(
-				req.Name,
-				req.Description,
-				time.Date(req.StartsAt.Year, time.Month(req.StartsAt.Month), req.StartsAt.Day, req.StartsAt.Hour, req.StartsAt.Min, 0 /* =sec */, 0 /* =nsec */, time.UTC),
-				req.Score,
-			)
+			id, err := server.AddSession(req.Name, req.Description, req.StartsAt, req.Score)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
