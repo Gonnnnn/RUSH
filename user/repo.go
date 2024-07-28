@@ -75,7 +75,6 @@ type ListResult struct {
 func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	ctx := context.Background()
 
-	// Count total number of documents
 	total, err := r.collection.CountDocuments(ctx, bson.M{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to count users: %w", err)

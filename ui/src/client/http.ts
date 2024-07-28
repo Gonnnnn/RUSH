@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 const BASE_URL = import.meta.env.VITE_SERVER_ENDPOINT;
 
-// set cors
 const client: AxiosInstance = axios.create({
   baseURL: `${BASE_URL.replace(/\/$/, '')}/api`,
   headers: {
@@ -90,6 +89,18 @@ const UserResponseSchema = UserSchema;
 const SessionsResponseSchema = z.array(SessionSchema);
 const SessionResponseSchema = SessionSchema;
 
+const ListSessionsResponseSchema = z
+  .object({
+    is_end: z.boolean(),
+    sessions: z.array(SessionSchema),
+    total_count: z.number(),
+  })
+  .transform((data) => ({
+    isEnd: data.is_end,
+    sessions: data.sessions,
+    totalCount: data.total_count,
+  }));
+
 const AttendancesResponseSchema = z.array(AttendanceSchema);
 
 export type ListUsersReponse = z.infer<typeof ListUsersResponseSchema>;
@@ -124,6 +135,14 @@ export const getSession = async (id: string): Promise<Session> => {
 export const getSessions = async (): Promise<Session[]> => {
   const response = await client.get('/sessions');
   return SessionsResponseSchema.parse(response.data);
+};
+
+export type ListSessionsResponse = z.infer<typeof ListSessionsResponseSchema>;
+
+export const listSessions = async (offset: number, pageSize: number): Promise<ListSessionsResponse> => {
+  const response = await client.get('/sessions', { params: { offset, pageSize } });
+  console.log(response.data);
+  return ListSessionsResponseSchema.parse(response.data);
 };
 
 export const createSession = async (
