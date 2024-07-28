@@ -17,7 +17,7 @@ const UserSchema = z
     name: z.string(),
     university: z.string(),
     phone: z.string(),
-    generation: z.string(),
+    generation: z.number(),
     is_active: z.boolean(),
   })
   .transform((data) => ({

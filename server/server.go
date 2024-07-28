@@ -9,12 +9,12 @@ import (
 )
 
 type User struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	University string `json:"university"`
-	Phone      string `json:"phone"`
-	Generation string `json:"generation"`
-	IsActive   bool   `json:"is_active"`
+	Id         string  `json:"id"`
+	Name       string  `json:"name"`
+	University string  `json:"university"`
+	Phone      string  `json:"phone"`
+	Generation float64 `json:"generation"`
+	IsActive   bool    `json:"is_active"`
 }
 
 type Session struct {
@@ -117,7 +117,7 @@ func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
 	}, nil
 }
 
-func (s *Server) AddUser(name string, university string, phone string, generation string, isActive bool) error {
+func (s *Server) AddUser(name string, university string, phone string, generation float64, isActive bool) error {
 	return s.userRepo.Add(&user.User{
 		Name:       name,
 		University: university,
