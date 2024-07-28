@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -12,36 +12,45 @@ import {
   TablePagination,
   Box,
   LinearProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { User, listUsers } from './client/http';
 
 const UserList = () => {
-  const pageSize = 10;
+  const theme = useTheme();
+  // TODO(#31): Centralize the isMobile logic.
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const pageSize = isMobile ? 8 : 10;
   const [users, setUsers] = useState<User[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [isEnd, setIsEnd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchUsers = async (page: number) => {
-    try {
-      setIsLoading(true);
-      const offset = page * pageSize;
-      const listUsersResponse = await listUsers(offset, pageSize);
-      setUsers(listUsersResponse.users);
-      setIsEnd(listUsersResponse.isEnd);
-      setTotalCount(listUsersResponse.totalCount);
-      setCurrentPage(page);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchUsers = useCallback(
+    async (page: number) => {
+      try {
+        setIsLoading(true);
+        const offset = page * pageSize;
+        const listUsersResponse = await listUsers(offset, pageSize);
+        setUsers(listUsersResponse.users);
+        setIsEnd(listUsersResponse.isEnd);
+        setTotalCount(listUsersResponse.totalCount);
+        setCurrentPage(page);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [pageSize],
+  );
 
   useEffect(() => {
     fetchUsers(0);
-  }, []);
+  }, [fetchUsers]);
 
   const handleChangePage = async (_: unknown, newPage: number) => {
     if (isEnd && newPage > currentPage) {
@@ -52,11 +61,11 @@ const UserList = () => {
 
   return (
     <Container>
-      <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
       <Typography variant="h4" sx={{ mb: 5 }}>
         Users
       </Typography>
       <TableContainer component={Paper}>
+        <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
         <Table>
           <TableHead>
             <TableRow>
