@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongodbSession struct {
@@ -19,7 +20,7 @@ type mongodbSession struct {
 	HostedBy      int                `bson:"hosted_by"`
 	CreatedBy     int                `bson:"created_by"`
 	GoogleFormUri string             `bson:"google_form_uri"`
-	JoinningUsers string             `bson:"joinning_users"`
+	JoinningUsers []string           `bson:"joinning_users"`
 	CreatedAt     time.Time          `bson:"created_at"`
 	StartsAt      time.Time          `bson:"starts_at"`
 	Score         int                `bson:"score"`
@@ -98,6 +99,54 @@ func (r *mongodbRepo) GetAll() ([]Session, error) {
 	return sessions, nil
 }
 
+type ListResult struct {
+	Sessions   []Session
+	IsEnd      bool
+	TotalCount int
+}
+
+func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
+	ctx := context.Background()
+
+	total, err := r.collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to count sessions: %w", err)
+	}
+
+	// Fetch pageSize + 1 to check if there are more pages.
+	cursor, err := r.collection.Find(ctx, bson.M{},
+		options.Find().
+			SetSkip(int64(offset)).
+			SetLimit(int64(pageSize+1)).
+			SetSort(bson.D{{Key: "starts_at", Value: -1}}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find sessions: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var mongodbSessions []mongodbSession
+	if err := cursor.All(ctx, &mongodbSessions); err != nil {
+		return nil, fmt.Errorf("failed to decode sessions: %w", err)
+	}
+
+	isEnd := len(mongodbSessions) <= pageSize
+	if !isEnd {
+		mongodbSessions = mongodbSessions[:pageSize]
+	}
+
+	sessions := []Session{}
+	for _, mongoSession := range mongodbSessions {
+		sessions = append(sessions, *fromMongodbSession(&mongoSession))
+	}
+
+	return &ListResult{
+		Sessions:   sessions,
+		IsEnd:      isEnd,
+		TotalCount: int(total),
+	}, nil
+}
+
 func (r *mongodbRepo) Add(name string, description string, hostedBy int, createdBy int, startsAt time.Time, score int) (string, error) {
 	session := mongodbSession{
 		Name:          name,
@@ -105,7 +154,7 @@ func (r *mongodbRepo) Add(name string, description string, hostedBy int, created
 		HostedBy:      hostedBy,
 		CreatedBy:     createdBy,
 		GoogleFormUri: "",
-		JoinningUsers: "",
+		JoinningUsers: []string{},
 		CreatedAt:     time.Now(),
 		StartsAt:      startsAt,
 		Score:         score,
@@ -228,7 +277,7 @@ func fromMongodbSession(session *mongodbSession) *Session {
 		HostedBy:      session.HostedBy,
 		CreatedBy:     session.CreatedBy,
 		GoogleFormUri: session.GoogleFormUri,
-		JoinningUsers: integerList(session.JoinningUsers),
+		JoinningUsers: session.JoinningUsers,
 		CreatedAt:     session.CreatedAt,
 		StartsAt:      session.StartsAt,
 		Score:         session.Score,

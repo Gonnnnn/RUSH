@@ -49,13 +49,11 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 				return
 			}
 
-			response := gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"users":       result.Users,
 				"is_end":      result.IsEnd,
 				"total_count": result.TotalCount,
-			}
-
-			c.JSON(http.StatusOK, response)
+			})
 		})
 
 		api.POST("/users", func(c *gin.Context) {
@@ -80,13 +78,29 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 		})
 
 		api.GET("/sessions", func(c *gin.Context) {
-			sessions, err := server.GetAllSessions()
+			offset, err := strconv.Atoi(c.Query("offset"))
+			if err != nil || offset < 0 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offset"})
+				return
+			}
+			pageSize, err := strconv.Atoi(c.Query("pageSize"))
+			if err != nil || pageSize < 1 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pageSize"})
+				return
+			}
+
+			result, err := server.ListSessions(offset, pageSize)
 			if err != nil {
 				log.Printf("Error getting sessions: %v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
-			c.JSON(http.StatusOK, sessions)
+
+			c.JSON(http.StatusOK, gin.H{
+				"sessions":    result.Sessions,
+				"is_end":      result.IsEnd,
+				"total_count": result.TotalCount,
+			})
 		})
 
 		api.GET("/sessions/:id", func(c *gin.Context) {

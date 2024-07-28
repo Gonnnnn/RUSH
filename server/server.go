@@ -51,6 +51,7 @@ type userRepo interface {
 type sessionRepo interface {
 	Get(id string) (*session.Session, error)
 	GetAll() ([]session.Session, error)
+	List(offset int, pageSize int) (*session.ListResult, error)
 	Add(name string, description string, hostedBy int, createdBy int, startsAt time.Time, score int) (string, error)
 	Update(id string, updateForm *session.UpdateForm) (*session.Session, error)
 }
@@ -147,6 +148,30 @@ func (s *Server) GetAllSessions() ([]*Session, error) {
 		converted = append(converted, fromSession(&session))
 	}
 	return converted, nil
+}
+
+type ListSessionsResult struct {
+	Sessions   []Session `json:"sessions"`
+	IsEnd      bool      `json:"is_end"`
+	TotalCount int       `json:"total_count"`
+}
+
+func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, error) {
+	listResult, err := s.sessionRepo.List(offset, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	converted := []Session{}
+	for _, session := range listResult.Sessions {
+		converted = append(converted, *fromSession(&session))
+	}
+
+	return &ListSessionsResult{
+		Sessions:   converted,
+		IsEnd:      listResult.IsEnd,
+		TotalCount: listResult.TotalCount,
+	}, nil
 }
 
 func (s *Server) CreateSessionForm(sessionId string) (string, error) {
