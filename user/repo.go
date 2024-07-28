@@ -66,33 +66,40 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 	return converted, nil
 }
 
-func (r *mongodbRepo) List(pageToken string, pageSize int) ([]User, string, error) {
+type ListResult struct {
+	Users      []User `json:"users"`
+	IsEnd      bool   `json:"is_end"`
+	TotalCount int    `json:"total_count"`
+}
+
+func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	ctx := context.Background()
 
-	filter := bson.M{}
-	if pageToken != "" {
-		objectID, err := primitive.ObjectIDFromHex(pageToken)
-		if err != nil {
-			return nil, "", fmt.Errorf("invalid page token: %w", err)
-		}
-		filter["_id"] = bson.M{"$lt": objectID}
+	// Count total number of documents
+	total, err := r.collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to count users: %w", err)
 	}
 
 	// Fetch pageSize + 1 to check if there are more pages.
-	cursor, err := r.collection.Find(ctx, filter, options.Find().SetLimit(int64(pageSize+1)).SetSort(bson.D{{Key: "generation", Value: -1}}))
+	cursor, err := r.collection.Find(ctx, bson.M{},
+		options.Find().
+			SetSkip(int64(offset)).
+			SetLimit(int64(pageSize+1)).
+			SetSort(bson.D{{Key: "generation", Value: -1}}),
+	)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to find users: %w", err)
+		return nil, fmt.Errorf("failed to find users: %w", err)
 	}
 	defer cursor.Close(ctx)
 
 	var users []mongodbUser
 	if err := cursor.All(ctx, &users); err != nil {
-		return nil, "", fmt.Errorf("failed to decode users: %w", err)
+		return nil, fmt.Errorf("failed to decode users: %w", err)
 	}
 
-	nextPageToken := ""
-	if len(users) > pageSize {
-		nextPageToken = users[len(users)-1].Id.Hex()
+	isEnd := len(users) <= pageSize
+	if !isEnd {
 		users = users[:pageSize]
 	}
 
@@ -108,7 +115,11 @@ func (r *mongodbRepo) List(pageToken string, pageSize int) ([]User, string, erro
 		}
 	}
 
-	return converted, nextPageToken, nil
+	return &ListResult{
+		Users:      converted,
+		IsEnd:      isEnd,
+		TotalCount: int(total),
+	}, nil
 }
 
 func (r *mongodbRepo) Add(u *User) error {

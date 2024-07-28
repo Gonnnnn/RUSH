@@ -39,13 +39,18 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 	api := router.Group("/api")
 	{
 		api.GET("/users", func(c *gin.Context) {
-			pageToken := c.Query("pageToken")
-			pageSize, err := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-			if err != nil || pageSize <= 0 {
-				pageSize = 20
+			offset, err := strconv.Atoi(c.Query("offset"))
+			if err != nil || offset < 0 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offset"})
+				return
+			}
+			pageSize, err := strconv.Atoi(c.Query("pageSize"))
+			if err != nil || pageSize < 1 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pageSize"})
+				return
 			}
 
-			users, nextPageToken, err := server.ListUsers(pageToken, pageSize)
+			result, err := server.ListUsers(offset, pageSize)
 			if err != nil {
 				log.Printf("Error listing users: %v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -53,9 +58,9 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			}
 
 			response := gin.H{
-				"users":           users,
-				"next_page_token": nextPageToken,
-				"is_end":          nextPageToken == "",
+				"users":       result.Users,
+				"is_end":      result.IsEnd,
+				"total_count": result.TotalCount,
 			}
 
 			c.JSON(http.StatusOK, response)

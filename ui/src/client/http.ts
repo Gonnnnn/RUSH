@@ -74,7 +74,17 @@ export type User = z.infer<typeof UserSchema>;
 export type Session = z.infer<typeof SessionSchema>;
 export type Attendance = z.infer<typeof AttendanceSchema>;
 
-const UsersResponseSchema = z.array(UserSchema);
+const ListUsersResponseSchema = z
+  .object({
+    is_end: z.boolean(),
+    users: z.array(UserSchema),
+    total_count: z.number(),
+  })
+  .transform((data) => ({
+    isEnd: data.is_end,
+    users: data.users,
+    totalCount: data.total_count,
+  }));
 const UserResponseSchema = UserSchema;
 
 const SessionsResponseSchema = z.array(SessionSchema);
@@ -82,9 +92,11 @@ const SessionResponseSchema = SessionSchema;
 
 const AttendancesResponseSchema = z.array(AttendanceSchema);
 
-export const getUsers = async (): Promise<User[]> => {
-  const response = await client.get('/users');
-  return UsersResponseSchema.parse(response.data);
+export type ListUsersReponse = z.infer<typeof ListUsersResponseSchema>;
+
+export const listUsers = async (offset: number, pageSize: number): Promise<ListUsersReponse> => {
+  const response = await client.get('/users', { params: { offset, pageSize } });
+  return ListUsersResponseSchema.parse(response.data);
 };
 
 export const createUser = async (
