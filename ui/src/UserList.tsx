@@ -10,6 +10,8 @@ import {
   Container,
   Typography,
   TablePagination,
+  Box,
+  CircularProgress,
 } from '@mui/material';
 import { User, getUsers } from './client/http';
 
@@ -49,7 +51,9 @@ const UserList = () => {
         <Typography variant="h4" sx={{ mb: 5 }}>
           Users
         </Typography>
-        <Typography>Loading...</Typography>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }

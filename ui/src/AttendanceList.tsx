@@ -11,6 +11,8 @@ import {
   Container,
   Typography,
   TablePagination,
+  CircularProgress,
+  Box,
 } from '@mui/material';
 import { Attendance, getAttendances } from './client/http';
 
@@ -42,7 +44,9 @@ const AttendanceList: React.FC = () => {
         <Typography variant="h4" sx={{ mb: 5 }}>
           Attendance List
         </Typography>
-        <Typography>Loading...</Typography>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }

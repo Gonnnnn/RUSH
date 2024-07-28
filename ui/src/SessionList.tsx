@@ -14,6 +14,7 @@ import {
   Button,
   Box,
   Modal,
+  CircularProgress,
 } from '@mui/material';
 import SessionCreate from './SessionCreate';
 import { Session, getSessions } from './client/http';
@@ -47,7 +48,9 @@ const SessionList: React.FC = () => {
         <Typography variant="h4" sx={{ mb: 5 }}>
           Sessions
         </Typography>
-        <Typography>Loading...</Typography>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }
