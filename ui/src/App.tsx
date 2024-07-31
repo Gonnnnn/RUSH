@@ -11,18 +11,18 @@ import Logo from './assets/logo.svg';
 dayjs.locale('ko');
 
 const App = () => {
-  const [loading, setLoading] = useState(true);
-  const [fadeOut, setFadeOut] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const fadeOutTimeMillis = 1000;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
     }, fadeOutTimeMillis);
 
-    setFadeOut(true);
+    setIsFadingOut(true);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(loadingTimer);
   }, []);
 
   return (
@@ -32,7 +32,7 @@ const App = () => {
           <AppRoutes />
         </BrowserRouter>
       </LocalizationProvider>
-      {loading && (
+      {isLoading && (
         <Box
           position="fixed"
           top={0}
@@ -45,10 +45,10 @@ const App = () => {
           bgcolor="#ffffff" // or any color you prefer
           zIndex={9999}
           sx={{
-            opacity: fadeOut ? 0 : 1,
+            opacity: isFadingOut ? 0 : 1,
             transition: `opacity ${fadeOutTimeMillis}ms cubic-bezier(0.6, 0, 1, 1)`,
           }}
-          onClick={() => setLoading(false)}
+          onClick={() => setIsLoading(false)}
         >
           <img src={Logo} alt="logo" width={256} />
         </Box>
