@@ -34,6 +34,7 @@ const App = () => {
       </LocalizationProvider>
       {isLoading && (
         <Box
+          onClick={() => setIsLoading(false)}
           position="fixed"
           top={0}
           left={0}
@@ -42,13 +43,12 @@ const App = () => {
           display="flex"
           justifyContent="center"
           alignItems="center"
-          bgcolor="#ffffff" // or any color you prefer
+          bgcolor="#ffffff"
           zIndex={9999}
           sx={{
             opacity: isFadingOut ? 0 : 1,
             transition: `opacity ${fadeOutTimeMillis}ms cubic-bezier(0.6, 0, 1, 1)`,
           }}
-          onClick={() => setIsLoading(false)}
         >
           <img src={Logo} alt="logo" width={256} />
         </Box>
