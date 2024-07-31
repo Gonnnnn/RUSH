@@ -10,6 +10,7 @@
     // It was `bundler` but fixed to be `node` as eslint was taken out to the root. Not sure why it was required all of a sudden.
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
