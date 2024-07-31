@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Input, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, TextField, Typography } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs from 'dayjs';
 import { createSession } from './client/http';
 
 const SessionCreate = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const { dateInputValue, onDateInputValueChange, date: startsAt } = useDateTimeLocalInput();
+  const [startsAt, setStartsAt] = useState(dayjs());
   const [score, setScore] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!startsAt) return;
     try {
-      const id = await createSession(name, description, startsAt, score);
+      const id = await createSession(name, description, new Date(startsAt.toISOString()), score);
       navigate(`/sessions/${id}`);
     } catch (error) {
       console.error(error);
@@ -42,16 +45,23 @@ const SessionCreate = () => {
           fullWidth
           sx={{ mb: 2 }}
         />
-        <Input
-          type="datetime-local"
-          name="startsAt"
-          value={dateInputValue}
-          onChange={(e) => onDateInputValueChange(e.target.value)}
-          fullWidth
-          sx={{ mb: 2 }}
+        <DateTimePicker
+          label="Starts At"
+          value={startsAt}
+          onChange={(newValue) => {
+            console.log(newValue);
+            setStartsAt(newValue ?? dayjs());
+          }}
+          minutesStep={10}
+          shouldDisableDate={(date) => date.isBefore(dayjs(), 'day')}
+          views={['year', 'month', 'day', 'hours', 'minutes']}
+          format="YYYY/MM/DD HH:mm"
+          skipDisabled
+          sx={{ mb: 2, width: '100%' }}
         />
-        <Input
+        <TextField
           type="number"
+          label="Score"
           name="score"
           value={score}
           onChange={(e) => setScore(parseInt(e.target.value, 10))}
@@ -66,32 +76,6 @@ const SessionCreate = () => {
       </form>
     </Container>
   );
-};
-
-const useDateTimeLocalInput = (initialDate = new Date()) => {
-  const [date, setDate] = useState(initialDate);
-
-  const formatDateToInput = (newDate: Date) => {
-    const pad = (number: number) => number.toString().padStart(2, '0');
-
-    const year = newDate.getFullYear();
-    const month = pad(newDate.getMonth() + 1);
-    const day = pad(newDate.getDate());
-    const hours = pad(newDate.getHours());
-    const minutes = pad(newDate.getMinutes());
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-  const handleChange = (newInputValue: string) => {
-    setDate(new Date(newInputValue));
-  };
-
-  return {
-    dateInputValue: formatDateToInput(date),
-    onDateInputValueChange: handleChange,
-    date,
-  };
 };
 
 export default SessionCreate;
