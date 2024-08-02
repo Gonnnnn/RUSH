@@ -20,7 +20,6 @@ import (
 	"google.golang.org/api/forms/v1"
 	"google.golang.org/api/option"
 
-	"rush/attendance"
 	"rush/golang/env"
 	rushHttp "rush/http"
 	"rush/server"
@@ -48,17 +47,15 @@ func main() {
 	mongodbDatabaseName := env.GetRequiredStringVariable("MONGODB_DB_NAME")
 	mongodbSessionColName := env.GetRequiredStringVariable("MONGODB_SESSION_COLLECTION_NAME")
 	mongodbUserColName := env.GetRequiredStringVariable("MONGODB_USER_COLLECTION_NAME")
-	mongodbAttendanceReportColName := env.GetRequiredStringVariable("MONGODB_ATTENDANCE_REPORT_COLLECTION_NAME")
 	sessionCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbSessionColName)
 	userCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbUserColName)
-	attendanceReportCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceReportColName)
 
 	googleCreds := getGoogleCredentials(ctx, env.GetRequiredStringVariable("ENVIRONMENT"))
 	log.Printf("project id: %s", googleCreds.ProjectID)
 	formsService := must.OK1(forms.NewService(ctx, option.WithCredentials(googleCreds)))
 
 	server := server.New(rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
-		attendance.NewMongoDbRepo(attendanceReportCollection), session.NewFormHandler(formsService))
+		session.NewFormHandler(formsService))
 
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()

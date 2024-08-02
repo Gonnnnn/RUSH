@@ -140,16 +140,6 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 
 			c.JSON(http.StatusOK, gin.H{"form_url": formUrl})
 		})
-
-		api.GET("/attendances", func(c *gin.Context) {
-			reports, err := server.GetAllAttendanceReports()
-			if err != nil {
-				log.Printf("Error getting attendance reports: %v", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			c.JSON(http.StatusOK, reports)
-		})
 	}
 
 	// TODO: Get it from env variable.
