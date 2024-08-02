@@ -123,7 +123,6 @@ export type ListSessionsResponse = z.infer<typeof ListSessionsResponseSchema>;
 
 export const listSessions = async (offset: number, pageSize: number): Promise<ListSessionsResponse> => {
   const response = await client.get('/sessions', { params: { offset, pageSize } });
-  console.log(response.data);
   return ListSessionsResponseSchema.parse(response.data);
 };
 
@@ -133,7 +132,6 @@ export const createSession = async (
   startsAt: Date,
   score: number,
 ): Promise<Session> => {
-  console.log(startsAt.getHours(), startsAt.getMinutes());
   const response = await client.post('/sessions', {
     name,
     description,
@@ -151,7 +149,6 @@ export const createSessionForm = async (id: string): Promise<string> => {
 export const signIn = async (token: string): Promise<string> => {
   const response = await client.post('/sign-in', { token });
   if (response.status === 200) {
-    console.log(response.data.token);
     return response.data.token;
   }
   throw new Error('Failed to sign in');
