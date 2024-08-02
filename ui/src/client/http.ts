@@ -53,25 +53,8 @@ const SessionSchema = z
     isClosed: data.is_closed,
   }));
 
-const AttendanceSchema = z
-  .object({
-    id: z.string(),
-    name: z.string(),
-    description: z.string(),
-    session_ids: z.array(z.string()),
-    created_at: z.string().transform((str) => new Date(str)),
-    created_by: z.string(),
-  })
-  .transform((data) => ({
-    ...data,
-    sessionIds: data.session_ids,
-    createdAt: data.created_at,
-    createdBy: data.created_by,
-  }));
-
 export type User = z.infer<typeof UserSchema>;
 export type Session = z.infer<typeof SessionSchema>;
-export type Attendance = z.infer<typeof AttendanceSchema>;
 
 const ListUsersResponseSchema = z
   .object({
@@ -100,8 +83,6 @@ const ListSessionsResponseSchema = z
     sessions: data.sessions,
     totalCount: data.total_count,
   }));
-
-const AttendancesResponseSchema = z.array(AttendanceSchema);
 
 export type ListUsersReponse = z.infer<typeof ListUsersResponseSchema>;
 
@@ -164,9 +145,4 @@ export const createSession = async (
 export const createSessionForm = async (id: string): Promise<string> => {
   const response = await client.post(`/sessions/${id}/attendance-form`);
   return response.data.form_url;
-};
-
-export const getAttendances = async (): Promise<Attendance[]> => {
-  const response = await client.get('/attendances');
-  return AttendancesResponseSchema.parse(response.data);
 };

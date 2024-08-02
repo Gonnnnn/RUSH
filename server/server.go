@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"rush/attendance"
 	"rush/session"
 	"rush/user"
 	"sort"
@@ -32,15 +31,6 @@ type Session struct {
 	IsClosed      bool      `json:"is_closed"`
 }
 
-type AttendanceReport struct {
-	Id          string    `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	SessionIds  []string  `json:"session_ids"`
-	CreatedAt   time.Time `json:"created_at"`
-	CreatedBy   string    `json:"created_by"`
-}
-
 type userRepo interface {
 	GetAll() ([]user.User, error)
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
@@ -56,11 +46,6 @@ type sessionRepo interface {
 	Update(id string, updateForm *session.UpdateForm) (*session.Session, error)
 }
 
-type attendanceRepo interface {
-	GetAll() ([]attendance.AttendanceReport, error)
-	Add(name string, description string, sessionIds []string, createdBy int) error
-}
-
 type sessionFormHandler interface {
 	GenerateForm(title string, description string, users []user.User) (string, error)
 	ReadUsers(formId string) ([]string, error)
@@ -69,15 +54,13 @@ type sessionFormHandler interface {
 type Server struct {
 	userRepo           userRepo
 	sessionRepo        sessionRepo
-	attendanceRepo     attendanceRepo
 	sessionFormHandler sessionFormHandler
 }
 
-func New(userRepo userRepo, sessionRepo sessionRepo, attendanceRepo attendanceRepo, sessionFormHandler sessionFormHandler) *Server {
+func New(userRepo userRepo, sessionRepo sessionRepo, sessionFormHandler sessionFormHandler) *Server {
 	return &Server{
 		userRepo:           userRepo,
 		sessionRepo:        sessionRepo,
-		attendanceRepo:     attendanceRepo,
 		sessionFormHandler: sessionFormHandler,
 	}
 }
@@ -135,19 +118,6 @@ func (s *Server) GetSession(id string) (*Session, error) {
 		return nil, err
 	}
 	return fromSession(session), nil
-}
-
-func (s *Server) GetAllSessions() ([]*Session, error) {
-	sessions, err := s.sessionRepo.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	converted := []*Session{}
-	for _, session := range sessions {
-		converted = append(converted, fromSession(&session))
-	}
-	return converted, nil
 }
 
 type ListSessionsResult struct {
@@ -217,29 +187,4 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 
 func (s *Server) AddSession(name string, description string, startsAt time.Time, score int) (string, error) {
 	return s.sessionRepo.Add(name, description, 0, 0, startsAt, score)
-}
-
-func (s *Server) GetAllAttendanceReports() ([]AttendanceReport, error) {
-	reports, err := s.attendanceRepo.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	converted := []AttendanceReport{}
-	for _, report := range reports {
-		converted = append(converted, AttendanceReport{
-			Id:          string(report.Id),
-			Name:        report.Name,
-			Description: report.Description,
-			SessionIds:  report.SessionIds,
-			CreatedAt:   report.CreatedAt,
-			CreatedBy:   string(report.CreatedBy),
-		})
-	}
-
-	return converted, nil
-}
-
-func (s *Server) AddAttendanceReport(name string, sessionIds []string, createdBy int) error {
-	return s.attendanceRepo.Add(name, "", sessionIds, createdBy)
 }
