@@ -1,36 +1,50 @@
-// Layout.tsx
 import { Outlet } from 'react-router-dom';
 import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import BottomNavigation, { BOTTOM_NAV_HEIGHT } from './BottomNavigation';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
-
-export const HEADER_HEIGHT = 64;
+import GoogleSignInButton from './common/GoogleSignInButton';
 
 const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh' }}>
-      {!isMobile && (
-        <Box sx={{ width: SIDEBAR_WIDTH }}>
-          <Sidebar />
-        </Box>
-      )}
+  return isMobile ? (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+        <GoogleSignInButton />
+      </Box>
 
       <Container
         sx={{
-          py: isMobile ? `16px` : `${HEADER_HEIGHT + 16}px`,
-          pb: isMobile ? `${BOTTOM_NAV_HEIGHT + 16}px` : '16px',
+          py: '16px',
+          pb: `${BOTTOM_NAV_HEIGHT + 16}px`,
           boxSizing: 'border-box',
-          width: isMobile ? '100%' : `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          width: '100%',
           flexGrow: 1,
         }}
       >
         <Outlet />
       </Container>
 
-      {isMobile && <BottomNavigation />}
+      <BottomNavigation />
+    </Box>
+  ) : (
+    <Box sx={{ display: 'flex', flexDirection: 'row', minHeight: '100vh' }}>
+      <Box sx={{ width: SIDEBAR_WIDTH }}>
+        <Sidebar />
+      </Box>
+
+      <Container
+        sx={{
+          py: '80px',
+          pb: '16px',
+          boxSizing: 'border-box',
+          width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          flexGrow: 1,
+        }}
+      >
+        <Outlet />
+      </Container>
     </Box>
   );
 };
