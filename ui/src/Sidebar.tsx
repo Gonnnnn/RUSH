@@ -4,6 +4,7 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { Box, ListItemButton, Stack } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import Logo from './assets/logo.svg';
+import GoogleSignInButton from './common/GoogleSignInButton';
 
 export const SIDEBAR_WIDTH = 280;
 
@@ -39,6 +40,7 @@ const Sidebar = () => {
         <Navigation title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
         <Navigation title="Users" path="/users" icon={<GroupOutlined />} />
       </Stack>
+      <GoogleSignInButton />
     </Stack>
   );
 };
