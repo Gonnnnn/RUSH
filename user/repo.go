@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/errgo.v2/errors"
 )
 
 type mongodbUser struct {
@@ -27,6 +28,8 @@ type mongodbRepo struct {
 type repo struct {
 	db *sql.DB
 }
+
+var ErrNotFound = errors.New("user not found")
 
 func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	return &mongodbRepo{
@@ -64,6 +67,27 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 	}
 
 	return converted, nil
+}
+
+func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
+	ctx := context.Background()
+
+	var u mongodbUser
+	if err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&u); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+
+	return &User{
+		Id:         u.Id.Hex(),
+		Name:       u.Name,
+		University: u.University,
+		Phone:      u.Phone,
+		Generation: u.Generation,
+		IsActive:   u.IsActive,
+	}, nil
 }
 
 type ListResult struct {

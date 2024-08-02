@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"rush/auth"
 	"rush/session"
 	"rush/user"
@@ -33,11 +34,16 @@ type Session struct {
 }
 
 type tokenInspector interface {
+	// Handles the third party token that is used for signing in.
 	GetUserIdentifier(token string) (auth.UserIdentifier, error)
+	// Returns the provider of the token. authHandler uses it to extract the email address.
+	Provider() auth.Provider
 }
 
 type authHandler interface {
-	tokenInspector
+	// Handles the rush token that is used for API calls after signing in.
+	GetUserIdentifier(token string) (auth.UserIdentifier, error)
+	// Returns the rush token that is used for API calls after signing in.
 	SignIn(userIdentifier auth.UserIdentifier) (string, error)
 }
 
@@ -46,6 +52,7 @@ type userRepo interface {
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
 	List(offset int, pageSize int) (*user.ListResult, error)
 	Add(user *user.User) error
+	GetByEmail(email string) (*user.User, error)
 }
 
 type sessionRepo interface {
@@ -84,7 +91,22 @@ func (s *Server) SignIn(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return s.authHandler.SignIn(userIdentifier)
+	log.Printf("firebase userIdentifier: %+v", userIdentifier)
+
+	// TODO(#67): Distinguish errors.
+	email, ok := userIdentifier.Email(s.tokenInspector.Provider())
+	if !ok {
+		return "", fmt.Errorf("failed to get email from the token")
+	}
+	log.Printf("firebase email: %s", email)
+
+	user, err := s.userRepo.GetByEmail(email)
+	if err != nil {
+		return "", fmt.Errorf("failed to get user by email: %w", err)
+	}
+	log.Printf("user: %+v", user)
+
+	return s.authHandler.SignIn(auth.NewUserIdentifier(map[auth.Provider]string{auth.ProviderRush: user.Id}, map[auth.Provider]string{auth.ProviderRush: email}))
 }
 
 func (s *Server) IsTokenValid(token string) bool {

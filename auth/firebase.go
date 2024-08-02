@@ -55,8 +55,9 @@ func (f *firebaseAuth) GetUserIdentifier(token string) (UserIdentifier, error) {
 		return UserIdentifier{}, fmt.Errorf("failed to verify the token: invalid user_id in claim")
 	}
 
-	return UserIdentifier{
-		ProviderIds: map[Provider]string{ProviderFirebase: firestoreIdStr},
-		Emails:      map[Provider]string{ProviderFirebase: emailStr},
-	}, nil
+	return NewUserIdentifier(map[Provider]string{ProviderFirebase: firestoreIdStr}, map[Provider]string{ProviderFirebase: emailStr}), nil
+}
+
+func (f *firebaseAuth) Provider() Provider {
+	return ProviderFirebase
 }

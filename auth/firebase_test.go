@@ -77,8 +77,12 @@ func TestGetUserIdentifier(t *testing.T) {
 		fbAuth := NewFbAuth(mockFbAuthClient)
 		identifier, err := fbAuth.GetUserIdentifier("token")
 
-		assert.Equal(t, "abcdefg", identifier.ProviderIds[ProviderFirebase])
-		assert.Equal(t, "john.doe@gmail.com", identifier.Emails[ProviderFirebase])
+		providerId, ok := identifier.ProviderId(ProviderFirebase)
+		assert.True(t, ok)
+		assert.Equal(t, "abcdefg", providerId)
+		email, ok := identifier.Email(ProviderFirebase)
+		assert.True(t, ok)
+		assert.Equal(t, "john.doe@gmail.com", email)
 		assert.Nil(t, err)
 	})
 }

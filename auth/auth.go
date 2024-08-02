@@ -16,8 +16,22 @@ const (
 type UserIdentifier struct {
 	// THe user ID provided by the provider.
 	// Other packages could use it to identify the user matching the provider.
-	ProviderIds map[Provider]string
+	providerIds map[Provider]string
 	// The email address of the user provided by the provider.
 	// E.g., Firebase: john.doe@gmail.com
-	Emails map[Provider]string
+	emails map[Provider]string
+}
+
+func NewUserIdentifier(providerIds map[Provider]string, emails map[Provider]string) UserIdentifier {
+	return UserIdentifier{providerIds: providerIds, emails: emails}
+}
+
+func (u *UserIdentifier) Email(provider Provider) (string, bool) {
+	email, ok := u.emails[provider]
+	return email, ok
+}
+
+func (u *UserIdentifier) ProviderId(provider Provider) (string, bool) {
+	id, ok := u.providerIds[provider]
+	return id, ok
 }
