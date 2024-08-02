@@ -19,6 +19,9 @@ const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
         display: 'flex',
         columnGap: 2,
         padding: '8px 0',
+        fontSize: '16px',
+        lineHeight: '20px',
+        fontWeight: 400,
       }}
       onClick={async () => {
         setIsLoggingOut(true);
