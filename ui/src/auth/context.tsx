@@ -4,13 +4,13 @@ import { checkAuth, signIn } from '../client/http';
 interface AuthContextType {
   authenticated: boolean;
   login: (token: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   authenticated: false,
   login: async () => {},
-  logout: () => {},
+  logout: async () => {},
 });
 
 const cookieName = 'rush-auth';
@@ -52,9 +52,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [setAuthenticated],
   );
 
-  const logout = () => {
-    document.cookie = '';
-    setAuthenticated(false);
+  const logout = async () => {
+    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+
+    // Set timer to reload the page just to make users feel like they are logged out.
+    // That's why the cookie is removed before the timer is initialized.
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        setAuthenticated(false);
+        resolve();
+      }, 1000);
+    });
   };
 
   const value = useMemo(() => ({ authenticated, login, logout }), [authenticated, login]);

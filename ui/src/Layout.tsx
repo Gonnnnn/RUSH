@@ -2,16 +2,19 @@ import { Outlet } from 'react-router-dom';
 import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import BottomNavigation, { BOTTOM_NAV_HEIGHT } from './BottomNavigation';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
+import { useAuth } from './auth/context';
 import GoogleSignInButton from './common/GoogleSignInButton';
+import GoogleSignOutButton from './common/GoogleSignOutButton';
 
 const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { authenticated } = useAuth();
 
   return isMobile ? (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-        <GoogleSignInButton />
+        {authenticated ? <GoogleSignOutButton /> : <GoogleSignInButton />}
       </Box>
 
       <Container

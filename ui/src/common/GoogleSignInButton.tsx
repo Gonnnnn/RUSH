@@ -10,7 +10,7 @@ const GoogleSignInButton = ({ text = '' }: { text?: string }) => {
     try {
       const credential = await signInWithPopup(auth, provider);
       const idToken = await credential.user.getIdToken();
-      login(idToken);
+      await login(idToken);
     } catch (error) {
       // TODO(#23): Handle error after centralizing the error handler.
       // eslint-disable-next-line no-console
