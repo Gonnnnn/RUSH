@@ -12,6 +12,10 @@ import (
 	"rush/server"
 )
 
+type SignInRequest struct {
+	Token string `json:"token"`
+}
+
 type UsersPostRequest struct {
 	Name       string  `json:"name"`
 	University string  `json:"university"`
@@ -30,6 +34,41 @@ type SessionsPostRequest struct {
 func SetUpRouter(router *gin.Engine, server *server.Server) {
 	api := router.Group("/api")
 	{
+		api.POST("/sign-in", func(c *gin.Context) {
+			var req SignInRequest
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			token, err := server.SignIn(req.Token)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"token": token})
+		})
+
+		api.GET("/auth", func(c *gin.Context) {
+			token, err := c.Cookie("rush-auth")
+			if err != nil {
+				if err == http.ErrNoCookie {
+					c.JSON(http.StatusBadRequest, gin.H{"error": "Cookie not found"})
+					return
+				}
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving cookie"})
+				return
+			}
+
+			if !server.IsTokenValid(token) {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"message": "Authorized"})
+		})
+
 		api.GET("/users", func(c *gin.Context) {
 			offset, err := strconv.Atoi(c.Query("offset"))
 			if err != nil || offset < 0 {

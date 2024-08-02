@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"rush/auth"
 	"rush/session"
 	"rush/user"
 	"sort"
@@ -31,6 +32,15 @@ type Session struct {
 	IsClosed      bool      `json:"is_closed"`
 }
 
+type tokenInspector interface {
+	GetUserIdentifier(token string) (auth.UserIdentifier, error)
+}
+
+type authHandler interface {
+	tokenInspector
+	SignIn(userIdentifier auth.UserIdentifier) (string, error)
+}
+
 type userRepo interface {
 	GetAll() ([]user.User, error)
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
@@ -52,17 +62,36 @@ type sessionFormHandler interface {
 }
 
 type Server struct {
+	tokenInspector     tokenInspector
+	authHandler        authHandler
 	userRepo           userRepo
 	sessionRepo        sessionRepo
 	sessionFormHandler sessionFormHandler
 }
 
-func New(userRepo userRepo, sessionRepo sessionRepo, sessionFormHandler sessionFormHandler) *Server {
+func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, sessionRepo sessionRepo, sessionFormHandler sessionFormHandler) *Server {
 	return &Server{
+		tokenInspector:     tokenInspector,
+		authHandler:        authHandler,
 		userRepo:           userRepo,
 		sessionRepo:        sessionRepo,
 		sessionFormHandler: sessionFormHandler,
 	}
+}
+
+func (s *Server) SignIn(token string) (string, error) {
+	userIdentifier, err := s.tokenInspector.GetUserIdentifier(token)
+	if err != nil {
+		return "", err
+	}
+	return s.authHandler.SignIn(userIdentifier)
+}
+
+func (s *Server) IsTokenValid(token string) bool {
+	if _, err := s.authHandler.GetUserIdentifier(token); err != nil {
+		return false
+	}
+	return true
 }
 
 func (s *Server) GetAllUsers() ([]*User, error) {

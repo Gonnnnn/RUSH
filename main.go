@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	firebase "firebase.google.com/go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,6 +21,7 @@ import (
 	"google.golang.org/api/forms/v1"
 	"google.golang.org/api/option"
 
+	"rush/auth"
 	"rush/golang/env"
 	rushHttp "rush/http"
 	"rush/server"
@@ -52,16 +54,23 @@ func main() {
 
 	googleCreds := getGoogleCredentials(ctx, env.GetRequiredStringVariable("ENVIRONMENT"))
 	log.Printf("project id: %s", googleCreds.ProjectID)
-	formsService := must.OK1(forms.NewService(ctx, option.WithCredentials(googleCreds)))
+	googleOption := option.WithCredentials(googleCreds)
+	formsService := must.OK1(forms.NewService(ctx, googleOption))
+	firebaseAuthClient := must.OK1(must.OK1(firebase.NewApp(ctx, nil, googleOption)).Auth(ctx))
 
-	server := server.New(rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
-		session.NewFormHandler(formsService))
+	server := server.New(
+		auth.NewFbAuth(firebaseAuthClient),
+		auth.NewRushAuth(),
+		rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
+		session.NewFormHandler(formsService),
+	)
 
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowOrigins = []string{env.GetRequiredStringVariable("CORS_ORIGIN")}
 	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
 	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	corsConfig.AllowCredentials = true
 	router.Use(cors.New(corsConfig))
 
 	rushHttp.SetUpRouter(router, server)

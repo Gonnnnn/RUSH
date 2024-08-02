@@ -8,6 +8,7 @@ const client: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 const UserSchema = z
@@ -122,7 +123,6 @@ export type ListSessionsResponse = z.infer<typeof ListSessionsResponseSchema>;
 
 export const listSessions = async (offset: number, pageSize: number): Promise<ListSessionsResponse> => {
   const response = await client.get('/sessions', { params: { offset, pageSize } });
-  console.log(response.data);
   return ListSessionsResponseSchema.parse(response.data);
 };
 
@@ -132,7 +132,6 @@ export const createSession = async (
   startsAt: Date,
   score: number,
 ): Promise<Session> => {
-  console.log(startsAt.getHours(), startsAt.getMinutes());
   const response = await client.post('/sessions', {
     name,
     description,
@@ -145,4 +144,17 @@ export const createSession = async (
 export const createSessionForm = async (id: string): Promise<string> => {
   const response = await client.post(`/sessions/${id}/attendance-form`);
   return response.data.form_url;
+};
+
+export const signIn = async (token: string): Promise<string> => {
+  const response = await client.post('/sign-in', { token });
+  if (response.status === 200) {
+    return response.data.token;
+  }
+  throw new Error('Failed to sign in');
+};
+
+export const checkAuth = async (): Promise<boolean> => {
+  const response = await client.get('/auth');
+  return response.status === 200;
 };
