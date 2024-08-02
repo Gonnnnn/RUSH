@@ -18,8 +18,8 @@ const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
         display: 'flex',
         columnGap: 2,
-        padding: '8px 0',
-        fontSize: '16px',
+        padding: '8px',
+        fontSize: '14px',
         lineHeight: '20px',
         fontWeight: 400,
       }}
