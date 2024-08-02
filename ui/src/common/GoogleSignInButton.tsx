@@ -1,12 +1,16 @@
 import { Button } from '@mui/material';
 import { signInWithPopup } from 'firebase/auth';
 import GoogleLogo from '../assets/google_logo.svg';
+import { useAuth } from '../auth/context';
 import { auth, provider } from '../firebase';
 
 const GoogleSignInButton = ({ text = '' }: { text?: string }) => {
+  const { login } = useAuth();
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const credential = await signInWithPopup(auth, provider);
+      const idToken = await credential.user.getIdToken();
+      login(idToken);
     } catch (error) {
       // TODO(#23): Handle error after centralizing the error handler.
       // eslint-disable-next-line no-console

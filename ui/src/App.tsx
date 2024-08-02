@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import AppRoutes from './Routes';
 import Logo from './assets/logo.svg';
+import { AuthProvider } from './auth/context';
 
 dayjs.locale('ko');
 
@@ -27,11 +28,13 @@ const App = () => {
 
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </LocalizationProvider>
+      <AuthProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </LocalizationProvider>
+      </AuthProvider>
       {isLoading && (
         <Box
           onClick={() => setIsLoading(false)}
