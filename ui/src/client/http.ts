@@ -8,6 +8,7 @@ const client: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 const UserSchema = z
@@ -145,4 +146,18 @@ export const createSession = async (
 export const createSessionForm = async (id: string): Promise<string> => {
   const response = await client.post(`/sessions/${id}/attendance-form`);
   return response.data.form_url;
+};
+
+export const signIn = async (token: string): Promise<string> => {
+  const response = await client.post('/sign-in', { token });
+  if (response.status === 200) {
+    console.log(response.data.token);
+    return response.data.token;
+  }
+  throw new Error('Failed to sign in');
+};
+
+export const checkAuth = async (): Promise<boolean> => {
+  const response = await client.get('/auth');
+  return response.status === 200;
 };
