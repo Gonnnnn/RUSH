@@ -25,8 +25,20 @@ func handleSignIn(server *server.Server) gin.HandlerFunc {
 
 		token, err := server.SignIn(req.Token)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
-			return
+			code := getHttpStatus(err)
+			if code == http.StatusBadRequest {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
+				return
+			}
+			if code == http.StatusNotFound {
+				c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			}
+			if code == http.StatusInternalServerError {
+				log.Printf("Error signing in: %+v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
 		}
 
 		c.JSON(http.StatusOK, gin.H{"token": token})
@@ -54,8 +66,8 @@ func handleListUsers(server *server.Server) gin.HandlerFunc {
 
 		result, err := server.ListUsers(offset, pageSize)
 		if err != nil {
-			log.Printf("Error listing users: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("Error getting users: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 
@@ -90,7 +102,8 @@ func handleAddUser(server *server.Server) gin.HandlerFunc {
 			req.Generation,
 			req.IsActive,
 		); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("Error adding user: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 
@@ -113,8 +126,8 @@ func handleListSessions(server *server.Server) gin.HandlerFunc {
 
 		result, err := server.ListSessions(offset, pageSize)
 		if err != nil {
-			log.Printf("Error getting sessions: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("Error getting sessions: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 
@@ -131,7 +144,12 @@ func handleGetSession(server *server.Server) gin.HandlerFunc {
 		id := c.Param("id")
 		session, err := server.GetSession(id)
 		if err != nil {
-			log.Printf("Error getting session: %v", err)
+			if isNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+				return
+			}
+
+			log.Printf("Error getting session: %+v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -156,7 +174,8 @@ func handleAddSession(server *server.Server) gin.HandlerFunc {
 
 		id, err := server.AddSession(req.Name, req.Description, req.StartsAt, req.Score)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("Error adding session: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 
@@ -169,7 +188,19 @@ func handleCreateSessionForm(server *server.Server) gin.HandlerFunc {
 		sessionId := c.Param("id")
 		formUrl, err := server.CreateSessionForm(sessionId)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			code := getHttpStatus(err)
+			if code == http.StatusNotFound {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+				return
+			}
+
+			if code == http.StatusBadRequest {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Form already exists"})
+				return
+			}
+
+			log.Printf("Error creating session form: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 

@@ -1,8 +1,8 @@
 package server
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"rush/auth"
 	"rush/session"
 	"rush/user"
@@ -89,24 +89,31 @@ func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRe
 func (s *Server) SignIn(token string) (string, error) {
 	userIdentifier, err := s.tokenInspector.GetUserIdentifier(token)
 	if err != nil {
-		return "", err
+		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
 	}
-	log.Printf("firebase userIdentifier: %+v", userIdentifier)
 
 	// TODO(#67): Distinguish errors.
 	email, ok := userIdentifier.Email(s.tokenInspector.Provider())
 	if !ok {
-		return "", fmt.Errorf("failed to get email from the token")
+		return "", newInternalServerError(errors.New("failed to get email from user identifier although there should be"))
 	}
-	log.Printf("firebase email: %s", email)
 
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
-		return "", fmt.Errorf("failed to get user by email: %w", err)
+		return "", newNotFoundError(fmt.Errorf("failed to get user by email: %w", err))
 	}
-	log.Printf("user: %+v", user)
 
-	return s.authHandler.SignIn(auth.NewUserIdentifier(map[auth.Provider]string{auth.ProviderRush: user.Id}, map[auth.Provider]string{auth.ProviderRush: email}))
+	rushToken, err := s.authHandler.SignIn(
+		auth.NewUserIdentifier(
+			map[auth.Provider]string{auth.ProviderRush: user.Id},
+			map[auth.Provider]string{auth.ProviderRush: email},
+		),
+	)
+	if err != nil {
+		return "", newInternalServerError(fmt.Errorf("failed to sign in: %w", err))
+	}
+
+	return rushToken, nil
 }
 
 func (s *Server) IsTokenValid(token string) bool {
@@ -119,7 +126,7 @@ func (s *Server) IsTokenValid(token string) bool {
 func (s *Server) GetAllUsers() ([]*User, error) {
 	users, err := s.userRepo.GetAll()
 	if err != nil {
-		return nil, err
+		return nil, newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}
 
 	converted := []*User{}
@@ -138,7 +145,7 @@ type ListUsersResult struct {
 func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
 	listResult, err := s.userRepo.List(offset, pageSize)
 	if err != nil {
-		return nil, err
+		return nil, newInternalServerError(fmt.Errorf("failed to list users: %w", err))
 	}
 
 	converted := []User{}
@@ -154,19 +161,23 @@ func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
 }
 
 func (s *Server) AddUser(name string, university string, phone string, generation float64, isActive bool) error {
-	return s.userRepo.Add(&user.User{
+	err := s.userRepo.Add(&user.User{
 		Name:       name,
 		University: university,
 		Phone:      phone,
 		Generation: generation,
 		IsActive:   isActive,
 	})
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to add user: %w", err))
+	}
+	return nil
 }
 
 func (s *Server) GetSession(id string) (*Session, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
-		return nil, err
+		return nil, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 	return fromSession(session), nil
 }
@@ -180,7 +191,7 @@ type ListSessionsResult struct {
 func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, error) {
 	listResult, err := s.sessionRepo.List(offset, pageSize)
 	if err != nil {
-		return nil, err
+		return nil, newInternalServerError(fmt.Errorf("failed to list sessions: %w", err))
 	}
 
 	converted := []Session{}
@@ -198,7 +209,7 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 	users, err := s.userRepo.GetAll()
 	if err != nil {
-		return "", fmt.Errorf("failed to get users: %w", err)
+		return "", newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}
 
 	sort.Slice(users, func(i, j int) bool {
@@ -210,11 +221,11 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
-		return "", fmt.Errorf("failed to get session: %w", err)
+		return "", newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 
 	if dbSession.GoogleFormUri != "" {
-		return "", fmt.Errorf("form already created: %s", dbSession.GoogleFormUri)
+		return "", newBadRequestError(errors.New("form already exists"))
 	}
 
 	formTitle := fmt.Sprintf("[출석] %s", dbSession.Name)
@@ -225,17 +236,21 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 
 	formUri, err := s.sessionFormHandler.GenerateForm(formTitle, formDescription, users)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate form: %w", err)
+		return "", newInternalServerError(fmt.Errorf("failed to generate form: %w", err))
 	}
 
 	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{GoogleFormUri: &formUri, ReturnUpdatedSession: false})
 	if err != nil {
-		return "", fmt.Errorf("failed to update session: %w", err)
+		return "", newInternalServerError(fmt.Errorf("failed to update session: %w", err))
 	}
 
 	return formUri, nil
 }
 
 func (s *Server) AddSession(name string, description string, startsAt time.Time, score int) (string, error) {
-	return s.sessionRepo.Add(name, description, 0, 0, startsAt, score)
+	id, err := s.sessionRepo.Add(name, description, 0, 0, startsAt, score)
+	if err != nil {
+		return "", newInternalServerError(fmt.Errorf("failed to add session: %w", err))
+	}
+	return id, nil
 }
