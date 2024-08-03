@@ -22,6 +22,7 @@ import (
 	"google.golang.org/api/forms/v1"
 	"google.golang.org/api/option"
 
+	"rush/attendance"
 	"rush/auth"
 	"rush/golang/env"
 	rushHttp "rush/http"
@@ -50,8 +51,10 @@ func main() {
 	mongodbDatabaseName := env.GetRequiredStringVariable("MONGODB_DB_NAME")
 	mongodbSessionColName := env.GetRequiredStringVariable("MONGODB_SESSION_COLLECTION_NAME")
 	mongodbUserColName := env.GetRequiredStringVariable("MONGODB_USER_COLLECTION_NAME")
+	mongodbAttendanceColName := env.GetRequiredStringVariable("MONGODB_ATTENDANCE_COLLECTION_NAME")
 	sessionCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbSessionColName)
 	userCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbUserColName)
+	attendanceCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceColName)
 
 	googleCreds := getGoogleCredentials(ctx, env.GetRequiredStringVariable("ENVIRONMENT"))
 	log.Printf("project id: %s", googleCreds.ProjectID)
@@ -65,7 +68,7 @@ func main() {
 		// The secret key is recommended to be 64 bytes long for HMACSHA256. RushAuth uses HMACSHA256 to sign the token.
 		auth.NewRushAuth(env.GetRequiredStringVariable("JWT_SECRET_KEY"), clock.New()),
 		rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
-		session.NewFormHandler(formsService),
+		attendance.NewFormHandler(formsService), attendance.NewMongoDbRepo(attendanceCollection),
 	)
 
 	router := gin.Default()

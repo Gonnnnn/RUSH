@@ -26,14 +26,14 @@ func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	}
 }
 
-func FindBySessionId(sessionId string) ([]Attendance, error) {
+func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
 	return nil, errors.New("not implemented")
 }
 
-func FindByUserId(userId string) ([]Attendance, error) {
+func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 	return nil, errors.New("not implemented")
 }
 
-func BulkInsert(sessionId string, userIds []string) error {
+func (m *mongodbRepo) BulkInsert(sessionId string, userIds []string) error {
 	return errors.New("not implemented")
 }
