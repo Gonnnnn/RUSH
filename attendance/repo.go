@@ -1,9 +1,11 @@
 package attendance
 
 import (
+	"context"
 	"errors"
 	"time"
 
+	"github.com/benbjohnson/clock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,11 +20,13 @@ type mongodbAttendance struct {
 
 type mongodbRepo struct {
 	collection *mongo.Collection
+	clock      clock.Clock
 }
 
-func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
+func NewMongoDbRepo(collection *mongo.Collection, clock clock.Clock) *mongodbRepo {
 	return &mongodbRepo{
 		collection: collection,
+		clock:      clock,
 	}
 }
 
@@ -35,5 +39,24 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 }
 
 func (m *mongodbRepo) BulkInsert(sessionId string, userIds []string) error {
-	return errors.New("not implemented")
+	if len(userIds) == 0 {
+		return nil
+	}
+
+	attendances := make([]interface{}, 0, len(userIds))
+	now := m.clock.Now()
+
+	for _, userId := range userIds {
+		attendance := mongodbAttendance{
+			SessionId: sessionId,
+			UserId:    userId,
+			// TODO(#42): Uses correct values for JoinedAt.
+			JoinedAt:  now,
+			CreatedAt: now,
+		}
+		attendances = append(attendances, attendance)
+	}
+
+	_, err := m.collection.InsertMany(context.Background(), attendances)
+	return err
 }

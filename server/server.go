@@ -273,7 +273,7 @@ func (s *Server) CloseSession(sessionId string) error {
 	}
 
 	// TODO(#42): Get userIds from the spread sheet linked to the google form.
-	userIds := []string{}
+	userIds := []string{"1", "2", "3"}
 
 	if err := s.attendanceRepo.BulkInsert(sessionId, userIds); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
