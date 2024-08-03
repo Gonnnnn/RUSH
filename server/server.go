@@ -68,21 +68,28 @@ type sessionFormHandler interface {
 	ReadUsers(formId string) ([]string, error)
 }
 
+type attendanceRepo interface {
+	BulkInsert(sessionId string, userIds []string) error
+}
+
 type Server struct {
 	tokenInspector     tokenInspector
 	authHandler        authHandler
 	userRepo           userRepo
 	sessionRepo        sessionRepo
 	sessionFormHandler sessionFormHandler
+	attendanceRepo     attendanceRepo
 }
 
-func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, sessionRepo sessionRepo, sessionFormHandler sessionFormHandler) *Server {
+func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, sessionRepo sessionRepo,
+	sessionFormHandler sessionFormHandler, attendanceRepo attendanceRepo) *Server {
 	return &Server{
 		tokenInspector:     tokenInspector,
 		authHandler:        authHandler,
 		userRepo:           userRepo,
 		sessionRepo:        sessionRepo,
 		sessionFormHandler: sessionFormHandler,
+		attendanceRepo:     attendanceRepo,
 	}
 }
 
@@ -253,4 +260,24 @@ func (s *Server) AddSession(name string, description string, startsAt time.Time,
 		return "", newInternalServerError(fmt.Errorf("failed to add session: %w", err))
 	}
 	return id, nil
+}
+
+func (s *Server) CloseSession(sessionId string) error {
+	session, err := s.sessionRepo.Get(sessionId)
+	if err != nil {
+		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+	}
+
+	if session.IsClosed {
+		return newBadRequestError(errors.New("session already closed"))
+	}
+
+	// TODO(#42): Get userIds from the spread sheet linked to the google form.
+	userIds := []string{}
+
+	if err := s.attendanceRepo.BulkInsert(sessionId, userIds); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
+	}
+
+	return nil
 }
