@@ -13,7 +13,6 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 	api := router.Group("/api")
 	{
 		api.POST("/sign-in", handleSignIn(server))
-		api.GET("/auth", handleAuth(server))
 		api.GET("/users", handleListUsers(server))
 		api.GET("/sessions", handleListSessions(server))
 		api.GET("/sessions/:id", handleGetSession(server))
@@ -21,6 +20,8 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 		protected := api.Group("/")
 		protected.Use(UseAuthMiddleware(server))
 		{
+			// handleAuth doesn't immplement anything. It relies on the middleware to check the token.
+			protected.GET("/auth", handleAuth(server))
 			protected.POST("/users", handleAddUser(server))
 			protected.POST("/sessions", handleAddSession(server))
 			protected.POST("/sessions/:id/attendance-form", handleCreateSessionForm(server))
