@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Button, CircularProgress } from '@mui/material';
 import { useAuth } from '../AuthContext';
+import { useSnackbar } from '../SnackbarContex';
 import GoogleLogo from '../assets/google_logo.svg';
 
 const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
   const { logout } = useAuth();
+  const { showInfo } = useSnackbar();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   return (
@@ -27,6 +29,7 @@ const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
         setIsLoggingOut(true);
         await logout();
         setIsLoggingOut(false);
+        showInfo('Successfully signed out.');
       }}
     >
       {isLoggingOut ? (

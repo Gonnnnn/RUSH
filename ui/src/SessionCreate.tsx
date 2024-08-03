@@ -4,12 +4,12 @@ import { Box, Button, Container, TextField, Typography } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
-import { SnackbarMessageType, useSnackbar } from './SnackbarContex';
+import { useSnackbar } from './SnackbarContex';
 import { createSession } from './client/http';
 
 const SessionCreate = () => {
   const navigate = useNavigate();
-  const { showMessage } = useSnackbar();
+  const { showWarning } = useSnackbar();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startsAt, setStartsAt] = useState(dayjs());
@@ -23,7 +23,7 @@ const SessionCreate = () => {
       navigate(`/sessions/${id}`);
     } catch (error: unknown) {
       if (error instanceof AxiosError && error.response?.status === 401) {
-        showMessage('Session creation is restricted to authenticated users', SnackbarMessageType.error);
+        showWarning('Session creation is restricted to authenticated users');
       }
     }
   };
