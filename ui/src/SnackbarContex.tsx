@@ -11,6 +11,10 @@ export enum SnackbarMessageType {
 
 interface SnackbarContextType {
   showMessage: (message: string, type: SnackbarMessageType) => void;
+  showInfo: (message: string) => void;
+  showError: (message: string) => void;
+  showSuccess: (message: string) => void;
+  showWarning: (message: string) => void;
 }
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
@@ -43,11 +47,19 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
     [lastTime],
   );
 
+  const showInfo = useCallback((msg: string) => showMessage(msg, SnackbarMessageType.info), [showMessage]);
+  const showError = useCallback((msg: string) => showMessage(msg, SnackbarMessageType.error), [showMessage]);
+  const showSuccess = useCallback((msg: string) => showMessage(msg, SnackbarMessageType.success), [showMessage]);
+  const showWarning = useCallback((msg: string) => showMessage(msg, SnackbarMessageType.warning), [showMessage]);
+
   const handleClose = () => {
     setOpen(false);
   };
 
-  const value = useMemo(() => ({ showMessage }), [showMessage]);
+  const value = useMemo(
+    () => ({ showMessage, showInfo, showError, showSuccess, showWarning }),
+    [showMessage, showInfo, showError, showSuccess, showWarning],
+  );
 
   return (
     <SnackbarContext.Provider value={value}>
