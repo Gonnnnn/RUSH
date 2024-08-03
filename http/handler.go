@@ -207,3 +207,35 @@ func handleCreateSessionForm(server *server.Server) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"form_url": formUrl})
 	}
 }
+
+type addAttendanceRequest struct {
+	SessionId string `json:"session_id"`
+}
+
+func handleCloseSession(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req addAttendanceRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := server.CloseSession(req.SessionId); err != nil {
+			if isBadRequest(err) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Session already closed"})
+				return
+			}
+
+			if isNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+				return
+			}
+
+			log.Printf("Error closing session: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Session closed successfully"})
+	}
+}

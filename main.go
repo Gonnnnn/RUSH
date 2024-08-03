@@ -62,13 +62,14 @@ func main() {
 	formsService := must.OK1(forms.NewService(ctx, googleOption))
 	firebaseAuthClient := must.OK1(must.OK1(firebase.NewApp(ctx, nil, googleOption)).Auth(ctx))
 
+	clock := clock.New()
 	server := server.New(
 		auth.NewFbAuth(firebaseAuthClient),
 		// https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.hmacsha256.-ctor?view=net-8.0
 		// The secret key is recommended to be 64 bytes long for HMACSHA256. RushAuth uses HMACSHA256 to sign the token.
-		auth.NewRushAuth(env.GetRequiredStringVariable("JWT_SECRET_KEY"), clock.New()),
+		auth.NewRushAuth(env.GetRequiredStringVariable("JWT_SECRET_KEY"), clock),
 		rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
-		attendance.NewFormHandler(formsService), attendance.NewMongoDbRepo(attendanceCollection),
+		attendance.NewFormHandler(formsService), attendance.NewMongoDbRepo(attendanceCollection, clock),
 	)
 
 	router := gin.Default()
