@@ -5,9 +5,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
+import { AuthProvider } from './AuthContext';
 import AppRoutes from './Routes';
+import { SnackbarProvider } from './SnackbarContex';
 import Logo from './assets/logo.svg';
-import { AuthProvider } from './auth/context';
 
 dayjs.locale('ko');
 
@@ -27,7 +28,7 @@ const App = () => {
   }, []);
 
   return (
-    <>
+    <SnackbarProvider>
       <AuthProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <BrowserRouter>
@@ -56,7 +57,7 @@ const App = () => {
           <img src={Logo} alt="logo" width={256} />
         </Box>
       )}
-    </>
+    </SnackbarProvider>
   );
 };
 export default App;

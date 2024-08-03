@@ -1,7 +1,7 @@
 import { Button } from '@mui/material';
 import { signInWithPopup } from 'firebase/auth';
+import { useAuth } from '../AuthContext';
 import GoogleLogo from '../assets/google_logo.svg';
-import { useAuth } from '../auth/context';
 import { auth, provider } from '../firebase';
 
 const GoogleSignInButton = ({ text = '' }: { text?: string }) => {

@@ -3,8 +3,8 @@ import { GroupOutlined, RunCircleOutlined } from '@mui/icons-material';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { Box, ListItemButton, Stack } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useAuth } from './AuthContext';
 import Logo from './assets/logo.svg';
-import { useAuth } from './auth/context';
 import GoogleSignInButton from './common/GoogleSignInButton';
 import GoogleSignOutButton from './common/GoogleSignOutButton';
 

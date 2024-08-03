@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, CircularProgress } from '@mui/material';
+import { useAuth } from '../AuthContext';
 import GoogleLogo from '../assets/google_logo.svg';
-import { useAuth } from '../auth/context';
 
 const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
   const { logout } = useAuth();

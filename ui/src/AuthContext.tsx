@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { checkAuth, signIn } from '../client/http';
+import { checkAuth, signIn } from './client/http';
 
 interface AuthContextType {
   authenticated: boolean;
