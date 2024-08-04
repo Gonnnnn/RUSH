@@ -4,7 +4,7 @@ import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mu
 import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useSnackbar } from './SnackbarContex';
-import { Session, closeSessionForm, createSessionForm, getSession } from './client/http';
+import { Session, closeSession, createSessionForm, getSession } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const SessionDetail = () => {
@@ -14,7 +14,7 @@ const SessionDetail = () => {
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingForm, setIsCreatingForm] = useState(false);
-  const [isClosingSession, setIsClosingForm] = useState(false);
+  const [isClosingSession, setIsClosingSession] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const qrSizePx = 128;
 
@@ -69,8 +69,8 @@ const SessionDetail = () => {
     }
 
     try {
-      setIsClosingForm(true);
-      await closeSessionForm(id);
+      setIsClosingSession(true);
+      await closeSession(id);
       setSession(await getSession(id));
     } catch (error: unknown) {
       if (error instanceof AxiosError && error.response?.status === 401) {
@@ -79,7 +79,7 @@ const SessionDetail = () => {
         showError('Failed to close the form. Contact the administrator.');
       }
     } finally {
-      setIsClosingForm(false);
+      setIsClosingSession(false);
     }
   };
 

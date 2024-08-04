@@ -151,7 +151,7 @@ export const createSessionForm = async (sessionId: string): Promise<string> => {
   return response.data.form_url;
 };
 
-export const closeSessionForm = async (sessionId: string): Promise<void> => {
+export const closeSession = async (sessionId: string): Promise<void> => {
   await client.post(`/sessions/${sessionId}/attendance`);
 };
 
