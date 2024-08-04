@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
+import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useSnackbar } from './SnackbarContex';
 import { Session, createSessionForm, getSession } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const SessionDetail = () => {
   const navigate = useNavigate();
+  const { showWarning, showError } = useSnackbar();
   const { id } = useParams();
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,8 +48,12 @@ const SessionDetail = () => {
       setIsCreatingForm(true);
       await createSessionForm(id);
       setSession(await getSession(id));
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        showWarning('Form creation is restricted to authenticated users');
+      } else {
+        showError('Failed to create a form. Contact the administrator.');
+      }
     } finally {
       setIsCreatingForm(false);
     }

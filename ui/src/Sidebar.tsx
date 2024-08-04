@@ -40,7 +40,7 @@ const Sidebar = () => {
       </Box>
 
       <Stack>
-        <Navigation title="My Page" path="/me" icon={<PersonOutlined />} />
+        {authenticated ?? <Navigation title="My Page" path="/me" icon={<PersonOutlined />} />}
         <Navigation title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
         <Navigation title="Users" path="/users" icon={<GroupOutlined />} />
       </Stack>
