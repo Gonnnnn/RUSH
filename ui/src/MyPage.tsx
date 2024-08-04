@@ -92,7 +92,7 @@ const MyPage = () => {
             {attendances.map((attendance) => (
               <TableRow
                 key={attendance.id}
-                onClick={() => navigate(`/session/${attendance.sessionId}`)}
+                onClick={() => navigate(`/sessions/${attendance.sessionId}`)}
                 style={{ cursor: 'pointer' }}
               >
                 <TableCell>{attendance.sessionName}</TableCell>
