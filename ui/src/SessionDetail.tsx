@@ -4,7 +4,7 @@ import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mu
 import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useSnackbar } from './SnackbarContex';
-import { Session, createSessionForm, getSession } from './client/http';
+import { Session, closeSessionForm, createSessionForm, getSession } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const SessionDetail = () => {
@@ -14,6 +14,7 @@ const SessionDetail = () => {
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingForm, setIsCreatingForm] = useState(false);
+  const [isClosingForm, setIsClosingForm] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const qrSizePx = 128;
 
@@ -43,7 +44,7 @@ const SessionDetail = () => {
     return null;
   }
 
-  const onQrCodeCreateClick = async () => {
+  const handleQrCodeCreateClick = async () => {
     try {
       setIsCreatingForm(true);
       await createSessionForm(id);
@@ -56,6 +57,29 @@ const SessionDetail = () => {
       }
     } finally {
       setIsCreatingForm(false);
+    }
+  };
+
+  const handleCloseFormBtnClick = async () => {
+    const answer = window.confirm(
+      'Are you sure you want to close the form? It will apply the attendance response to the session and close the form.',
+    );
+    if (!answer) {
+      return;
+    }
+
+    try {
+      setIsClosingForm(true);
+      await closeSessionForm(id);
+      setSession(await getSession(id));
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        showWarning('Form closing is restricted to authenticated users');
+      } else {
+        showError('Failed to close the form. Contact the administrator.');
+      }
+    } finally {
+      setIsClosingForm(false);
     }
   };
 
@@ -123,15 +147,20 @@ const SessionDetail = () => {
                 Download QR code
               </Button>
               <Button variant="outlined" onClick={() => window.open(session.googleFormUri, '_blank')}>
-                Open the form
+                Open the form page
               </Button>
+              {!session.isClosed && (
+                <Button variant="outlined" onClick={handleCloseFormBtnClick}>
+                  {isClosingForm ? <CircularProgress /> : 'Close the form'}
+                </Button>
+              )}
             </Box>
           </>
         ) : (
           <>
             <Typography variant="h6">No form is associated</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
-              <Button variant="contained" onClick={onQrCodeCreateClick} disabled={isCreatingForm}>
+              <Button variant="contained" onClick={handleQrCodeCreateClick} disabled={isCreatingForm}>
                 {isCreatingForm ? <CircularProgress /> : 'Create QR code'}
               </Button>
             </Box>

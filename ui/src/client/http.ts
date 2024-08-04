@@ -146,9 +146,13 @@ export const createSession = async (
   return response.data.id;
 };
 
-export const createSessionForm = async (id: string): Promise<string> => {
-  const response = await client.post(`/sessions/${id}/attendance-form`);
+export const createSessionForm = async (sessionId: string): Promise<string> => {
+  const response = await client.post(`/sessions/${sessionId}/attendance-form`);
   return response.data.form_url;
+};
+
+export const closeSessionForm = async (sessionId: string): Promise<void> => {
+  await client.post(`/sessions/${sessionId}/attendance`);
 };
 
 export const signIn = async (token: string): Promise<string> => {

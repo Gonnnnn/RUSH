@@ -289,26 +289,23 @@ func (s *Server) AddSession(name string, description string, startsAt time.Time,
 }
 
 func (s *Server) CloseSession(sessionId string) error {
-	session, err := s.sessionRepo.Get(sessionId)
+	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 
-	if session.IsClosed {
-		return newBadRequestError(errors.New("session already closed"))
+	if dbSession.IsClosed {
+		return newBadRequestError(errors.New("session is already closed"))
 	}
 
-	fmt.Printf("session: %+v\n", session)
-	fmt.Printf("google form id: %s\n", session.GoogleFormId)
-
-	formSubmissions, err := s.attendanceFormHandler.GetSubmissions(session.GoogleFormId)
+	formSubmissions, err := s.attendanceFormHandler.GetSubmissions(dbSession.GoogleFormId)
 	if err != nil {
 		return newInternalServerError(fmt.Errorf("failed to get form submissions: %w", err))
 	}
 
 	submissionsOnTime := []attendance.FormSubmission{}
 	for _, submission := range formSubmissions {
-		if submission.SubmissionTime.Before(session.StartsAt) {
+		if submission.SubmissionTime.Before(dbSession.StartsAt) {
 			submissionsOnTime = append(submissionsOnTime, submission)
 		}
 	}
@@ -339,6 +336,13 @@ func (s *Server) CloseSession(sessionId string) error {
 
 	if err := s.attendanceRepo.BulkInsert(sessionIds, userIds, joinedAts); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
+	}
+
+	isClosed := true
+	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{IsClosed: &isClosed, ReturnUpdatedSession: false})
+
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to update session to be closed: %w", err))
 	}
 
 	return nil
