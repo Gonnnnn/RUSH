@@ -3,19 +3,24 @@ package attendance
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/benbjohnson/clock"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongodbAttendance struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty"`
-	SessionId string             `bson:"session_id"`
-	UserId    string             `bson:"user_id"`
-	JoinedAt  time.Time          `bson:"joined_at"`
-	CreatedAt time.Time          `bson:"created_at"`
+	Id          primitive.ObjectID `bson:"_id,omitempty"`
+	SessionId   string             `bson:"session_id"`
+	SessionName string             `bson:"session_name"`
+	UserId      string             `bson:"user_id"`
+	UserName    string             `bson:"user_name"`
+	JoinedAt    time.Time          `bson:"joined_at"`
+	CreatedAt   time.Time          `bson:"created_at"`
 }
 
 type mongodbRepo struct {
@@ -35,27 +40,62 @@ func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
 }
 
 func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
-	return nil, errors.New("not implemented")
-}
+	ctx := context.Background()
 
-func (m *mongodbRepo) BulkInsert(sessionIds []string, userIds []string, joinedAts []time.Time) error {
-	if len(sessionIds) != len(userIds) || len(sessionIds) != len(joinedAts) {
-		return errors.New("sessionIds, userIds, and joinedAts must have the same length")
+	cursor, err := m.collection.Find(ctx, bson.M{},
+		options.Find().
+			SetSort(bson.D{{Key: "userId", Value: userId}}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query attendances: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var attendances []mongodbAttendance
+	if err = cursor.All(ctx, &attendances); err != nil {
+		return nil, fmt.Errorf("failed to decode attendances: %w", err)
 	}
 
-	if len(sessionIds) == 0 {
+	var converted []Attendance
+	for _, a := range attendances {
+		converted = append(converted, Attendance{
+			Id:          a.Id.Hex(),
+			SessionId:   a.SessionId,
+			SessionName: a.SessionName,
+			UserId:      a.UserId,
+			UserName:    a.UserName,
+			JoinedAt:    a.JoinedAt,
+			CreatedAt:   a.CreatedAt,
+		})
+	}
+
+	return converted, nil
+}
+
+type AddAttendanceReq struct {
+	SessionId   string
+	SessionName string
+	UserId      string
+	UserName    string
+	JoinedAt    time.Time
+}
+
+func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
+	if len(requests) == 0 {
 		return nil
 	}
 
-	attendances := make([]interface{}, 0, len(sessionIds))
+	attendances := make([]interface{}, 0, len(requests))
 	now := m.clock.Now()
 
-	for i := range sessionIds {
+	for _, request := range requests {
 		attendances = append(attendances, &mongodbAttendance{
-			SessionId: sessionIds[i],
-			UserId:    userIds[i],
-			JoinedAt:  joinedAts[i],
-			CreatedAt: now,
+			SessionId:   request.SessionId,
+			SessionName: request.SessionName,
+			UserId:      request.UserId,
+			UserName:    request.UserName,
+			JoinedAt:    request.JoinedAt,
+			CreatedAt:   now,
 		})
 	}
 

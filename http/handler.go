@@ -256,3 +256,22 @@ func handleApplyAttendance(server *server.Server) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Session closed successfully"})
 	}
 }
+
+func handleGetAttendanceForUser(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId := c.Query("userId")
+		if userId == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "userId is required"})
+			return
+		}
+
+		attendances, err := server.GetAttendanceByUserId(userId)
+		if err != nil {
+			log.Printf("Error getting attendance for user: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"attendances": attendances})
+	}
+}
