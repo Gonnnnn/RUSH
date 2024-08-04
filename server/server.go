@@ -49,6 +49,7 @@ type authHandler interface {
 }
 
 type userRepo interface {
+	Get(id string) (*user.User, error)
 	GetAll() ([]user.User, error)
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
 	List(offset int, pageSize int) (*user.ListResult, error)
@@ -167,6 +168,14 @@ func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
 		IsEnd:      listResult.IsEnd,
 		TotalCount: listResult.TotalCount,
 	}, nil
+}
+
+func (s *Server) GetUser(id string) (*User, error) {
+	user, err := s.userRepo.Get(id)
+	if err != nil {
+		return nil, newNotFoundError(fmt.Errorf("failed to get user: %w", err))
+	}
+	return fromUser(user), nil
 }
 
 func (s *Server) AddUser(name string, university string, phone string, generation float64, isActive bool) error {

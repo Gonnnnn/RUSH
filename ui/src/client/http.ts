@@ -92,6 +92,11 @@ export const listUsers = async (offset: number, pageSize: number): Promise<ListU
   return ListUsersResponseSchema.parse(response.data);
 };
 
+export const getUser = async (id: string): Promise<User> => {
+  const response = await client.get(`/users/${id}`);
+  return UserResponseSchema.parse(response.data);
+};
+
 export const createUser = async (
   name: string,
   university: string,

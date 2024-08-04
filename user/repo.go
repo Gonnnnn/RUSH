@@ -149,6 +149,33 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	}, nil
 }
 
+func (r *mongodbRepo) Get(id string) (*User, error) {
+	ctx := context.Background()
+
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert id: %w", err)
+	}
+
+	var u mongodbUser
+	if err := r.collection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&u); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+
+	return &User{
+		Id:         u.Id.Hex(),
+		Name:       u.Name,
+		University: u.University,
+		Phone:      u.Phone,
+		Generation: u.Generation,
+		IsActive:   u.IsActive,
+		ExternalId: u.ExternalId,
+	}, nil
+}
+
 func (r *mongodbRepo) Add(u *User) error {
 	ctx := context.Background()
 	_, err := r.collection.InsertOne(ctx, u)

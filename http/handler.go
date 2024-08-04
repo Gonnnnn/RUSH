@@ -51,6 +51,7 @@ func handleAuth(server *server.Server) gin.HandlerFunc {
 	}
 }
 
+// TODO(#86): Fix it so that only certain users can see the list of users.
 func handleListUsers(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		offset, err := strconv.Atoi(c.Query("offset"))
@@ -76,6 +77,25 @@ func handleListUsers(server *server.Server) gin.HandlerFunc {
 			"is_end":      result.IsEnd,
 			"total_count": result.TotalCount,
 		})
+	}
+}
+
+// TODO(#86): Fix it so that only the admin or the user itself can see the user's information.
+func handleGetUser(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		user, err := server.GetUser(id)
+		if err != nil {
+			if isNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			}
+
+			log.Printf("Error getting user: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, user)
 	}
 }
 

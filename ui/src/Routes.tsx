@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Layout from './Layout';
+import MyPage from './MyPage';
 import SessionDetail from './SessionDetail';
 import SessionList from './SessionList';
 import UserList from './UserList';
@@ -11,6 +12,7 @@ const AppRoutes = () => (
       <Route path="/sessions" element={<SessionList />} />
       <Route path="/sessions/:id" element={<SessionDetail />} />
       <Route path="/users" element={<UserList />} />
+      <Route path="/me" element={<MyPage />} />
     </Route>
   </Routes>
 );

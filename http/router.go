@@ -22,6 +22,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 		{
 			// handleAuth doesn't immplement anything. It relies on the middleware to check the token.
 			protected.GET("/auth", handleAuth(server))
+			protected.GET("/users/:id", handleGetUser(server))
 			protected.POST("/users", handleAddUser(server))
 			protected.POST("/sessions", handleAddSession(server))
 			protected.POST("/sessions/:id/attendance-form", handleCreateSessionForm(server))
