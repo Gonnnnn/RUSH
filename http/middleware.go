@@ -12,7 +12,6 @@ type userIdFetcher interface {
 
 var authCookieName = "rush-auth"
 
-// TODO(#86): Get user ID from token, attach it to the context.
 func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie(authCookieName)
