@@ -19,6 +19,7 @@ type mongodbSession struct {
 	Description   string             `bson:"description"`
 	HostedBy      int                `bson:"hosted_by"`
 	CreatedBy     int                `bson:"created_by"`
+	GoogleFormId  string             `bson:"google_form_id"`
 	GoogleFormUri string             `bson:"google_form_uri"`
 	JoinningUsers []string           `bson:"joinning_users"`
 	CreatedAt     time.Time          `bson:"created_at"`
@@ -39,6 +40,7 @@ type UpdateForm struct {
 	Title         *string
 	Description   *string
 	HostedBy      *int
+	GoogleFormId  *string
 	GoogleFormUri *string
 	JoinningUsers *string
 	// It should be updated with the form's description.
@@ -153,6 +155,7 @@ func (r *mongodbRepo) Add(name string, description string, hostedBy int, created
 		Description:   description,
 		HostedBy:      hostedBy,
 		CreatedBy:     createdBy,
+		GoogleFormId:  "",
 		GoogleFormUri: "",
 		JoinningUsers: []string{},
 		CreatedAt:     time.Now(),
@@ -189,6 +192,9 @@ func (r *mongodbRepo) Update(id string, updateForm *UpdateForm) (*Session, error
 	}
 	if updateForm.HostedBy != nil {
 		update["hosted_by"] = *updateForm.HostedBy
+	}
+	if updateForm.GoogleFormId != nil {
+		update["google_form_id"] = *updateForm.GoogleFormId
 	}
 	if updateForm.GoogleFormUri != nil {
 		update["google_form_uri"] = *updateForm.GoogleFormUri

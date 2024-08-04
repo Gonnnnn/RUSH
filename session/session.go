@@ -10,6 +10,7 @@ type Session struct {
 	Description   string    `json:"description"`
 	HostedBy      int       `json:"hosted_by"`
 	CreatedBy     int       `json:"created_by"`
+	GoogleFormId  string    `json:"google_form_id"`
 	GoogleFormUri string    `json:"google_form_uri"`
 	JoinningUsers []string  `json:"joinning_users"`
 	CreatedAt     time.Time `json:"created_at"`

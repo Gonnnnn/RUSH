@@ -5,27 +5,38 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 
+	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/forms/v1"
 
 	"rush/user"
 )
 
+type Form struct {
+	// The Google form ID.
+	Id string
+	// The Google form URI. It's what users access to fill out the form.
+	Uri string
+}
 type formHandler struct {
 	googleFormService   *forms.Service
+	googleDriveService  *drive.Service
 	userOptionDelimiter string
 }
 
-func NewFormHandler(googleFormService *forms.Service) *formHandler {
-	return &formHandler{googleFormService: googleFormService, userOptionDelimiter: "-"}
+var adminEmail = "geonkim23@gmail.com"
+
+func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.Service) *formHandler {
+	return &formHandler{googleFormService: googleFormService, googleDriveService: googleDriveService, userOptionDelimiter: "-"}
 }
 
-func (f *formHandler) GenerateForm(title string, description string, users []user.User) (string, error) {
-	newForm := &forms.Form{Info: &forms.Info{Title: title}}
+func (f *formHandler) GenerateForm(title string, description string, users []user.User) (Form, error) {
+	newForm := &forms.Form{Info: &forms.Info{Title: title, DocumentTitle: title}}
 
 	form, err := f.googleFormService.Forms.Create(newForm).Do()
 	if err != nil {
-		return "", fmt.Errorf("failed to create form: %w", err)
+		return Form{}, fmt.Errorf("failed to create form: %w", err)
 	}
 
 	question := &forms.Question{
@@ -71,10 +82,21 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 
 	_, err = f.googleFormService.Forms.BatchUpdate(form.FormId, updateRequest).Do()
 	if err != nil {
-		return "", fmt.Errorf("failed to update form: %w", err)
+		return Form{}, fmt.Errorf("failed to update form: %w", err)
 	}
 
-	return form.ResponderUri, nil
+	permission := &drive.Permission{
+		Type:         "user",
+		Role:         "writer",
+		EmailAddress: adminEmail,
+	}
+
+	_, err = f.googleDriveService.Permissions.Create(form.FormId, permission).Do()
+	if err != nil {
+		return Form{}, fmt.Errorf("failed to create permission: %w", err)
+	}
+
+	return Form{Id: form.FormId, Uri: form.ResponderUri}, nil
 }
 
 func (f *formHandler) ReadUsers(formId string) ([]string, error) {
@@ -90,4 +112,15 @@ func (f *formHandler) attendanceOption(user user.User) string {
 	}
 
 	return fmt.Sprintf("%s%s%s", generationStr, f.userOptionDelimiter, user.Name)
+}
+
+func (f *formHandler) parseAttendanceOption(option string) (string, string, error) {
+	parts := strings.Split(option, f.userOptionDelimiter)
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid option format: %s", option)
+	}
+
+	generation := parts[0]
+	name := parts[1]
+	return generation, name, nil
 }
