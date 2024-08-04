@@ -208,19 +208,10 @@ func handleCreateSessionForm(server *server.Server) gin.HandlerFunc {
 	}
 }
 
-type addAttendanceRequest struct {
-	SessionId string `json:"session_id"`
-}
-
-func handleCloseSession(server *server.Server) gin.HandlerFunc {
+func handleApplyAttendance(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req addAttendanceRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if err := server.CloseSession(req.SessionId); err != nil {
+		sessionId := c.Param("id")
+		if err := server.CloseSession(sessionId); err != nil {
 			if isBadRequest(err) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Session already closed"})
 				return

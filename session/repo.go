@@ -282,6 +282,7 @@ func fromMongodbSession(session *mongodbSession) *Session {
 		Description:   session.Description,
 		HostedBy:      session.HostedBy,
 		CreatedBy:     session.CreatedBy,
+		GoogleFormId:  session.GoogleFormId,
 		GoogleFormUri: session.GoogleFormUri,
 		JoinningUsers: session.JoinningUsers,
 		CreatedAt:     session.CreatedAt,

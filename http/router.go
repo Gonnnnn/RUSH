@@ -25,6 +25,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			protected.POST("/users", handleAddUser(server))
 			protected.POST("/sessions", handleAddSession(server))
 			protected.POST("/sessions/:id/attendance-form", handleCreateSessionForm(server))
+			protected.POST("/sessions/:id/attendance", handleApplyAttendance(server))
 		}
 	}
 

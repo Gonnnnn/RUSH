@@ -71,7 +71,7 @@ type attendanceFormHandler interface {
 }
 
 type attendanceRepo interface {
-	BulkInsert(sessionId string, userIds []string) error
+	BulkInsert(sessionIds []string, userIds []string, joinedAts []time.Time) error
 }
 
 type Server struct {
@@ -275,6 +275,9 @@ func (s *Server) CloseSession(sessionId string) error {
 		return newBadRequestError(errors.New("session already closed"))
 	}
 
+	fmt.Printf("session: %+v\n", session)
+	fmt.Printf("google form id: %s\n", session.GoogleFormId)
+
 	formSubmissions, err := s.attendanceFormHandler.GetSubmissions(session.GoogleFormId)
 	if err != nil {
 		return newInternalServerError(fmt.Errorf("failed to get form submissions: %w", err))
@@ -302,7 +305,16 @@ func (s *Server) CloseSession(sessionId string) error {
 		userIds = append(userIds, user.Id)
 	}
 
-	if err := s.attendanceRepo.BulkInsert(sessionId, userIds); err != nil {
+	sessionIds := []string{}
+	for range userIds {
+		sessionIds = append(sessionIds, sessionId)
+	}
+	joinedAts := []time.Time{}
+	for _, submissionOnTime := range submissionsOnTime {
+		joinedAts = append(joinedAts, submissionOnTime.SubmissionTime)
+	}
+
+	if err := s.attendanceRepo.BulkInsert(sessionIds, userIds, joinedAts); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
 	}
 
