@@ -158,7 +158,7 @@ const SessionDetail = () => {
           </>
         ) : (
           <>
-            <Typography variant="h6">No form is associated</Typography>
+            <Typography variant="h6">No form has been created for this session</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
               <Button variant="contained" onClick={handleQrCodeCreateClick} disabled={isCreatingForm}>
                 {isCreatingForm ? <CircularProgress /> : 'Create QR code'}
