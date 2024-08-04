@@ -31,7 +31,8 @@ type formHandler struct {
 	userOptionDelimiter string
 }
 
-var adminEmail = "geonkim23@gmail.com"
+// 김건, 양현우
+var adminEmails = []string{"geonkim23@gmail.com", "hyeonyi30754@gmail.com"}
 
 func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.Service) *formHandler {
 	return &formHandler{googleFormService: googleFormService, googleDriveService: googleDriveService, userOptionDelimiter: " - "}
@@ -91,15 +92,17 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 		return Form{}, fmt.Errorf("failed to update form: %w", err)
 	}
 
-	permission := &drive.Permission{
-		Type:         "user",
-		Role:         "writer",
-		EmailAddress: adminEmail,
-	}
+	for _, adminEmail := range adminEmails {
+		permission := &drive.Permission{
+			Type:         "user",
+			Role:         "writer",
+			EmailAddress: adminEmail,
+		}
 
-	_, err = f.googleDriveService.Permissions.Create(form.FormId, permission).Do()
-	if err != nil {
-		return Form{}, fmt.Errorf("failed to create permission: %w", err)
+		_, err = f.googleDriveService.Permissions.Create(form.FormId, permission).Do()
+		if err != nil {
+			return Form{}, fmt.Errorf("failed to create permission: %w", err)
+		}
 	}
 
 	return Form{Id: form.FormId, Uri: form.ResponderUri}, nil
