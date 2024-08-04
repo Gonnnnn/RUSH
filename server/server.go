@@ -34,6 +34,16 @@ type Session struct {
 	IsClosed      bool      `json:"is_closed"`
 }
 
+type Attendance struct {
+	Id          string    `json:"id"`
+	SessionId   string    `json:"session_id"`
+	SessionName string    `json:"session_name"`
+	UserId      string    `json:"user_id"`
+	UserName    string    `json:"user_name"`
+	JoinedAt    time.Time `json:"joined_at"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
 type tokenInspector interface {
 	// Handles the third party token that is used for signing in.
 	GetUserIdentifier(token string) (auth.UserIdentifier, error)
@@ -357,10 +367,14 @@ func (s *Server) CloseSession(sessionId string) error {
 	return nil
 }
 
-func (s *Server) GetAttendanceByUserId(userId string) ([]attendance.Attendance, error) {
+func (s *Server) GetAttendanceByUserId(userId string) ([]Attendance, error) {
 	attendances, err := s.attendanceRepo.FindByUserId(userId)
 	if err != nil {
 		return nil, newInternalServerError(fmt.Errorf("failed to find attendance by user ID: %w", err))
 	}
-	return attendances, nil
+	converted := []Attendance{}
+	for _, attendance := range attendances {
+		converted = append(converted, *fromAttendance(&attendance))
+	}
+	return converted, nil
 }

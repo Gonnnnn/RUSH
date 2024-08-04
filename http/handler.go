@@ -259,7 +259,7 @@ func handleApplyAttendance(server *server.Server) gin.HandlerFunc {
 
 func handleGetAttendanceForUser(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId := c.Query("userId")
+		userId := c.Param("id")
 		if userId == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "userId is required"})
 			return

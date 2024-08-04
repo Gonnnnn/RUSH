@@ -54,8 +54,33 @@ const SessionSchema = z
     isClosed: data.is_closed,
   }));
 
+const AttendanceSchema = z
+  .object({
+    id: z.string(),
+    session_id: z.string(),
+    session_name: z.string(),
+    user_id: z.string(),
+    user_name: z.string(),
+    joined_at: z.string().transform((str) => new Date(str)),
+    created_at: z.string().transform((str) => new Date(str)),
+  })
+  .transform((data) => ({
+    id: data.id,
+    sessionId: data.session_id,
+    sessionName: data.session_name,
+    userId: data.user_id,
+    userName: data.user_name,
+    joinedAt: data.joined_at,
+    createdAt: data.created_at,
+  }));
+
+const GetUserAttendancesResponseSchema = z.object({
+  attendances: z.array(AttendanceSchema),
+});
+
 export type User = z.infer<typeof UserSchema>;
 export type Session = z.infer<typeof SessionSchema>;
+export type Attendance = z.infer<typeof AttendanceSchema>;
 
 const ListUsersResponseSchema = z
   .object({
@@ -153,6 +178,11 @@ export const createSessionForm = async (sessionId: string): Promise<string> => {
 
 export const closeSession = async (sessionId: string): Promise<void> => {
   await client.post(`/sessions/${sessionId}/attendance`);
+};
+
+export const getUserAttendances = async (userId: string): Promise<Attendance[]> => {
+  const response = await client.get(`/users/${userId}/attendances`);
+  return GetUserAttendancesResponseSchema.parse(response.data).attendances;
 };
 
 export const signIn = async (token: string): Promise<string> => {
