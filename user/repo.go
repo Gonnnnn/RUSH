@@ -19,6 +19,7 @@ type mongodbUser struct {
 	Phone      string             `bson:"phone"`
 	Generation float64            `bson:"generation"`
 	IsActive   bool               `bson:"is_active"`
+	ExternalId string             `bson:"external_id"`
 }
 
 type mongodbRepo struct {
@@ -63,6 +64,7 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 			Phone:      u.Phone,
 			Generation: u.Generation,
 			IsActive:   u.IsActive,
+			ExternalId: u.ExternalId,
 		})
 	}
 
@@ -87,6 +89,7 @@ func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 		Phone:      u.Phone,
 		Generation: u.Generation,
 		IsActive:   u.IsActive,
+		ExternalId: u.ExternalId,
 	}, nil
 }
 
@@ -135,6 +138,7 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 			Phone:      u.Phone,
 			Generation: u.Generation,
 			IsActive:   u.IsActive,
+			ExternalId: u.ExternalId,
 		}
 	}
 
@@ -152,6 +156,36 @@ func (r *mongodbRepo) Add(u *User) error {
 		return fmt.Errorf("failed to insert user: %w", err)
 	}
 	return nil
+}
+
+func (r *mongodbRepo) GetAllByExternalIds(externalIds []string) ([]User, error) {
+	ctx := context.Background()
+
+	var users []mongodbUser
+	cursor, err := r.collection.Find(ctx, bson.M{"external_id": bson.M{"$in": externalIds}})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, fmt.Errorf("failed to decode users: %w", err)
+	}
+
+	converted := make([]User, len(users))
+	for index, user := range users {
+		converted[index] = User{
+			Id:         user.Id.Hex(),
+			Name:       user.Name,
+			University: user.University,
+			Phone:      user.Phone,
+			Generation: user.Generation,
+			IsActive:   user.IsActive,
+			ExternalId: user.ExternalId,
+		}
+	}
+
+	return converted, nil
 }
 
 func (r *repo) GetAll() ([]User, error) {
