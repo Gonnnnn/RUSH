@@ -38,6 +38,7 @@ const MyPage = () => {
     );
   }
 
+  // TODO(#42): Fetch user attendance and show it here.
   return (
     <Container>
       <Box
