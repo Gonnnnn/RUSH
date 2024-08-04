@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"rush/attendance"
 	"rush/auth"
 	"rush/session"
 	"rush/user"
@@ -63,8 +64,8 @@ type sessionRepo interface {
 	Update(id string, updateForm *session.UpdateForm) (*session.Session, error)
 }
 
-type sessionFormHandler interface {
-	GenerateForm(title string, description string, users []user.User) (string, error)
+type attendanceFormHandler interface {
+	GenerateForm(title string, description string, users []user.User) (attendance.Form, error)
 	ReadUsers(formId string) ([]string, error)
 }
 
@@ -73,23 +74,23 @@ type attendanceRepo interface {
 }
 
 type Server struct {
-	tokenInspector     tokenInspector
-	authHandler        authHandler
-	userRepo           userRepo
-	sessionRepo        sessionRepo
-	sessionFormHandler sessionFormHandler
-	attendanceRepo     attendanceRepo
+	tokenInspector        tokenInspector
+	authHandler           authHandler
+	userRepo              userRepo
+	sessionRepo           sessionRepo
+	attendanceFormHandler attendanceFormHandler
+	attendanceRepo        attendanceRepo
 }
 
 func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, sessionRepo sessionRepo,
-	sessionFormHandler sessionFormHandler, attendanceRepo attendanceRepo) *Server {
+	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo) *Server {
 	return &Server{
-		tokenInspector:     tokenInspector,
-		authHandler:        authHandler,
-		userRepo:           userRepo,
-		sessionRepo:        sessionRepo,
-		sessionFormHandler: sessionFormHandler,
-		attendanceRepo:     attendanceRepo,
+		tokenInspector:        tokenInspector,
+		authHandler:           authHandler,
+		userRepo:              userRepo,
+		sessionRepo:           sessionRepo,
+		attendanceFormHandler: attendanceFormHandler,
+		attendanceRepo:        attendanceRepo,
 	}
 }
 
@@ -241,17 +242,18 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 	formDescription := fmt.Sprintf(`%s을(를) 위한 출석용 구글폼입니다.
 폼 마감 시각은 %s입니다. %s 이후 요청은 무시됩니다.`, dbSession.Name, expiresAt.Format("2006-01-02 15:04:05"), startsAt.Format("2006-01-02 15:04:05"))
 
-	formUri, err := s.sessionFormHandler.GenerateForm(formTitle, formDescription, users)
+	attendanceForm, err := s.attendanceFormHandler.GenerateForm(formTitle, formDescription, users)
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to generate form: %w", err))
 	}
 
-	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{GoogleFormUri: &formUri, ReturnUpdatedSession: false})
+	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{
+		GoogleFormId: &attendanceForm.Id, GoogleFormUri: &attendanceForm.Uri, ReturnUpdatedSession: false})
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to update session: %w", err))
 	}
 
-	return formUri, nil
+	return attendanceForm.Uri, nil
 }
 
 func (s *Server) AddSession(name string, description string, startsAt time.Time, score int) (string, error) {

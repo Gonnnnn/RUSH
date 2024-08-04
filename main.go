@@ -19,6 +19,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/forms/v1"
 	"google.golang.org/api/option"
 
@@ -60,6 +61,7 @@ func main() {
 	log.Printf("project id: %s", googleCreds.ProjectID)
 	googleOption := option.WithCredentials(googleCreds)
 	formsService := must.OK1(forms.NewService(ctx, googleOption))
+	driveService := must.OK1(drive.NewService(ctx, googleOption))
 	firebaseAuthClient := must.OK1(must.OK1(firebase.NewApp(ctx, nil, googleOption)).Auth(ctx))
 
 	clock := clock.New()
@@ -69,7 +71,8 @@ func main() {
 		// The secret key is recommended to be 64 bytes long for HMACSHA256. RushAuth uses HMACSHA256 to sign the token.
 		auth.NewRushAuth(env.GetRequiredStringVariable("JWT_SECRET_KEY"), clock),
 		rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
-		attendance.NewFormHandler(formsService), attendance.NewMongoDbRepo(attendanceCollection, clock),
+		attendance.NewFormHandler(formsService, driveService),
+		attendance.NewMongoDbRepo(attendanceCollection, clock),
 	)
 
 	router := gin.Default()
@@ -90,7 +93,7 @@ func getGoogleCredentials(ctx context.Context, environment string) *google.Crede
 	if environment == "local" {
 		googleCredsPath := must.OK1(getAbsolutePath((env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_PATH"))))
 		jsonCreds := must.OK1(os.ReadFile(googleCredsPath))
-		return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope))
+		return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope, drive.DriveScope))
 	}
 
 	base64UrlEncodedFile := env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_JSON_BASE64URL_ENCODED")
