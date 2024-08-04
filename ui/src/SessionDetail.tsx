@@ -14,7 +14,7 @@ const SessionDetail = () => {
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingForm, setIsCreatingForm] = useState(false);
-  const [isClosingForm, setIsClosingForm] = useState(false);
+  const [isClosingSession, setIsClosingForm] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const qrSizePx = 128;
 
@@ -60,9 +60,9 @@ const SessionDetail = () => {
     }
   };
 
-  const handleCloseFormBtnClick = async () => {
+  const handleCloseSessionBtnClick = async () => {
     const answer = window.confirm(
-      'Are you sure you want to close the form? It will apply the attendance response to the session and close the form.',
+      "Are you sure you want to close the session? It will apply the attendance response to the session and close the session. It's to prevent possible cheating by changing session metadata after the attendance is applied.",
     );
     if (!answer) {
       return;
@@ -150,8 +150,8 @@ const SessionDetail = () => {
                 Open the form page
               </Button>
               {!session.isClosed && (
-                <Button variant="outlined" onClick={handleCloseFormBtnClick}>
-                  {isClosingForm ? <CircularProgress /> : 'Close the form'}
+                <Button variant="outlined" onClick={handleCloseSessionBtnClick}>
+                  {isClosingSession ? <CircularProgress /> : 'Close the session'}
                 </Button>
               )}
             </Box>

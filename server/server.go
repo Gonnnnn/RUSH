@@ -239,6 +239,14 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 }
 
 func (s *Server) CreateSessionForm(sessionId string) (string, error) {
+	dbSession, err := s.sessionRepo.Get(sessionId)
+	if err != nil {
+		return "", newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+	}
+	if dbSession.IsClosed {
+		return "", newBadRequestError(errors.New("session is already closed"))
+	}
+
 	users, err := s.userRepo.GetAll()
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to get users: %w", err))
@@ -251,13 +259,8 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 		return users[i].Name < users[j].Name
 	})
 
-	dbSession, err := s.sessionRepo.Get(sessionId)
-	if err != nil {
-		return "", newNotFoundError(fmt.Errorf("failed to get session: %w", err))
-	}
-
 	if dbSession.GoogleFormUri != "" {
-		return "", newBadRequestError(errors.New("form already exists"))
+		return "", newBadRequestError(fmt.Errorf("form already exists: URI is %s", dbSession.GoogleFormUri))
 	}
 
 	formTitle := fmt.Sprintf("[출석] %s", dbSession.Name)
