@@ -163,3 +163,8 @@ export const checkAuth = async (): Promise<boolean> => {
   const response = await client.get('/auth');
   return response.status === 200;
 };
+
+export const getUserId = async (): Promise<string> => {
+  const response = await client.get('/auth');
+  return response.data.user_id;
+};

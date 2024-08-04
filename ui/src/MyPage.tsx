@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
-import { User, getUser } from './client/http';
+import { User, getUser, getUserId } from './client/http';
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -12,8 +12,8 @@ const MyPage = () => {
     const init = async () => {
       try {
         setIsLoading(true);
-        // TODO(#42): Fetch the user ID from the auth.
-        setUser(await getUser(''));
+        // TODO(#42): Fetch user data directly.
+        setUser(await getUser(await getUserId()));
       } catch (error) {
         console.error(error);
         navigate('/');

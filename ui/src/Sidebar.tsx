@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { GroupOutlined, RunCircleOutlined } from '@mui/icons-material';
+import { GroupOutlined, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { Box, ListItemButton, Stack } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -40,6 +40,7 @@ const Sidebar = () => {
       </Box>
 
       <Stack>
+        <Navigation title="My Page" path="/me" icon={<PersonOutlined />} />
         <Navigation title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
         <Navigation title="Users" path="/users" icon={<GroupOutlined />} />
       </Stack>

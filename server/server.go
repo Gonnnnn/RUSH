@@ -133,6 +133,20 @@ func (s *Server) IsTokenValid(token string) bool {
 	return true
 }
 
+func (s *Server) GetUserIdentifier(token string) (string, error) {
+	userIdentifier, err := s.authHandler.GetUserIdentifier(token)
+	if err != nil {
+		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
+	}
+
+	userId, ok := userIdentifier.ProviderId(auth.ProviderRush)
+	if !ok {
+		return "", newInternalServerError(errors.New("failed to get user ID from user identifier although there should be"))
+	}
+
+	return userId, nil
+}
+
 func (s *Server) GetAllUsers() ([]*User, error) {
 	users, err := s.userRepo.GetAll()
 	if err != nil {

@@ -47,7 +47,13 @@ func handleSignIn(server *server.Server) gin.HandlerFunc {
 
 func handleAuth(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "Authorized"})
+		userId := c.GetString("userId")
+		if userId == "" {
+			log.Printf("Error getting user ID from context, it is supposed to be set by the middleware")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"user_id": userId})
 	}
 }
 

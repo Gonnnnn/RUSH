@@ -6,13 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type tokenValidator interface {
-	IsTokenValid(token string) bool
+type userIdFetcher interface {
+	GetUserIdentifier(token string) (string, error)
 }
 
 var authCookieName = "rush-auth"
 
-func UseAuthMiddleware(tokenValidator tokenValidator) gin.HandlerFunc {
+func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie(authCookieName)
 		// https://pkg.go.dev/github.com/gin-gonic/gin#Context.Cookie
@@ -29,12 +29,14 @@ func UseAuthMiddleware(tokenValidator tokenValidator) gin.HandlerFunc {
 			return
 		}
 
-		if !tokenValidator.IsTokenValid(token) {
+		userId, err := userIdFetcher.GetUserIdentifier(token)
+		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 
+		c.Set("userId", userId)
 		c.Next()
 	}
 }
