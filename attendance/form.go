@@ -1,11 +1,11 @@
 package attendance
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/forms/v1"
@@ -19,6 +19,12 @@ type Form struct {
 	// The Google form URI. It's what users access to fill out the form.
 	Uri string
 }
+
+type FormSubmission struct {
+	UserID         string
+	SubmissionTime time.Time
+}
+
 type formHandler struct {
 	googleFormService   *forms.Service
 	googleDriveService  *drive.Service
@@ -65,7 +71,7 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 				CreateItem: &forms.CreateItemRequest{
 					Item: &forms.Item{
 						Title:       "기수:이름",
-						Description: "기수와 이름을 선택해주세요.\n선택지는 1. 기수 2. 이름 순으로 정렬돼있습니다.\nformat: `기수-이름`",
+						Description: "기수와 이름을 선택해주세요.\n선택지는 1. 기수 2. 이름 순으로 정렬돼있습니다.\nformat: `기수-이름-ID`",
 						QuestionItem: &forms.QuestionItem{
 							Question: question,
 						},
@@ -99,8 +105,39 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 	return Form{Id: form.FormId, Uri: form.ResponderUri}, nil
 }
 
-func (f *formHandler) ReadUsers(formId string) ([]string, error) {
-	return nil, errors.New("not implemented")
+func (f *formHandler) GetSubmissions(formId string) ([]FormSubmission, error) {
+	responses, err := f.googleFormService.Forms.Responses.List(formId).Do()
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch form responses: %w", err)
+	}
+
+	var userExternalIdSubmissionTimeMap = make(map[string]time.Time)
+	for _, response := range responses.Responses {
+		submissionTime, err := time.Parse(time.RFC3339, response.LastSubmittedTime)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse submission time: %w", err)
+		}
+
+		externalId, err := f.getUserExternalIdFromResponse(response)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get user external ID from response: %w", err)
+		}
+
+		timeFoundBefore, ok := userExternalIdSubmissionTimeMap[externalId]
+		if ok && submissionTime.After(timeFoundBefore) {
+			// The user might have submitted the form multiple times. We only keep the first submission.
+			continue
+		}
+
+		userExternalIdSubmissionTimeMap[externalId] = submissionTime
+	}
+
+	var submissions []FormSubmission
+	for externalId, submissionTime := range userExternalIdSubmissionTimeMap {
+		submissions = append(submissions, FormSubmission{UserID: externalId, SubmissionTime: submissionTime})
+	}
+
+	return submissions, nil
 }
 
 func (f *formHandler) attendanceOption(user user.User) string {
@@ -111,16 +148,32 @@ func (f *formHandler) attendanceOption(user user.User) string {
 		generationStr = fmt.Sprintf("%.1f", user.Generation)
 	}
 
-	return fmt.Sprintf("%s%s%s", generationStr, f.userOptionDelimiter, user.Name)
+	return fmt.Sprintf("%s%s%s%s%s", generationStr, f.userOptionDelimiter, user.Name, f.userOptionDelimiter, user.ExternalId)
 }
 
-func (f *formHandler) parseAttendanceOption(option string) (string, string, error) {
+func (f *formHandler) parseUserExternalId(option string) (string, error) {
 	parts := strings.Split(option, f.userOptionDelimiter)
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid option format: %s", option)
+	if len(parts) != 3 {
+		return "", fmt.Errorf("invalid option format: %s", option)
 	}
 
-	generation := parts[0]
-	name := parts[1]
-	return generation, name, nil
+	return parts[2], nil
+}
+
+func (f *formHandler) getUserExternalIdFromResponse(response *forms.FormResponse) (string, error) {
+	for _, answer := range response.Answers {
+		if answer.TextAnswers == nil || len(answer.TextAnswers.Answers) == 0 {
+			return "", fmt.Errorf("invalid answer was read from the form which seems like the form API problem: %v", answer)
+		}
+
+		selectedOption := answer.TextAnswers.Answers[0].Value
+		externalId, err := f.parseUserExternalId(selectedOption)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse user external ID: %w", err)
+		}
+
+		return externalId, nil
+	}
+
+	return "", fmt.Errorf("no answer was found in the response")
 }

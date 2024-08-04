@@ -54,6 +54,7 @@ type userRepo interface {
 	List(offset int, pageSize int) (*user.ListResult, error)
 	Add(user *user.User) error
 	GetByEmail(email string) (*user.User, error)
+	GetAllByExternalIds(externalIds []string) ([]user.User, error)
 }
 
 type sessionRepo interface {
@@ -66,7 +67,7 @@ type sessionRepo interface {
 
 type attendanceFormHandler interface {
 	GenerateForm(title string, description string, users []user.User) (attendance.Form, error)
-	ReadUsers(formId string) ([]string, error)
+	GetSubmissions(formId string) ([]attendance.FormSubmission, error)
 }
 
 type attendanceRepo interface {
@@ -274,8 +275,32 @@ func (s *Server) CloseSession(sessionId string) error {
 		return newBadRequestError(errors.New("session already closed"))
 	}
 
-	// TODO(#42): Get userIds from the spread sheet linked to the google form.
-	userIds := []string{"1", "2", "3"}
+	formSubmissions, err := s.attendanceFormHandler.GetSubmissions(session.GoogleFormId)
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to get form submissions: %w", err))
+	}
+
+	submissionsOnTime := []attendance.FormSubmission{}
+	for _, submission := range formSubmissions {
+		if submission.SubmissionTime.Before(session.StartsAt) {
+			submissionsOnTime = append(submissionsOnTime, submission)
+		}
+	}
+
+	externalIds := []string{}
+	for _, submissionOnTime := range submissionsOnTime {
+		externalIds = append(externalIds, submissionOnTime.UserID)
+	}
+
+	users, err := s.userRepo.GetAllByExternalIds(externalIds)
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to get users by external ids: %w", err))
+	}
+
+	userIds := []string{}
+	for _, user := range users {
+		userIds = append(userIds, user.Id)
+	}
 
 	if err := s.attendanceRepo.BulkInsert(sessionId, userIds); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
