@@ -93,10 +93,11 @@ type Server struct {
 	sessionRepo           sessionRepo
 	attendanceFormHandler attendanceFormHandler
 	attendanceRepo        attendanceRepo
+	formTimeLocation      *time.Location
 }
 
 func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, sessionRepo sessionRepo,
-	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo) *Server {
+	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location) *Server {
 	return &Server{
 		tokenInspector:        tokenInspector,
 		authHandler:           authHandler,
@@ -104,6 +105,7 @@ func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRe
 		sessionRepo:           sessionRepo,
 		attendanceFormHandler: attendanceFormHandler,
 		attendanceRepo:        attendanceRepo,
+		formTimeLocation:      formTimeLocation,
 	}
 }
 
@@ -275,7 +277,7 @@ func (s *Server) CreateSessionForm(sessionId string) (string, error) {
 	}
 
 	formTitle := fmt.Sprintf("[출석] %s", dbSession.Name)
-	startsAt := dbSession.StartsAt
+	startsAt := dbSession.StartsAt.In(s.formTimeLocation)
 	expiresAt := startsAt.Add(-time.Second)
 	formDescription := fmt.Sprintf(`%s을(를) 위한 출석용 구글폼입니다.
 폼 마감 시각은 %s입니다. %s 이후 요청은 무시됩니다.`, dbSession.Name, expiresAt.Format("2006-01-02 15:04:05"), startsAt.Format("2006-01-02 15:04:05"))
