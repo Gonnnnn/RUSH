@@ -90,17 +90,18 @@ func main() {
 }
 
 func getGoogleCredentials(ctx context.Context, environment string) *google.Credentials {
+	scopes := []string{forms.FormsBodyScope, drive.DriveScope}
 	if environment == "local" {
 		googleCredsPath := must.OK1(getAbsolutePath((env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_PATH"))))
 		jsonCreds := must.OK1(os.ReadFile(googleCredsPath))
-		return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope, drive.DriveScope))
+		return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, scopes...))
 	}
 
 	base64UrlEncodedFile := env.GetRequiredStringVariable("GOOGLE_CREDENTIALS_JSON_BASE64URL_ENCODED")
 	encoding := base64.RawURLEncoding
 	decoded := must.OK1(encoding.DecodeString(base64UrlEncodedFile))
 	jsonCreds := []byte(decoded)
-	return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, forms.FormsBodyScope))
+	return must.OK1(google.CredentialsFromJSON(ctx, jsonCreds, scopes...))
 }
 
 func getAbsolutePath(path string) (string, error) {
