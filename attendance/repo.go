@@ -38,23 +38,25 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (m *mongodbRepo) BulkInsert(sessionId string, userIds []string) error {
-	if len(userIds) == 0 {
+func (m *mongodbRepo) BulkInsert(sessionIds []string, userIds []string, joinedAts []time.Time) error {
+	if len(sessionIds) != len(userIds) || len(sessionIds) != len(joinedAts) {
+		return errors.New("sessionIds, userIds, and joinedAts must have the same length")
+	}
+
+	if len(sessionIds) == 0 {
 		return nil
 	}
 
-	attendances := make([]interface{}, 0, len(userIds))
+	attendances := make([]interface{}, 0, len(sessionIds))
 	now := m.clock.Now()
 
-	for _, userId := range userIds {
-		attendance := mongodbAttendance{
-			SessionId: sessionId,
-			UserId:    userId,
-			// TODO(#42): Uses correct values for JoinedAt.
-			JoinedAt:  now,
+	for i := range sessionIds {
+		attendances = append(attendances, &mongodbAttendance{
+			SessionId: sessionIds[i],
+			UserId:    userIds[i],
+			JoinedAt:  joinedAts[i],
 			CreatedAt: now,
-		}
-		attendances = append(attendances, attendance)
+		})
 	}
 
 	_, err := m.collection.InsertMany(context.Background(), attendances)

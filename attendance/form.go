@@ -34,7 +34,7 @@ type formHandler struct {
 var adminEmail = "geonkim23@gmail.com"
 
 func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.Service) *formHandler {
-	return &formHandler{googleFormService: googleFormService, googleDriveService: googleDriveService, userOptionDelimiter: "-"}
+	return &formHandler{googleFormService: googleFormService, googleDriveService: googleDriveService, userOptionDelimiter: " - "}
 }
 
 func (f *formHandler) GenerateForm(title string, description string, users []user.User) (Form, error) {
@@ -71,7 +71,7 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 				CreateItem: &forms.CreateItemRequest{
 					Item: &forms.Item{
 						Title:       "기수:이름",
-						Description: "기수와 이름을 선택해주세요.\n선택지는 1. 기수 2. 이름 순으로 정렬돼있습니다.\nformat: `기수-이름-ID`",
+						Description: "기수와 이름을 선택해주세요.\n선택지는 1. 기수 2. 이름 순으로 정렬돼있습니다.\nformat: `기수 - 이름 - ID`",
 						QuestionItem: &forms.QuestionItem{
 							Question: question,
 						},
@@ -140,6 +140,7 @@ func (f *formHandler) GetSubmissions(formId string) ([]FormSubmission, error) {
 	return submissions, nil
 }
 
+// TODO(#42): Save the user ID somewhere else. Not safe to include it here and couple it with the parsing logic.
 func (f *formHandler) attendanceOption(user user.User) string {
 	var generationStr string
 	if math.Trunc(user.Generation) == user.Generation {
