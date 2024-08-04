@@ -1,11 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
-import { User, getUser, getUserId } from './client/http';
+import {
+  Container,
+  Typography,
+  Paper,
+  Box,
+  Button,
+  CircularProgress,
+  LinearProgress,
+  Table,
+  TableHead,
+  TableContainer,
+  TableRow,
+  TableCell,
+  TableBody,
+} from '@mui/material';
+import { Attendance, User, getUser, getUserAttendances, getUserId } from './client/http';
+import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const MyPage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User>();
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -13,7 +29,9 @@ const MyPage = () => {
       try {
         setIsLoading(true);
         // TODO(#42): Fetch user data directly.
-        setUser(await getUser(await getUserId()));
+        const userId = await getUserId();
+        setUser(await getUser(userId));
+        setAttendances(await getUserAttendances(userId));
       } catch (error) {
         console.error(error);
         navigate('/');
@@ -60,6 +78,30 @@ const MyPage = () => {
         <Typography>Name: {user.name}</Typography>
         <Typography>Generation: {user.generation}</Typography>
       </Paper>
+
+      <TableContainer component={Paper}>
+        <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Attendance</TableCell>
+              <TableCell>Joined at</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {attendances.map((attendance) => (
+              <TableRow
+                key={attendance.id}
+                onClick={() => navigate(`/session/${attendance.sessionId}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                <TableCell>{attendance.sessionName}</TableCell>
+                <TableCell>{toYYYY년MM월DD일HH시MM분(attendance.joinedAt)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 };

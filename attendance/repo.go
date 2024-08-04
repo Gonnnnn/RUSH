@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongodbAttendance struct {
@@ -42,10 +41,7 @@ func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
 func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 	ctx := context.Background()
 
-	cursor, err := m.collection.Find(ctx, bson.M{},
-		options.Find().
-			SetSort(bson.D{{Key: "userId", Value: userId}}),
-	)
+	cursor, err := m.collection.Find(ctx, bson.M{"user_id": userId})
 	if err != nil {
 		return nil, fmt.Errorf("failed to query attendances: %w", err)
 	}

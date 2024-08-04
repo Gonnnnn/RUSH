@@ -56,7 +56,6 @@ const SessionCreate = () => {
           label="Starts At"
           value={startsAt}
           onChange={(newValue) => {
-            console.log(newValue);
             setStartsAt(newValue ?? dayjs());
           }}
           minutesStep={10}

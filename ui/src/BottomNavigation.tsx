@@ -7,7 +7,6 @@ export const BOTTOM_NAV_HEIGHT = 56;
 
 const BottomNavigation = () => {
   const { authenticated } = useAuth();
-  console.log(authenticated);
   return (
     <Box
       sx={{
