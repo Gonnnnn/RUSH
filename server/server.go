@@ -72,7 +72,8 @@ type attendanceFormHandler interface {
 }
 
 type attendanceRepo interface {
-	BulkInsert(sessionIds []string, userIds []string, joinedAts []time.Time) error
+	BulkInsert(requests []attendance.AddAttendanceReq) error
+	FindByUserId(userId string) ([]attendance.Attendance, error)
 }
 
 type Server struct {
@@ -315,29 +316,34 @@ func (s *Server) CloseSession(sessionId string) error {
 
 	externalIds := []string{}
 	for _, submissionOnTime := range submissionsOnTime {
-		externalIds = append(externalIds, submissionOnTime.UserID)
+		externalIds = append(externalIds, submissionOnTime.UserExternalId)
 	}
 
 	users, err := s.userRepo.GetAllByExternalIds(externalIds)
 	if err != nil {
-		return newInternalServerError(fmt.Errorf("failed to get users by external ids: %w", err))
+		return newInternalServerError(fmt.Errorf("failed to get users by external IDs: %w", err))
 	}
 
-	userIds := []string{}
-	for _, user := range users {
-		userIds = append(userIds, user.Id)
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].ExternalId < users[j].ExternalId
+	})
+	sort.Slice(submissionsOnTime, func(i, j int) bool {
+		return submissionsOnTime[i].UserExternalId < submissionsOnTime[j].UserExternalId
+	})
+
+	addAttendanceReqs := []attendance.AddAttendanceReq{}
+	for index, submissionOnTime := range submissionsOnTime {
+		user := users[index]
+		addAttendanceReqs = append(addAttendanceReqs, attendance.AddAttendanceReq{
+			SessionId:   sessionId,
+			SessionName: dbSession.Name,
+			UserId:      user.Id,
+			UserName:    user.Name,
+			JoinedAt:    submissionOnTime.SubmissionTime,
+		})
 	}
 
-	sessionIds := []string{}
-	for range userIds {
-		sessionIds = append(sessionIds, sessionId)
-	}
-	joinedAts := []time.Time{}
-	for _, submissionOnTime := range submissionsOnTime {
-		joinedAts = append(joinedAts, submissionOnTime.SubmissionTime)
-	}
-
-	if err := s.attendanceRepo.BulkInsert(sessionIds, userIds, joinedAts); err != nil {
+	if err := s.attendanceRepo.BulkInsert(addAttendanceReqs); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
 	}
 
@@ -349,4 +355,12 @@ func (s *Server) CloseSession(sessionId string) error {
 	}
 
 	return nil
+}
+
+func (s *Server) GetAttendanceByUserId(userId string) ([]attendance.Attendance, error) {
+	attendances, err := s.attendanceRepo.FindByUserId(userId)
+	if err != nil {
+		return nil, newInternalServerError(fmt.Errorf("failed to find attendance by user ID: %w", err))
+	}
+	return attendances, nil
 }

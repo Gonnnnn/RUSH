@@ -21,7 +21,7 @@ type Form struct {
 }
 
 type FormSubmission struct {
-	UserID         string
+	UserExternalId string
 	SubmissionTime time.Time
 }
 
@@ -137,7 +137,7 @@ func (f *formHandler) GetSubmissions(formId string) ([]FormSubmission, error) {
 
 	var submissions []FormSubmission
 	for externalId, submissionTime := range userExternalIdSubmissionTimeMap {
-		submissions = append(submissions, FormSubmission{UserID: externalId, SubmissionTime: submissionTime})
+		submissions = append(submissions, FormSubmission{UserExternalId: externalId, SubmissionTime: submissionTime})
 	}
 
 	return submissions, nil
