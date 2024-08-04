@@ -9,7 +9,7 @@ import { createSession } from './client/http';
 
 const SessionCreate = () => {
   const navigate = useNavigate();
-  const { showWarning } = useSnackbar();
+  const { showWarning, showError } = useSnackbar();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startsAt, setStartsAt] = useState(dayjs());
@@ -24,6 +24,8 @@ const SessionCreate = () => {
     } catch (error: unknown) {
       if (error instanceof AxiosError && error.response?.status === 401) {
         showWarning('Session creation is restricted to authenticated users');
+      } else {
+        showError('Failed to create a form. Contact the administrator.');
       }
     }
   };

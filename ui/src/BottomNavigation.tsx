@@ -1,30 +1,34 @@
 import { NavLink } from 'react-router-dom';
 import { GroupOutlined, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
 import { Box, ListItemButton, Stack } from '@mui/material';
+import { useAuth } from './AuthContext';
 
 export const BOTTOM_NAV_HEIGHT = 56;
 
-const BottomNavigation = () => (
-  <Box
-    sx={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: BOTTOM_NAV_HEIGHT,
-      bgcolor: 'background.paper',
-      borderTop: (theme) => `solid 1px ${theme.palette.divider}`,
-      display: 'flex',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      px: 2,
-    }}
-  >
-    <NavigationItem title="My Page" path="/me" icon={<PersonOutlined />} />
-    <NavigationItem title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
-    <NavigationItem title="Users" path="/users" icon={<GroupOutlined />} />
-  </Box>
-);
+const BottomNavigation = () => {
+  const { authenticated } = useAuth();
+  return (
+    <Box
+      sx={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: BOTTOM_NAV_HEIGHT,
+        bgcolor: 'background.paper',
+        borderTop: (theme) => `solid 1px ${theme.palette.divider}`,
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        px: 2,
+      }}
+    >
+      {authenticated ?? <NavigationItem title="My Page" path="/me" icon={<PersonOutlined />} />}
+      <NavigationItem title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
+      <NavigationItem title="Users" path="/users" icon={<GroupOutlined />} />
+    </Box>
+  );
+};
 
 const NavigationItem = ({ title, path, icon }: { title: string; path: string; icon: JSX.Element }) => (
   <ListItemButton
