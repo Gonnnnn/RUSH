@@ -40,9 +40,9 @@ const Sidebar = () => {
       </Box>
 
       <Stack>
-        {authenticated ?? <Navigation title="My Page" path="/me" icon={<PersonOutlined />} />}
-        <Navigation title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
-        <Navigation title="Users" path="/users" icon={<GroupOutlined />} />
+        {authenticated && <NavigationButton title="My Page" path="/me" icon={<PersonOutlined />} />}
+        <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
+        <NavigationButton title="Users" path="/users" icon={<GroupOutlined />} />
       </Stack>
       {authenticated ? <GoogleSignOutButton /> : <GoogleSignInButton />}
     </Stack>
@@ -51,7 +51,7 @@ const Sidebar = () => {
 
 export default Sidebar;
 
-const Navigation = ({
+const NavigationButton = ({
   title,
   path,
   icon,

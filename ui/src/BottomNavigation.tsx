@@ -7,6 +7,7 @@ export const BOTTOM_NAV_HEIGHT = 56;
 
 const BottomNavigation = () => {
   const { authenticated } = useAuth();
+  console.log(authenticated);
   return (
     <Box
       sx={{
@@ -23,14 +24,14 @@ const BottomNavigation = () => {
         px: 2,
       }}
     >
-      {authenticated ?? <NavigationItem title="My Page" path="/me" icon={<PersonOutlined />} />}
-      <NavigationItem title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
-      <NavigationItem title="Users" path="/users" icon={<GroupOutlined />} />
+      {authenticated && <NavigationButton title="My Page" path="/me" icon={<PersonOutlined />} />}
+      <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
+      <NavigationButton title="Users" path="/users" icon={<GroupOutlined />} />
     </Box>
   );
 };
 
-const NavigationItem = ({ title, path, icon }: { title: string; path: string; icon: JSX.Element }) => (
+const NavigationButton = ({ title, path, icon }: { title: string; path: string; icon: JSX.Element }) => (
   <ListItemButton
     component={NavLink}
     to={path}
