@@ -30,6 +30,12 @@ const SessionCreate = () => {
     }
   };
 
+  const handleDateTimeChange = (newValue: dayjs.Dayjs | null) => {
+    if (newValue === null) return;
+    // Truncate seconds and milliseconds because sessions are created in minute precision.
+    setStartsAt(newValue.startOf('minute'));
+  };
+
   return (
     <Container>
       <Typography variant="h4" sx={{ mb: 3 }}>
@@ -55,9 +61,7 @@ const SessionCreate = () => {
         <DateTimePicker
           label="Starts At"
           value={startsAt}
-          onChange={(newValue) => {
-            setStartsAt(newValue ?? dayjs());
-          }}
+          onChange={handleDateTimeChange}
           minutesStep={10}
           shouldDisableDate={(date) => date.isBefore(dayjs(), 'day')}
           views={['year', 'month', 'day', 'hours', 'minutes']}
