@@ -11,16 +11,17 @@ import (
 )
 
 type mockServer struct {
-	valueToReturn bool
+	valueToReturn string
+	errorToReturn error
 }
 
-func (s *mockServer) IsTokenValid(token string) bool {
-	return s.valueToReturn
+func (s *mockServer) GetUserIdentifier(token string) (string, error) {
+	return s.valueToReturn, s.errorToReturn
 }
 
 func TestUseAuthMiddleware(t *testing.T) {
 	t.Run("Should return a gin.HandlerFunc", func(t *testing.T) {
-		middleware := UseAuthMiddleware(&mockServer{true})
+		middleware := UseAuthMiddleware(&mockServer{"token", nil})
 
 		assert.NotNil(t, middleware)
 		assert.IsType(t, gin.HandlerFunc(nil), middleware)
@@ -31,7 +32,7 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(resRecorder)
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 
-		middleware := UseAuthMiddleware(&mockServer{true})
+		middleware := UseAuthMiddleware(&mockServer{"", nil})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
@@ -43,7 +44,7 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: ""})
 
-		middleware := UseAuthMiddleware(&mockServer{true})
+		middleware := UseAuthMiddleware(&mockServer{"", assert.AnError})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
@@ -55,7 +56,7 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: "token"})
 
-		middleware := UseAuthMiddleware(&mockServer{false})
+		middleware := UseAuthMiddleware(&mockServer{"", assert.AnError})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
@@ -67,9 +68,10 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: "token"})
 
-		middleware := UseAuthMiddleware(&mockServer{true})
+		middleware := UseAuthMiddleware(&mockServer{"token", nil})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Writer.Status())
+		assert.Equal(t, "token", ctx.GetString("userId"))
 	})
 }
