@@ -73,6 +73,7 @@ func main() {
 		rushUser.NewMongoDbRepo(userCollection), session.NewMongoDbRepo(sessionCollection),
 		attendance.NewFormHandler(formsService, driveService),
 		attendance.NewMongoDbRepo(attendanceCollection, clock),
+		must.OK1(time.LoadLocation("Asia/Seoul")),
 	)
 
 	router := gin.Default()
