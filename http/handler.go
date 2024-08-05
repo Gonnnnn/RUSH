@@ -209,10 +209,10 @@ func handleAddSession(server *server.Server) gin.HandlerFunc {
 	}
 }
 
-func handleCreateSessionForm(server *server.Server) gin.HandlerFunc {
+func handleCreateAttendanceForm(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionId := c.Param("id")
-		formUrl, err := server.CreateSessionForm(sessionId)
+		formUrl, err := server.CreateAttendanceForm(sessionId)
 		if err != nil {
 			code := getHttpStatus(err)
 			if code == http.StatusNotFound {
