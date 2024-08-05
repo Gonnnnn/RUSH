@@ -5,12 +5,14 @@ import { checkAuth, signIn } from './client/http';
 
 interface AuthContextType {
   authenticated: boolean;
+  isLoading: boolean;
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   authenticated: false,
+  isLoading: true,
   login: async () => {},
   logout: async () => {},
 });
@@ -19,6 +21,7 @@ const cookieName = 'rush-auth';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const verifyAuth = useCallback(async () => {
     try {
@@ -30,6 +33,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // eslint-disable-next-line no-console
       console.error('Error verifying authentication:', error);
       logout();
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -94,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthenticated(false);
   };
 
-  const value = useMemo(() => ({ authenticated, login, logout }), [authenticated, login]);
+  const value = useMemo(() => ({ authenticated, isLoading, login, logout }), [authenticated, isLoading, login]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
