@@ -18,6 +18,8 @@
     "axios": "^1.7.2",
     "dayjs": "^1.11.12",
     "firebase": "^10.12.5",
+    "js-cookie": "^3.0.5",
+    "lodash": "^4.17.21",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -25,6 +27,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/lodash": "^4.17.7",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
