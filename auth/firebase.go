@@ -10,6 +10,7 @@ import (
 
 // firebaseAuthClient is an interface for Firebase Auth client. https://pkg.go.dev/firebase.google.com/go/auth#Client
 type firebaseAuthClient interface {
+	// Verfies the OpenID token and returns the information about the token such as payload.
 	VerifyIDToken(ctx context.Context, idToken string) (*fbAuth.Token, error)
 }
 

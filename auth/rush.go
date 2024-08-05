@@ -10,15 +10,16 @@ import (
 )
 
 type rushAuth struct {
+	// The secret key to sign and verify the JWT.
 	secretKey []byte
-	clock     clock.Clock
+	// The clock to get the current time. It's used to mock the time in tests.
+	clock clock.Clock
 }
 
 func NewRushAuth(secretKey string, clock clock.Clock) *rushAuth {
 	return &rushAuth{secretKey: []byte(secretKey), clock: clock}
 }
 
-// TODO(#23): Implement the methods.
 func (r *rushAuth) SignIn(userIdentifier UserIdentifier) (string, error) {
 	rushUserId, ok := userIdentifier.ProviderId(ProviderRush)
 	if !ok {

@@ -10,6 +10,7 @@ type userIdFetcher interface {
 	GetUserIdentifier(token string) (string, error)
 }
 
+// The name of the cookie to store the rush authentication token.
 var authCookieName = "rush-auth"
 
 func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
