@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import Cookies from 'js-cookie';
+import Cookies, { CookieAttributes } from 'js-cookie';
 import { debounce } from 'lodash';
 import { checkAuth, signIn } from './client/http';
 
@@ -66,15 +66,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async (token: string) => {
       if (token) {
         try {
-          const cookie = await signIn(token);
-          Cookies.set(cookieName, cookie, {
-            // Longer than the token expiration time so that it'll be sent again and refreshed.
+          const rushToken = await signIn(token);
+          const cookieOptions: CookieAttributes = {
             expires: 30,
-            secure: import.meta.env.VITE_ENV !== 'local',
-            domain: import.meta.env.VITE_SERVER_ENDPOINT,
-            sameSite: import.meta.env.VITE_ENV === 'local' ? 'None' : 'Strict',
+            domain: new URL(import.meta.env.VITE_SERVER_ENDPOINT).hostname,
             path: '/',
-          });
+          };
+          if (import.meta.env.VITE_ENV !== 'local') {
+            cookieOptions.secure = true;
+            cookieOptions.sameSite = 'Strict';
+          }
+          Cookies.set(cookieName, rushToken, cookieOptions);
           setAuthenticated(true);
         } catch (error) {
           // TODO(#65): Handle this error globally.
@@ -89,15 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     Cookies.remove(cookieName, { path: '/' });
-
-    // Set timer to reload the page just to make users feel like they are logged out.
-    // That's why the cookie is removed before the timer is initialized.
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        setAuthenticated(false);
-        resolve();
-      }, 1000);
-    });
+    setAuthenticated(false);
   };
 
   const value = useMemo(() => ({ authenticated, login, logout }), [authenticated, login]);
