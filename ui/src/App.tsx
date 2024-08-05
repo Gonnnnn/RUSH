@@ -1,44 +1,66 @@
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { AuthProvider } from './AuthContext';
+import { AuthProvider, useAuth } from './AuthContext';
 import AppRoutes from './Routes';
 import { SnackbarProvider } from './SnackbarContex';
 import Logo from './assets/logo.svg';
 
 dayjs.locale('ko');
 
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
+const App = () => (
+  <SnackbarProvider>
+    <AuthProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DataLoader>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </DataLoader>
+      </LocalizationProvider>
+    </AuthProvider>
+  </SnackbarProvider>
+);
+
+const DataLoader = ({ children }: { children: ReactNode }) => {
+  const { isLoading: isAuthLoading } = useAuth();
+  const [isLogoVisible, setIsLogoVisible] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const fadeOutTimeMillis = 1000;
 
   useEffect(() => {
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, fadeOutTimeMillis);
+    if (!isAuthLoading) {
+      setIsFadingOut(true);
+      console.log('is loading false, fade out true');
+    }
+  }, [isAuthLoading]);
 
+  useEffect(() => {
+    if (isFadingOut) {
+      setTimeout(() => {
+        setIsLogoVisible(false);
+      }, fadeOutTimeMillis);
+    }
+  }, [isFadingOut]);
+
+  const handleLogoClick = () => {
+    if (isAuthLoading) {
+      return;
+    }
+    setIsLogoVisible(false);
     setIsFadingOut(true);
-
-    return () => clearTimeout(loadingTimer);
-  }, []);
+  };
 
   return (
-    <SnackbarProvider>
-      <AuthProvider>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </LocalizationProvider>
-      </AuthProvider>
-      {isLoading && (
+    <>
+      {isAuthLoading ? null : children}
+      {isLogoVisible && (
         <Box
-          onClick={() => setIsLoading(false)}
+          onClick={() => handleLogoClick()}
           position="fixed"
           top={0}
           left={0}
@@ -57,7 +79,7 @@ const App = () => {
           <img src={Logo} alt="logo" width={256} />
         </Box>
       )}
-    </SnackbarProvider>
+    </>
   );
 };
 export default App;
