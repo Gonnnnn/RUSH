@@ -2,9 +2,7 @@ package session
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -32,10 +30,6 @@ type mongodbRepo struct {
 	collection *mongo.Collection
 }
 
-type sqliteRepo struct {
-	db *sql.DB
-}
-
 type UpdateForm struct {
 	Title         *string
 	Description   *string
@@ -55,12 +49,6 @@ type UpdateForm struct {
 func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	return &mongodbRepo{
 		collection: collection,
-	}
-}
-
-func NewSqliteRepo(db *sql.DB) *sqliteRepo {
-	return &sqliteRepo{
-		db: db,
 	}
 }
 
@@ -221,58 +209,6 @@ func (r *mongodbRepo) Update(id string, updateForm *UpdateForm) (*Session, error
 	}
 
 	return nil, nil
-}
-
-func (r *sqliteRepo) Get(id string) (*Session, error) {
-	session := &Session{}
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid id: %w", err)
-	}
-
-	if r.db.QueryRow(`SELECT * FROM sessions WHERE id = ?`, intId).Scan(
-		&session.Id, &session.Name, &session.Description, &session.HostedBy, &session.CreatedBy, &session.GoogleFormUri, &session.JoinningUsers, &session.CreatedAt, &session.StartsAt, &session.Score, &session.IsClosed,
-	); err != nil {
-		return nil, fmt.Errorf("failed to get session: %w", err)
-	}
-
-	return session, nil
-}
-
-func (r *sqliteRepo) GetAll() ([]Session, error) {
-	rows, err := r.db.Query(`SELECT * FROM sessions`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	sessions := []Session{}
-	for rows.Next() {
-		var session Session
-		err := rows.Scan(&session.Id, &session.Name, &session.Description, &session.HostedBy, &session.CreatedBy, &session.GoogleFormUri, &session.JoinningUsers, &session.CreatedAt, &session.StartsAt, &session.Score, &session.IsClosed)
-		if err != nil {
-			return nil, err
-		}
-		sessions = append(sessions, session)
-	}
-
-	return sessions, nil
-}
-
-func (r *sqliteRepo) Add(name string, description string, hostedBy int, createdBy int, startsAt time.Time, score int) (string, error) {
-	result, err := r.db.Exec(
-		`INSERT INTO sessions (name, description, hosted_by, created_by, google_form_uri, joinning_users, created_at, starts_at, score, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		name, description, hostedBy, createdBy, "", "", time.Now(), startsAt, score, false,
-	)
-	if err != nil {
-		return "", fmt.Errorf("failed to insert session: %w", err)
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return "", fmt.Errorf("failed to get last insert id: %w", err)
-	}
-	return strconv.Itoa(int(id)), nil
 }
 
 func fromMongodbSession(session *mongodbSession) *Session {
