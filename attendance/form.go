@@ -21,13 +21,19 @@ type Form struct {
 }
 
 type FormSubmission struct {
+	// The external ID of the user that is exposed to the form.
+	// Use it to match the submission with the user. E.g., "abc123"
 	UserExternalId string
+	// The time when the form was submitted.
 	SubmissionTime time.Time
 }
 
 type formHandler struct {
-	googleFormService   *forms.Service
-	googleDriveService  *drive.Service
+	// The Google Forms service to make forms.
+	googleFormService *forms.Service
+	// The Google Drive service to manage permissions to the form.
+	googleDriveService *drive.Service
+	// The delimiter to separate the user's generation, name, and external ID in the form option.
 	userOptionDelimiter string
 }
 

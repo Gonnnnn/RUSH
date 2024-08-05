@@ -24,7 +24,8 @@ type mongodbAttendance struct {
 
 type mongodbRepo struct {
 	collection *mongo.Collection
-	clock      clock.Clock
+	// The clock to get the current time. It's used to mock the time in tests.
+	clock clock.Clock
 }
 
 func NewMongoDbRepo(collection *mongo.Collection, clock clock.Clock) *mongodbRepo {
