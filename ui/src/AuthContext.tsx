@@ -34,7 +34,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error verifying authentication:', error);
       logout();
     } finally {
-      console.log('is loading false');
       setIsLoading(false);
     }
   }, []);

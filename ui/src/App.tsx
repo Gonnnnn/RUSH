@@ -28,37 +28,39 @@ const App = () => (
 
 const DataLoader = ({ children }: { children: ReactNode }) => {
   const { isLoading: isAuthLoading } = useAuth();
-  const [isLogoVisible, setIsLogoVisible] = useState(true);
+  // To keep logo until necessary data is loaded.
+  const [shouldKeepLogo, setShouldKeepLogo] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const fadeOutTimeMillis = 1000;
 
   useEffect(() => {
-    if (!isAuthLoading) {
-      setIsFadingOut(true);
-      console.log('is loading false, fade out true');
+    if (isAuthLoading) {
+      return;
     }
+    setIsFadingOut(true);
   }, [isAuthLoading]);
 
   useEffect(() => {
-    if (isFadingOut) {
-      setTimeout(() => {
-        setIsLogoVisible(false);
-      }, fadeOutTimeMillis);
+    if (!isFadingOut) {
+      return;
     }
+    setTimeout(() => {
+      setShouldKeepLogo(false);
+    }, fadeOutTimeMillis);
   }, [isFadingOut]);
 
   const handleLogoClick = () => {
     if (isAuthLoading) {
       return;
     }
-    setIsLogoVisible(false);
+    setShouldKeepLogo(false);
     setIsFadingOut(true);
   };
 
   return (
     <>
       {isAuthLoading ? null : children}
-      {isLogoVisible && (
+      {shouldKeepLogo && (
         <Box
           onClick={() => handleLogoClick()}
           position="fixed"
