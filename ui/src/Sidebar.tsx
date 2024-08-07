@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { GroupOutlined, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import { Box, ListItemButton, Stack } from '@mui/material';
+import { Box, ListItemButton, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useAuth } from './AuthContext';
 import Logo from './assets/logo.svg';
@@ -87,7 +87,7 @@ const NavigationButton = ({
     <Stack sx={{ width: 24, height: 24, mr: 1.5 }}>{icon}</Stack>
 
     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flex: 1 }}>
-      <Box
+      <Typography
         sx={{
           width: 132,
           overflow: 'hidden',
@@ -96,7 +96,7 @@ const NavigationButton = ({
         }}
       >
         {title}
-      </Box>
+      </Typography>
 
       {expandable && <ExpandMoreRoundedIcon />}
     </Stack>

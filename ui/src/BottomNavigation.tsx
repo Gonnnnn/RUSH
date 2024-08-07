@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { GroupOutlined, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
-import { Box, ListItemButton, Stack } from '@mui/material';
+import { Box, ListItemButton, Stack, Typography } from '@mui/material';
 
 export const BOTTOM_NAV_HEIGHT = 56;
 
@@ -39,7 +39,7 @@ const NavigationButton = ({ title, path, icon }: { title: string; path: string; 
     }}
   >
     <Stack sx={{ width: 24, height: 24, mb: 0.5 }}>{icon}</Stack>
-    <Box sx={{ fontSize: '0.75rem' }}>{title}</Box>
+    <Typography sx={{ fontSize: '0.75rem' }}>{title}</Typography>
   </ListItemButton>
 );
 
