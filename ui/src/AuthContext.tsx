@@ -7,14 +7,14 @@ interface AuthContextType {
   authenticated: boolean;
   isLoading: boolean;
   login: (token: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   authenticated: false,
   isLoading: true,
   login: async () => {},
-  logout: async () => {},
+  logout: () => {},
 });
 
 const cookieName = 'rush-auth';
@@ -72,16 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (token) {
         try {
           const rushToken = await signIn(token);
-          const cookieOptions: CookieAttributes = {
-            expires: 30,
-            domain: new URL(import.meta.env.VITE_SERVER_ENDPOINT).hostname,
-            path: '/',
-          };
-          if (import.meta.env.VITE_ENV !== 'local') {
-            cookieOptions.secure = true;
-            cookieOptions.sameSite = 'Strict';
-          }
-          Cookies.set(cookieName, rushToken, cookieOptions);
+          Cookies.set(cookieName, rushToken, getCookieOptions());
           setAuthenticated(true);
         } catch (error) {
           // TODO(#65): Handle this error globally.
@@ -94,14 +85,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [setAuthenticated],
   );
 
-  const logout = async () => {
-    Cookies.remove(cookieName, { path: '/' });
+  const logout = () => {
+    Cookies.remove(cookieName, getCookieOptions());
     setAuthenticated(false);
   };
 
   const value = useMemo(() => ({ authenticated, isLoading, login, logout }), [authenticated, isLoading, login]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+const hostName = new URL(import.meta.env.VITE_SERVER_ENDPOINT).hostname;
+const env = import.meta.env.VITE_ENV;
+
+const getCookieOptions = () => {
+  const cookieOptions: CookieAttributes = {
+    expires: 30,
+    domain: hostName,
+    path: '/',
+  };
+  if (env === 'local') {
+    return cookieOptions;
+  }
+  cookieOptions.secure = true;
+  cookieOptions.sameSite = 'Strict';
+  return cookieOptions;
 };
 
 export const useAuth = () => useContext(AuthContext);
