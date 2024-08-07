@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { LogoutRounded } from '@mui/icons-material';
 import { Button, CircularProgress } from '@mui/material';
 import { useAuth } from '../AuthContext';
-import { useSnackbar } from '../SnackbarContex';
+import { useSnackbar } from '../SnackbarContext';
 import GoogleLogo from '../assets/google_logo.svg';
 
-const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
+const GoogleSignOutButton = ({ text }: { text?: string }) => {
   const { logout } = useAuth();
   const { showInfo } = useSnackbar();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -42,7 +43,7 @@ const GoogleSignOutButton = ({ text = 'Sign Out' }: { text?: string }) => {
       ) : (
         <img src={GoogleLogo} alt="Google Logo" height={20} width={20} />
       )}
-      {text}
+      {text || <LogoutRounded />}
     </Button>
   );
 };

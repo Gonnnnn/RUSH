@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { CheckCircleOutlineRounded } from '@mui/icons-material';
 import {
   Table,
   TableBody,
@@ -67,17 +68,19 @@ const UserList = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Generation</TableCell>
-              <TableCell>Active</TableCell>
+              <TableCell align="center">이름</TableCell>
+              <TableCell align="center">기수</TableCell>
+              <TableCell align="center">활동 중</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.generation}</TableCell>
-                <TableCell>{user.isActive ? 'Yes' : 'No'}</TableCell>
+                <TableCell align="center">{user.name}</TableCell>
+                <TableCell align="center">{user.generation}</TableCell>
+                <TableCell align="center">
+                  <CheckCircleOutlineRounded color={user.isActive ? 'primary' : 'disabled'} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
