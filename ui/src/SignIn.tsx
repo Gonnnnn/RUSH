@@ -10,8 +10,8 @@ const SignIn = () => {
   const { from } = location.state || { from: { pathname: '/' } };
 
   return (
-    <Stack justifyContent="center" alignItems="center" spacing={2} sx={{ height: '100vh' }}>
-      <Typography variant="h4">Sign-In required for this page</Typography>
+    <Stack justifyContent="center" alignItems="center" spacing={3} sx={{ height: '100vh' }}>
+      <Typography variant="h5">Sign-In required for this page</Typography>
       <GoogleSignInButton
         callBack={() => {
           navigate(from, { replace: true });

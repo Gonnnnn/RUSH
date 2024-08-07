@@ -1,7 +1,7 @@
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { signInWithPopup } from 'firebase/auth';
 import { useAuth } from '../AuthContext';
-import { useSnackbar } from '../SnackbarContex';
+import { useSnackbar } from '../SnackbarContext';
 import GoogleLogo from '../assets/google_logo.svg';
 import { auth, provider } from '../firebase';
 
@@ -41,7 +41,7 @@ const GoogleSignInButton = ({ text = '', callBack }: { text?: string; callBack?:
       onClick={() => handleGoogleSignIn()}
     >
       <img src={GoogleLogo} width={20} height={20} alt="Google logo" />
-      {text}
+      <Typography variant="body1">{text}</Typography>
     </Button>
   );
 };

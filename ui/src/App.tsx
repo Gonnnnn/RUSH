@@ -8,7 +8,7 @@ import 'dayjs/locale/ko';
 import { AuthProvider, useAuth } from './AuthContext';
 import { HeaderProvider } from './Layout';
 import AppRoutes from './Routes';
-import { SnackbarProvider } from './SnackbarContex';
+import { SnackbarProvider } from './SnackbarContext';
 import Logo from './assets/logo.svg';
 
 dayjs.locale('ko');

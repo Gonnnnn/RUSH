@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircleOutlineRounded } from '@mui/icons-material';
 import {
   Table,
   TableBody,
@@ -20,7 +21,7 @@ import {
 import { useHeader } from './Layout';
 import SessionCreate from './SessionCreate';
 import { Session, listSessions } from './client/http';
-import toYYYY년MM월DD일HH시MM분 from './common/date';
+import { toYYslashMMslashDDspaceHHcolonMM } from './common/date';
 
 const SessionList = () => {
   const navigate = useNavigate();
@@ -89,17 +90,20 @@ const SessionList = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Starts At</TableCell>
-                <TableCell>Score</TableCell>
+                <TableCell align="center">이름</TableCell>
+                <TableCell align="center">시작 시간</TableCell>
+                <TableCell align="center">출석 반영</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {sessions.map((session) => (
                 <TableRow key={session.id} onClick={() => handleRowClick(session)} style={{ cursor: 'pointer' }}>
-                  <TableCell>{session.name}</TableCell>
-                  <TableCell>{toYYYY년MM월DD일HH시MM분(session.startsAt)}</TableCell>
-                  <TableCell>{session.score}</TableCell>
+                  <TableCell align="center">{session.name}</TableCell>
+                  <TableCell align="center">{toYYslashMMslashDDspaceHHcolonMM(session.startsAt)}</TableCell>
+                  {/* center the children */}
+                  <TableCell align="center">
+                    <CheckCircleOutlineRounded color={session.isClosed ? 'primary' : 'disabled'} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

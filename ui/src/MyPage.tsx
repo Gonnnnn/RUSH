@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { useHeader } from './Layout';
 import { Attendance, User, getUser, getUserAttendances, getUserId } from './client/http';
-import toYYYY년MM월DD일HH시MM분 from './common/date';
+import { toYYYY년MM월DD일HH시MM분 } from './common/date';
 
 const MyPage = () => {
   useHeader({ newTitle: 'Me' });
@@ -59,9 +59,9 @@ const MyPage = () => {
   return (
     <Container>
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6">Details</Typography>
-        <Typography>Name: {user.name}</Typography>
-        <Typography>Generation: {user.generation}</Typography>
+        <Typography variant="body1">
+          {user.name} / {user.generation}기
+        </Typography>
       </Paper>
 
       <TableContainer component={Paper}>
@@ -73,18 +73,26 @@ const MyPage = () => {
               <TableCell>Joined at</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {attendances.map((attendance) => (
-              <TableRow
-                key={attendance.id}
-                onClick={() => navigate(`/sessions/${attendance.sessionId}`)}
-                style={{ cursor: 'pointer' }}
-              >
-                <TableCell>{attendance.sessionName}</TableCell>
-                <TableCell>{toYYYY년MM월DD일HH시MM분(attendance.joinedAt)}</TableCell>
+          {attendances.length > 0 ? (
+            <TableBody>
+              {attendances.map((attendance) => (
+                <TableRow
+                  key={attendance.id}
+                  onClick={() => navigate(`/sessions/${attendance.sessionId}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <TableCell>{attendance.sessionName}</TableCell>
+                  <TableCell>{toYYYY년MM월DD일HH시MM분(attendance.joinedAt)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          ) : (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={2}>출석 데이터가 없습니다. 출석하세요!</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Container>
