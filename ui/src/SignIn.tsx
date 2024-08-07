@@ -1,8 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Stack, Typography } from '@mui/material';
+import { useHeader } from './Layout';
 import GoogleSignInButton from './common/GoogleSignInButton';
 
 const SignIn = () => {
+  useHeader({ newTitle: 'Sign-In' });
   const location = useLocation();
   const navigate = useNavigate();
   const { from } = location.state || { from: { pathname: '/' } };

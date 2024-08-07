@@ -3,14 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useHeader } from './Layout';
 import { useSnackbar } from './SnackbarContex';
 import { Session, closeSession, createSessionForm, getSession } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const SessionDetail = () => {
+  useHeader({ newTitle: 'Session Detail' });
   const navigate = useNavigate();
   const { showWarning, showError } = useSnackbar();
   const { id } = useParams();
+
   const [session, setSession] = useState<Session>();
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingForm, setIsCreatingForm] = useState(false);
@@ -86,9 +89,6 @@ const SessionDetail = () => {
   if (isLoading || !session) {
     return (
       <Container>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          Session Detail
-        </Typography>
         <Box display="flex" justifyContent="center" alignItems="center">
           <CircularProgress />
         </Box>
@@ -107,7 +107,6 @@ const SessionDetail = () => {
           mb: 3,
         }}
       >
-        <Typography variant="h4">Session Detail</Typography>
         <Button variant="outlined" onClick={() => navigate('/sessions')} sx={{ alignSelf: 'flex-start' }}>
           Back
         </Button>
