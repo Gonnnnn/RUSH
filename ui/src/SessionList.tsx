@@ -9,7 +9,6 @@ import {
   TableRow,
   Paper,
   Container,
-  Typography,
   TablePagination,
   Button,
   Box,
@@ -18,6 +17,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { useHeader } from './Layout';
 import SessionCreate from './SessionCreate';
 import { Session, listSessions } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
@@ -26,6 +26,7 @@ const SessionList = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  useHeader({ newTitle: 'Sessions' });
 
   const pageSize = isMobile ? 8 : 10;
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -71,9 +72,6 @@ const SessionList = () => {
 
   return (
     <Container>
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        Sessions
-      </Typography>
       <Box display="flex" flexDirection="column" gap={2}>
         <Box display="flex" justifyContent="flex-end">
           <Button
@@ -82,7 +80,7 @@ const SessionList = () => {
               setIsModalOpen(true);
             }}
           >
-            New Session
+            New
           </Button>
         </Box>
         <TableContainer component={Paper}>

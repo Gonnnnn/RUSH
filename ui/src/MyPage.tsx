@@ -5,7 +5,6 @@ import {
   Typography,
   Paper,
   Box,
-  Button,
   CircularProgress,
   LinearProgress,
   Table,
@@ -15,10 +14,13 @@ import {
   TableCell,
   TableBody,
 } from '@mui/material';
+import { useHeader } from './Layout';
 import { Attendance, User, getUser, getUserAttendances, getUserId } from './client/http';
 import toYYYY년MM월DD일HH시MM분 from './common/date';
 
 const MyPage = () => {
+  useHeader({ newTitle: 'Me' });
+
   const navigate = useNavigate();
   const [user, setUser] = useState<User>();
   const [attendances, setAttendances] = useState<Attendance[]>([]);
@@ -46,9 +48,6 @@ const MyPage = () => {
   if (isLoading || !user) {
     return (
       <Container>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          My Page
-        </Typography>
         <Box display="flex" justifyContent="center" alignItems="center">
           <CircularProgress />
         </Box>
@@ -59,20 +58,6 @@ const MyPage = () => {
   // TODO(#42): Fetch user attendance and show it here.
   return (
     <Container>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          gap: 1,
-          mb: 3,
-        }}
-      >
-        <Typography variant="h4">My Page</Typography>
-        <Button variant="outlined" onClick={() => navigate('/')} sx={{ alignSelf: 'flex-start' }}>
-          Back
-        </Button>
-      </Box>
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6">Details</Typography>
         <Typography>Name: {user.name}</Typography>

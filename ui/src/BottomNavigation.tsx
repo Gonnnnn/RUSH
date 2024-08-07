@@ -20,7 +20,7 @@ const BottomNavigation = () => (
       px: 2,
     }}
   >
-    <NavigationButton title="My Page" path="/me" icon={<PersonOutlined />} />
+    <NavigationButton title="Me" path="/me" icon={<PersonOutlined />} />
     <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
     <NavigationButton title="Users" path="/users" icon={<GroupOutlined />} />
   </Box>

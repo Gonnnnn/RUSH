@@ -8,16 +8,17 @@ import {
   TableRow,
   Paper,
   Container,
-  Typography,
   TablePagination,
   Box,
   LinearProgress,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { useHeader } from './Layout';
 import { User, listUsers } from './client/http';
 
 const UserList = () => {
+  useHeader({ newTitle: 'Users' });
   const theme = useTheme();
   // TODO(#31): Centralize the isMobile logic.
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -61,9 +62,6 @@ const UserList = () => {
 
   return (
     <Container>
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        Users
-      </Typography>
       <TableContainer component={Paper}>
         <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
         <Table>
