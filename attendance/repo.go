@@ -17,6 +17,7 @@ type mongodbAttendance struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty"`
 	SessionId        string             `bson:"session_id"`
 	SessionName      string             `bson:"session_name"`
+	SessionScore     int                `bson:"session_score"`
 	SessionStartedAt time.Time          `bson:"session_started_at"`
 	UserId           string             `bson:"user_id"`
 	UserName         string             `bson:"user_name"`
@@ -57,6 +58,7 @@ func (m *mongodbRepo) GetAll() ([]Attendance, error) {
 			Id:               attendance.Id.Hex(),
 			SessionId:        attendance.SessionId,
 			SessionName:      attendance.SessionName,
+			SessionScore:     attendance.SessionScore,
 			SessionStartedAt: attendance.SessionStartedAt,
 			UserId:           attendance.UserId,
 			UserName:         attendance.UserName,
@@ -96,6 +98,7 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 			Id:               attendance.Id.Hex(),
 			SessionId:        attendance.SessionId,
 			SessionName:      attendance.SessionName,
+			SessionScore:     attendance.SessionScore,
 			SessionStartedAt: attendance.SessionStartedAt,
 			UserId:           attendance.UserId,
 			UserName:         attendance.UserName,
@@ -111,6 +114,7 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 type AddAttendanceReq struct {
 	SessionId        string
 	SessionName      string
+	SessionScore     int
 	SessionStartedAt time.Time
 	UserId           string
 	UserName         string
@@ -130,6 +134,7 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 		attendances = append(attendances, &mongodbAttendance{
 			SessionId:        request.SessionId,
 			SessionName:      request.SessionName,
+			SessionScore:     request.SessionScore,
 			SessionStartedAt: request.SessionStartedAt,
 			UserId:           request.UserId,
 			UserName:         request.UserName,

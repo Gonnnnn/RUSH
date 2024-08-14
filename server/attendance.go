@@ -70,21 +70,23 @@ func (s *Server) GetAttendanceByUserId(userId string) ([]Attendance, error) {
 
 type HalfYearAttendace struct {
 	// All the sessions that are held in the half year so far.
-	Sessions []sessionForAttendance
+	Sessions []sessionForAttendance `json:"sessions"`
 	// All the users who joined the sessions in the half year so far.
-	Users []struct {
-		Id         string
-		Name       string
-		Generation float64
-	}
+	Users []userForAttendance `json:"users"`
 	// All the attendances in the half year so far.
-	Attendances []Attendance
+	Attendances []Attendance `json:"attendances"`
+}
+
+type userForAttendance struct {
+	Id         string  `json:"id"`
+	Name       string  `json:"name"`
+	Generation float64 `json:"generation"`
 }
 
 type sessionForAttendance struct {
-	Id        string
-	Name      string
-	StartedAt time.Time
+	Id        string    `json:"id"`
+	Name      string    `json:"name"`
+	StartedAt time.Time `json:"started_at"`
 }
 
 func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
@@ -142,16 +144,12 @@ func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 
 	halfYearAttendace := HalfYearAttendace{
 		Sessions: uniqueSessions,
-		Users: array.Map(activeUsers, func(user user.User) struct {
-			Id         string
-			Name       string
-			Generation float64
-		} {
-			return struct {
-				Id         string
-				Name       string
-				Generation float64
-			}{Id: user.Id, Name: user.Name, Generation: user.Generation}
+		Users: array.Map(activeUsers, func(user user.User) userForAttendance {
+			return userForAttendance{
+				Id:         user.Id,
+				Name:       user.Name,
+				Generation: user.Generation,
+			}
 		}),
 		Attendances: convertedAttendances,
 	}

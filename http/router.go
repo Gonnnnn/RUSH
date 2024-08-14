@@ -31,7 +31,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			protected.POST("/sessions/:id/attendance-form", handleCreateAttendanceForm(server))
 			protected.POST("/sessions/:id/attendance", handleApplyAttendance(server))
 
-			protected.GET("half-year-attendance", handleHalfYearAttendance(server))
+			protected.GET("attendances/half-year", handleHalfYearAttendance(server))
 		}
 	}
 

@@ -94,6 +94,7 @@ func (s *Server) CloseSession(sessionId string) error {
 		addAttendanceReqs = append(addAttendanceReqs, attendance.AddAttendanceReq{
 			SessionId:        sessionId,
 			SessionName:      dbSession.Name,
+			SessionScore:     dbSession.Score,
 			SessionStartedAt: dbSession.StartsAt,
 			UserId:           user.Id,
 			UserName:         user.Name,

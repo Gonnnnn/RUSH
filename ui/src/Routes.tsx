@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import HalfYearAttendances from './Attendance';
 import { useAuth } from './AuthContext';
 import { Layout } from './Layout';
 import MyPage from './MyPage';
@@ -17,6 +18,7 @@ const AppRoutes = () => (
       <Route path="/" element={<AuthRoute />}>
         <Route path="/me" element={<MyPage />} />
       </Route>
+      <Route path="attendance" element={<HalfYearAttendances />} />
       <Route path="signin" element={<SignIn />} />
     </Route>
   </Routes>

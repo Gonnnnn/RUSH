@@ -60,9 +60,11 @@ const AttendanceSchema = z
     id: z.string(),
     session_id: z.string(),
     session_name: z.string(),
+    session_score: z.number(),
     session_started_at: z.string().transform((str) => new Date(str)),
     user_id: z.string(),
     user_name: z.string(),
+    user_generation: z.number(),
     user_joined_at: z.string().transform((str) => new Date(str)),
     created_at: z.string().transform((str) => new Date(str)),
   })
@@ -70,9 +72,11 @@ const AttendanceSchema = z
     id: data.id,
     sessionId: data.session_id,
     sessionName: data.session_name,
+    sessionScore: data.session_score,
     sessionStartedAt: data.session_started_at,
     userId: data.user_id,
     userName: data.user_name,
+    userGeneration: data.user_generation,
     userJoinedAt: data.user_joined_at,
     createdAt: data.created_at,
   }));
@@ -186,6 +190,41 @@ export const closeSession = async (sessionId: string): Promise<void> => {
 export const getUserAttendances = async (userId: string): Promise<Attendance[]> => {
   const response = await client.get(`/users/${userId}/attendances`);
   return GetUserAttendancesResponseSchema.parse(response.data).attendances;
+};
+
+const GetHalfYearAttendancesResponseSchema = z
+  .object({
+    sessions: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        started_at: z.string().transform((str) => new Date(str)),
+      }),
+    ),
+    users: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        generation: z.number(),
+      }),
+    ),
+    attendances: z.array(AttendanceSchema),
+  })
+  .transform((data) => ({
+    sessions: data.sessions.map((session) => ({
+      id: session.id,
+      name: session.name,
+      startedAt: session.started_at,
+    })),
+    users: data.users,
+    attendances: data.attendances,
+  }));
+
+export type GetHalfYearAttendancesResponse = z.infer<typeof GetHalfYearAttendancesResponseSchema>;
+
+export const getHalfYearAttendances = async (): Promise<GetHalfYearAttendancesResponse> => {
+  const response = await client.get('/attendances/half-year');
+  return GetHalfYearAttendancesResponseSchema.parse(response.data);
 };
 
 export const signIn = async (token: string): Promise<string> => {
