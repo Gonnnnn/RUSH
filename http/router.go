@@ -16,7 +16,6 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 		api.GET("/users", handleListUsers(server))
 		api.GET("/sessions", handleListSessions(server))
 		api.GET("/sessions/:id", handleGetSession(server))
-		api.GET("attendances/half-year", handleHalfYearAttendance(server))
 
 		protected := api.Group("/")
 		protected.Use(UseAuthMiddleware(server))
@@ -32,7 +31,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			protected.POST("/sessions/:id/attendance-form", handleCreateAttendanceForm(server))
 			protected.POST("/sessions/:id/attendance", handleApplyAttendance(server))
 
-			// protected.GET("attendances/half-year", handleHalfYearAttendance(server))
+			protected.GET("attendances/half-year", handleHalfYearAttendance(server))
 		}
 	}
 
