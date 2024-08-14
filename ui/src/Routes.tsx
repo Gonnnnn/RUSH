@@ -10,16 +10,16 @@ import UserList from './UserList';
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Layout />}>
+    <Route element={<Layout />}>
       <Route index element={<SessionList />} />
       <Route path="/sessions" element={<SessionList />} />
       <Route path="/sessions/:id" element={<SessionDetail />} />
       <Route path="/users" element={<UserList />} />
-      <Route path="/" element={<AuthRoute />}>
+      <Route element={<AuthRoute />}>
         <Route path="/me" element={<MyPage />} />
+        <Route path="/attendances" element={<HalfYearAttendances />} />
       </Route>
-      <Route path="attendance" element={<HalfYearAttendances />} />
-      <Route path="signin" element={<SignIn />} />
+      <Route path="/signin" element={<SignIn />} />
     </Route>
   </Routes>
 );
