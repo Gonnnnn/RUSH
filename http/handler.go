@@ -285,6 +285,6 @@ func handleHalfYearAttendance(server *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"result": result})
+		c.JSON(http.StatusOK, gin.H{"sessions": result.Sessions, "users": result.Users, "attendances": result.Attendances})
 	}
 }

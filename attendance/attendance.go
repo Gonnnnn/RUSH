@@ -9,6 +9,8 @@ type Attendance struct {
 	SessionId string `json:"session_id"`
 	// The name of the session that the user joined. E.g. "Yonsei University track"
 	SessionName string `json:"session_name"`
+	// The score of the session. E.g. 2
+	SessionScore int `json:"session_score"`
 	// The time when the session started.
 	SessionStartedAt time.Time `json:"session_started_at"`
 	// The unique identifier for the user. E.g. "1"

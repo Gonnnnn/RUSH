@@ -39,9 +39,11 @@ func fromAttendance(attendance *attendance.Attendance) *Attendance {
 		Id:               attendance.Id,
 		SessionId:        attendance.SessionId,
 		SessionName:      attendance.SessionName,
+		SessionScore:     attendance.SessionScore,
 		SessionStartedAt: attendance.SessionStartedAt,
 		UserId:           attendance.UserId,
 		UserName:         attendance.UserName,
+		UserGeneration:   attendance.UserGeneration,
 		UserJoinedAt:     attendance.UserJoinedAt,
 		CreatedAt:        attendance.CreatedAt,
 	}

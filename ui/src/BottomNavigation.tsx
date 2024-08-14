@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { GroupOutlined, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
+import { CheckCircleOutline, GroupOutlined, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
 import { Box, ListItemButton, Stack, Typography } from '@mui/material';
 
 export const BOTTOM_NAV_HEIGHT = 56;
@@ -23,6 +23,7 @@ const BottomNavigation = () => (
     <NavigationButton title="Me" path="/me" icon={<PersonOutlined />} />
     <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
     <NavigationButton title="Users" path="/users" icon={<GroupOutlined />} />
+    <NavigationButton title="Attendance" path="/attendance" icon={<CheckCircleOutline />} />
   </Box>
 );
 
