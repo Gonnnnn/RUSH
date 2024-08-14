@@ -60,18 +60,20 @@ const AttendanceSchema = z
     id: z.string(),
     session_id: z.string(),
     session_name: z.string(),
+    session_started_at: z.string().transform((str) => new Date(str)),
     user_id: z.string(),
     user_name: z.string(),
-    joined_at: z.string().transform((str) => new Date(str)),
+    user_joined_at: z.string().transform((str) => new Date(str)),
     created_at: z.string().transform((str) => new Date(str)),
   })
   .transform((data) => ({
     id: data.id,
     sessionId: data.session_id,
     sessionName: data.session_name,
+    sessionStartedAt: data.session_started_at,
     userId: data.user_id,
     userName: data.user_name,
-    joinedAt: data.joined_at,
+    userJoinedAt: data.user_joined_at,
     createdAt: data.created_at,
   }));
 

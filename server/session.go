@@ -92,11 +92,13 @@ func (s *Server) CloseSession(sessionId string) error {
 	for index, submissionOnTime := range submissionsOnTime {
 		user := users[index]
 		addAttendanceReqs = append(addAttendanceReqs, attendance.AddAttendanceReq{
-			SessionId:   sessionId,
-			SessionName: dbSession.Name,
-			UserId:      user.Id,
-			UserName:    user.Name,
-			JoinedAt:    submissionOnTime.SubmissionTime,
+			SessionId:        sessionId,
+			SessionName:      dbSession.Name,
+			SessionStartedAt: dbSession.StartsAt,
+			UserId:           user.Id,
+			UserName:         user.Name,
+			UserGeneration:   user.Generation,
+			UserJoinedAt:     submissionOnTime.SubmissionTime,
 		})
 	}
 

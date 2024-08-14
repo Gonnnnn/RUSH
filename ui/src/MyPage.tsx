@@ -82,7 +82,7 @@ const MyPage = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <TableCell>{attendance.sessionName}</TableCell>
-                  <TableCell>{toYYYY년MM월DD일HH시MM분(attendance.joinedAt)}</TableCell>
+                  <TableCell>{toYYYY년MM월DD일HH시MM분(attendance.userJoinedAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

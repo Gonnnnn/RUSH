@@ -36,12 +36,13 @@ func fromSession(session *session.Session) *Session {
 
 func fromAttendance(attendance *attendance.Attendance) *Attendance {
 	return &Attendance{
-		Id:          attendance.Id,
-		SessionId:   attendance.SessionId,
-		SessionName: attendance.SessionName,
-		UserId:      attendance.UserId,
-		UserName:    attendance.UserName,
-		JoinedAt:    attendance.JoinedAt,
-		CreatedAt:   attendance.CreatedAt,
+		Id:               attendance.Id,
+		SessionId:        attendance.SessionId,
+		SessionName:      attendance.SessionName,
+		SessionStartedAt: attendance.SessionStartedAt,
+		UserId:           attendance.UserId,
+		UserName:         attendance.UserName,
+		UserJoinedAt:     attendance.UserJoinedAt,
+		CreatedAt:        attendance.CreatedAt,
 	}
 }
