@@ -59,13 +59,15 @@ type Attendance struct {
 	// The name of the session that the attendance is related to. E.g., "456회 정기 세션"
 	// It's not synced with the actual session data.
 	SessionName string `json:"session_name"`
+	// The time when the session started.
+	SessionStartedAt time.Time `json:"session_started_at"`
 	// The ID of the user who joined the session. E.g., "abc123"
 	UserId string `json:"user_id"`
 	// The name of the user who joined the session. E.g., "김건"
 	// It's not synced with the actual user data.
 	UserName string `json:"user_name"`
 	// The time in UTC when the user joined the session.
-	JoinedAt time.Time `json:"joined_at"`
+	UserJoinedAt time.Time `json:"joined_at"`
 	// The time in UTC when the attendance is created.
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -112,6 +114,8 @@ type attendanceFormHandler interface {
 }
 
 type attendanceRepo interface {
+	// Returns all the attendance requests. It is used to provide admins with the attendance result of all users.
+	GetAll() ([]attendance.Attendance, error)
 	// Inserts the attendance requests in bulk. It's used to insert the attendance requests after closing the session.
 	BulkInsert(requests []attendance.AddAttendanceReq) error
 	// Returns the attendances that are related to the user. Typically used to get the attendances for each user.

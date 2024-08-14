@@ -10,16 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongodbAttendance struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty"`
-	SessionId   string             `bson:"session_id"`
-	SessionName string             `bson:"session_name"`
-	UserId      string             `bson:"user_id"`
-	UserName    string             `bson:"user_name"`
-	JoinedAt    time.Time          `bson:"joined_at"`
-	CreatedAt   time.Time          `bson:"created_at"`
+	Id               primitive.ObjectID `bson:"_id,omitempty"`
+	SessionId        string             `bson:"session_id"`
+	SessionName      string             `bson:"session_name"`
+	SessionStartedAt time.Time          `bson:"session_started_at"`
+	UserId           string             `bson:"user_id"`
+	UserName         string             `bson:"user_name"`
+	UserJoinedAt     time.Time          `bson:"user_joined_at"`
+	UserGeneration   float64            `bson:"user_generation"`
+	CreatedAt        time.Time          `bson:"created_at"`
 }
 
 type mongodbRepo struct {
@@ -35,6 +38,37 @@ func NewMongoDbRepo(collection *mongo.Collection, clock clock.Clock) *mongodbRep
 	}
 }
 
+func (m *mongodbRepo) GetAll() ([]Attendance, error) {
+	ctx := context.Background()
+
+	cursor, err := m.collection.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to query attendances: %w", err)
+	}
+
+	var attendances []mongodbAttendance
+	if err = cursor.All(ctx, &attendances); err != nil {
+		return nil, fmt.Errorf("failed to decode attendances: %w", err)
+	}
+
+	var converted []Attendance
+	for _, attendance := range attendances {
+		converted = append(converted, Attendance{
+			Id:               attendance.Id.Hex(),
+			SessionId:        attendance.SessionId,
+			SessionName:      attendance.SessionName,
+			SessionStartedAt: attendance.SessionStartedAt,
+			UserId:           attendance.UserId,
+			UserName:         attendance.UserName,
+			UserGeneration:   attendance.UserGeneration,
+			UserJoinedAt:     attendance.UserJoinedAt,
+			CreatedAt:        attendance.CreatedAt,
+		})
+	}
+
+	return converted, nil
+}
+
 func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
 	return nil, errors.New("not implemented")
 }
@@ -42,7 +76,10 @@ func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
 func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 	ctx := context.Background()
 
-	cursor, err := m.collection.Find(ctx, bson.M{"user_id": userId})
+	cursor, err := m.collection.Find(
+		ctx, bson.M{"user_id": userId},
+		options.Find().SetSort(bson.D{{Key: "session_started_at", Value: -1}}),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query attendances: %w", err)
 	}
@@ -54,15 +91,17 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 	}
 
 	var converted []Attendance
-	for _, a := range attendances {
+	for _, attendance := range attendances {
 		converted = append(converted, Attendance{
-			Id:          a.Id.Hex(),
-			SessionId:   a.SessionId,
-			SessionName: a.SessionName,
-			UserId:      a.UserId,
-			UserName:    a.UserName,
-			JoinedAt:    a.JoinedAt,
-			CreatedAt:   a.CreatedAt,
+			Id:               attendance.Id.Hex(),
+			SessionId:        attendance.SessionId,
+			SessionName:      attendance.SessionName,
+			SessionStartedAt: attendance.SessionStartedAt,
+			UserId:           attendance.UserId,
+			UserName:         attendance.UserName,
+			UserGeneration:   attendance.UserGeneration,
+			UserJoinedAt:     attendance.UserJoinedAt,
+			CreatedAt:        attendance.CreatedAt,
 		})
 	}
 
@@ -70,11 +109,13 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 }
 
 type AddAttendanceReq struct {
-	SessionId   string
-	SessionName string
-	UserId      string
-	UserName    string
-	JoinedAt    time.Time
+	SessionId        string
+	SessionName      string
+	SessionStartedAt time.Time
+	UserId           string
+	UserName         string
+	UserGeneration   float64
+	UserJoinedAt     time.Time
 }
 
 func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
@@ -87,12 +128,14 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 
 	for _, request := range requests {
 		attendances = append(attendances, &mongodbAttendance{
-			SessionId:   request.SessionId,
-			SessionName: request.SessionName,
-			UserId:      request.UserId,
-			UserName:    request.UserName,
-			JoinedAt:    request.JoinedAt,
-			CreatedAt:   now,
+			SessionId:        request.SessionId,
+			SessionName:      request.SessionName,
+			SessionStartedAt: request.SessionStartedAt,
+			UserId:           request.UserId,
+			UserName:         request.UserName,
+			UserGeneration:   request.UserGeneration,
+			UserJoinedAt:     request.UserJoinedAt,
+			CreatedAt:        now,
 		})
 	}
 
