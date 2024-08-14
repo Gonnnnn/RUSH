@@ -43,7 +43,7 @@ const Sidebar = () => {
         <NavigationButton title="Me" path="/me" icon={<PersonOutlined />} />
         <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
         <NavigationButton title="Users" path="/users" icon={<GroupOutlined />} />
-        <NavigationButton title="Attendance" path="/attendance" icon={<CheckCircleOutline />} />
+        <NavigationButton title="Attendance" path="/attendances" icon={<CheckCircleOutline />} />
       </Stack>
       {authenticated ? <GoogleSignOutButton /> : <GoogleSignInButton />}
     </Stack>
