@@ -15,7 +15,7 @@ type mongodbSession struct {
 	Id            primitive.ObjectID `bson:"_id,omitempty"`
 	Name          string             `bson:"name"`
 	Description   string             `bson:"description"`
-	CreatedBy     int                `bson:"created_by"`
+	CreatedBy     string             `bson:"created_by"`
 	GoogleFormId  string             `bson:"google_form_id"`
 	GoogleFormUri string             `bson:"google_form_uri"`
 	CreatedAt     time.Time          `bson:"created_at"`
@@ -133,7 +133,7 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	}, nil
 }
 
-func (r *mongodbRepo) Add(name string, description string, createdBy int, startsAt time.Time, score int) (string, error) {
+func (r *mongodbRepo) Add(name string, description string, createdBy string, startsAt time.Time, score int) (string, error) {
 	session := mongodbSession{
 		Name:          name,
 		Description:   description,

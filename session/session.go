@@ -12,7 +12,7 @@ type Session struct {
 	// The description of the session. E.g., "연대 트랙..."
 	Description string `json:"description"`
 	// The ID of the user who created the session. E.g., "abc123"
-	CreatedBy int `json:"created_by"`
+	CreatedBy string `json:"created_by"`
 	// The Google form ID for attendance of the session. E.g., "abc123"
 	GoogleFormId string `json:"google_form_id"`
 	// The Google form URI for attendance of the session. E.g., "https://forms.gle/abc123"
