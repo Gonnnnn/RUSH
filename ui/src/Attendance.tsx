@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Box, Paper, Stack, Typography } from '@mui/material';
-import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
+import { Box, Button, Stack } from '@mui/material';
+import {
+  DataGrid,
+  GridColDef,
+  GridRowsProp,
+  GridToolbarColumnsButton,
+  GridToolbarContainer,
+  GridToolbarQuickFilter,
+} from '@mui/x-data-grid';
+import * as XLSX from 'xlsx';
 import { useHeader } from './Layout';
 import { getHalfYearAttendances } from './client/http';
+import { toYYslashMMslashDDspaceHHcolonMM } from './common/date';
 
 type Attendance = {
   id: string;
@@ -28,12 +37,16 @@ type Session = {
   startedAt: Date;
 };
 
+type Row = User & {
+  [sessionId: string]: string | number;
+};
+
 const HalfYearAttendances = () => {
   useHeader({ newTitle: 'Attendance' });
-
   const [attendanceData, setAttendanceData] = useState<Attendance[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
+
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [columns, setColumns] = useState<GridColDef[]>([]);
 
@@ -77,15 +90,14 @@ const HalfYearAttendances = () => {
   }, []);
 
   useEffect(() => {
-    // Transform the data
     const userMap = new Map<string, User>();
     users.forEach((user) => userMap.set(user.id, user));
 
     const sessionMap = new Map<string, Session>();
     sessions.forEach((session) => sessionMap.set(session.id, session));
 
-    const transformedRows = users.map((user) => {
-      const row: any = {
+    const transformedRows: Row[] = users.map((user) => {
+      const row: Row = {
         id: user.id,
         name: user.name,
         generation: user.generation,
@@ -115,26 +127,63 @@ const HalfYearAttendances = () => {
 
   return (
     <Stack spacing={2}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="body2">Admin only page to check user attendance.</Typography>
-        <Typography variant="body2">Click 이름 to search a specific user.</Typography>
-        <Typography variant="body2">You can also sort the rows by 이름 and 유저 기수.</Typography>
-        <Typography variant="body2">If necessary, select only certain columns to view.</Typography>
-      </Paper>
-      <Box style={{ height: '100%', width: '100%', overflow: 'auto' }}>
-        {/* paginate by 20 */}
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 10, page: 0 },
-            },
-          }}
-        />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button variant="outlined" onClick={() => exportToExcel(attendanceData, users, sessions)}>
+          Download
+        </Button>
       </Box>
+      <DataGrid
+        rows={rows}
+        columns={columns}
+        slots={{
+          toolbar: CustomToolbar,
+        }}
+        disableColumnFilter
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 10, page: 0 },
+          },
+        }}
+      />
     </Stack>
   );
+};
+
+const CustomToolbar = () => (
+  <GridToolbarContainer sx={{ pt: 2, pr: 2, pl: 2 }}>
+    <GridToolbarQuickFilter />
+    <Box sx={{ flexGrow: 1 }} />
+    <GridToolbarColumnsButton slotProps={{ button: { children: <div>hi</div> } }} />
+  </GridToolbarContainer>
+);
+
+const exportToExcel = (attendanceData: Attendance[], users: User[], sessions: Session[]) => {
+  const data = toExcelFormat(attendanceData, users, sessions);
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '출석');
+
+  const now = new Date();
+  const filename = `출석_${toYYslashMMslashDDspaceHHcolonMM(now)}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+const toExcelFormat = (attendanceData: Attendance[], users: User[], sessions: Session[]) => {
+  const headers = [
+    ['이름', '기수', ...sessions.map((session) => session.name)],
+    ['', '', ...sessions.map((session) => toYYslashMMslashDDspaceHHcolonMM(session.startedAt))],
+  ];
+
+  const rows = users.map((user) => {
+    const row = [user.name, user.generation];
+    sessions.forEach((session) => {
+      const attendance = attendanceData.find((a) => a.userId === user.id && a.sessionId === session.id);
+      row.push(attendance && attendance.sessionScore > 0 ? attendance.sessionScore : '');
+    });
+    return row;
+  });
+
+  return [...headers, ...rows];
 };
 
 export default HalfYearAttendances;
