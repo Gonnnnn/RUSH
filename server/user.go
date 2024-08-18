@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"rush/user"
 )
 
 func (s *Server) GetAllUsers() ([]*User, error) {
@@ -51,14 +50,7 @@ func (s *Server) GetUser(id string) (*User, error) {
 }
 
 func (s *Server) AddUser(name string, university string, phone string, generation float64, isActive bool) error {
-	err := s.userRepo.Add(&user.User{
-		Name:       name,
-		University: university,
-		Phone:      phone,
-		Generation: generation,
-		IsActive:   isActive,
-	})
-	if err != nil {
+	if err := s.userAdder.Add(name, university, phone, generation, isActive); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to add user: %w", err))
 	}
 	return nil
