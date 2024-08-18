@@ -40,7 +40,7 @@ func fromAttendance(attendance *attendance.Attendance) *Attendance {
 		SessionScore:     attendance.SessionScore,
 		SessionStartedAt: attendance.SessionStartedAt,
 		UserId:           attendance.UserId,
-		UserName:         attendance.UserName,
+		UserExternalName: attendance.UserExternalName,
 		UserGeneration:   attendance.UserGeneration,
 		UserJoinedAt:     attendance.UserJoinedAt,
 		CreatedAt:        attendance.CreatedAt,

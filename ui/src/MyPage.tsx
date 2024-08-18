@@ -60,7 +60,7 @@ const MyPage = () => {
     <Container>
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="body1">
-          {user.name} / {user.generation}기
+          {user.externalName} / {user.generation}기
         </Typography>
       </Paper>
 

@@ -16,7 +16,7 @@ type Attendance struct {
 	// The unique identifier for the user. E.g. "1"
 	UserId string `json:"user_id"`
 	// The name of the user. E.g. "Alice"
-	UserName string `json:"user_name"`
+	UserExternalName string `json:"user_external_name"`
 	// The generation of the user. E.g. 9.5
 	UserGeneration float64 `json:"user_generation"`
 	// The time when the user joined the session.
