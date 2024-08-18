@@ -164,7 +164,7 @@ const SessionInfo = ({ session }: { session: Session }) => (
         <Grid item xs={12} sm={6}>
           <Box display="flex" alignItems="center">
             <CalendarTodayOutlined sx={{ mr: 1 }} color="primary" />
-            <Typography variant="body2">시작 시각: {toYYYY년MM월DD일HH시MM분(session.startsAt)}</Typography>
+            <Typography variant="body2">시작 시간: {toYYYY년MM월DD일HH시MM분(session.startsAt)}</Typography>
           </Box>
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -276,7 +276,7 @@ const AttendanceQrPanel = ({
       >
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            출석을 반영하시겠습니까? 반영 이후 세션 이름, 시작 시각, 점수는 변경할 수 없습니다.
+            출석을 반영하시겠습니까? 반영 이후 세션 이름, 시작 시간, 점수는 변경할 수 없습니다.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

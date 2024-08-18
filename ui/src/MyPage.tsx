@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { StarBorderRounded } from '@mui/icons-material';
+import { RunCircleOutlined, StarBorderRounded } from '@mui/icons-material';
 import {
   Container,
   Typography,
@@ -57,7 +57,6 @@ const MyPage = () => {
     );
   }
 
-  // TODO(#42): Fetch user attendance and show it here.
   return (
     <Container>
       <Paper sx={{ p: 2, mb: 3, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2 }}>
@@ -70,6 +69,10 @@ const MyPage = () => {
             출석 총점: {attendances.reduce((acc, cur) => acc + cur.sessionScore, 0)}점
           </Typography>
         </Box>
+        <Box display="flex" alignItems="center">
+          <RunCircleOutlined sx={{ mr: 1 }} color="primary" />
+          <Typography variant="body1">세션 참여: {attendances.length}회</Typography>
+        </Box>
       </Paper>
 
       <TableContainer component={Paper}>
@@ -77,9 +80,15 @@ const MyPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell align="center">참여 세션 ({attendances.length})</TableCell>
-              <TableCell align="center">출석 폼 제출 시각</TableCell>
-              <TableCell align="center">출석 점수</TableCell>
+              <TableCell align="center" sx={{ width: '40%' }}>
+                참여 세션 ({attendances.length})
+              </TableCell>
+              <TableCell align="center" sx={{ width: '40%' }}>
+                출석 시간
+              </TableCell>
+              <TableCell align="center" sx={{ width: '20%' }}>
+                점수
+              </TableCell>
             </TableRow>
           </TableHead>
           {attendances.length > 0 ? (
@@ -99,7 +108,9 @@ const MyPage = () => {
           ) : (
             <TableBody>
               <TableRow>
-                <TableCell colSpan={2}>출석 데이터가 없습니다. 출석하세요!</TableCell>
+                <TableCell colSpan={3} align="center">
+                  출석 데이터가 없습니다. 출석하세요!
+                </TableCell>
               </TableRow>
             </TableBody>
           )}

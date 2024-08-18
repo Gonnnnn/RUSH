@@ -90,9 +90,15 @@ const SessionList = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="center">이름</TableCell>
-                <TableCell align="center">시작 시간</TableCell>
-                <TableCell align="center">출석 반영</TableCell>
+                <TableCell align="center" sx={{ width: '40%' }}>
+                  이름
+                </TableCell>
+                <TableCell align="center" sx={{ width: '40%' }}>
+                  시작 시간
+                </TableCell>
+                <TableCell align="center" sx={{ width: '20%' }}>
+                  출석 반영
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
