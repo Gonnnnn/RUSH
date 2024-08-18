@@ -1,14 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CalendarTodayOutlined, StarBorderRounded } from '@mui/icons-material';
-import { Container, Typography, Paper, Box, Button, CircularProgress, Stack, Grid } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Paper,
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  Grid,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from '@mui/material';
 import { TimeIcon } from '@mui/x-date-pickers';
 import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useHeader } from './Layout';
 import { useSnackbar } from './SnackbarContext';
 import { Session, closeSession, createSessionForm, getSession } from './client/http';
-import { toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from './common/date';
+import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from './common/date';
 
 const SessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
@@ -23,6 +36,7 @@ const SessionDetail = () => {
   const [isClosingSession, setIsClosingSession] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const qrSizePx = 128;
+  const qrDownloadSizePx = 512;
 
   useEffect(() => {
     if (!id) {
@@ -126,6 +140,7 @@ const SessionDetail = () => {
           session={session}
           qrRef={qrRef}
           qrSizePx={qrSizePx}
+          qrDownloadSizePx={qrDownloadSizePx}
           isCreatingForm={isCreatingForm}
           isClosingSession={isClosingSession}
           onCreateQRCode={handleQrCodeCreateClick}
@@ -173,6 +188,7 @@ const AttendanceQrPanel = ({
   session,
   qrRef,
   qrSizePx,
+  qrDownloadSizePx,
   isCreatingForm,
   isClosingSession,
   onCreateQRCode,
@@ -181,65 +197,98 @@ const AttendanceQrPanel = ({
   session: Session;
   qrRef: React.RefObject<HTMLDivElement>;
   qrSizePx: number;
+  qrDownloadSizePx: number;
   isCreatingForm: boolean;
   isClosingSession: boolean;
   onCreateQRCode: () => void;
   onCloseSession: () => void;
-}) => (
-  <Paper sx={{ p: 2, mb: 3 }} elevation={4}>
-    {session.googleFormUri ? (
-      <>
-        <Typography variant="h6" gutterBottom>
-          출석 QR
-        </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
-          <div ref={qrRef}>
+}) => {
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleConfirmCloseSession = () => {
+    onCloseSession();
+    setOpenDialog(false);
+  };
+
+  return (
+    <Paper sx={{ p: 2, mb: 3 }} elevation={4}>
+      {session.googleFormUri ? (
+        <>
+          <Typography variant="h6" gutterBottom>
+            출석 QR
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
             <QRCodeCanvas value={session.googleFormUri} size={qrSizePx} />
-          </div>
-          <Grid container spacing={2} justifyContent="center">
-            <Grid item xs={12} sm={4}>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => onQrDownload(qrRef, qrSizePx, toYYYY년MM월DD일HH시MM분(session.startsAt))}
-              >
-                QR 다운로드
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button variant="outlined" fullWidth onClick={() => window.open(session.googleFormUri, '_blank')}>
-                Google form 열기 (제출용)
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => window.open(`https://docs.google.com/forms/d/${session.googleFormId}/edit`, '_blank')}
-              >
-                Google form 열기 (편집용)
-              </Button>
-            </Grid>
-            {!session.isClosed && (
-              <Grid item xs={12} sm={4}>
-                <Button variant="outlined" fullWidth onClick={onCloseSession} disabled={isClosingSession}>
-                  {isClosingSession ? <CircularProgress size={24} /> : '출석 반영'}
+            {/* Make a hidden QR for download. The QR for display is too small that it breaks when resizing for downloading. */}
+            <div ref={qrRef} style={{ display: 'None' }}>
+              <QRCodeCanvas value={session.googleFormUri} size={qrDownloadSizePx} />
+            </div>
+            <Grid container spacing={2} justifyContent="center">
+              <Grid item xs={12} sm={6}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  // to Month Day format
+                  onClick={() =>
+                    onQrDownload(qrRef, qrDownloadSizePx, formatDateToMonthDate(new Date(session.startsAt)))
+                  }
+                >
+                  QR 다운로드
                 </Button>
               </Grid>
-            )}
-          </Grid>
+              {!session.isClosed && (
+                <Grid item xs={12} sm={6}>
+                  <Button variant="outlined" fullWidth onClick={() => setOpenDialog(true)} disabled={isClosingSession}>
+                    {isClosingSession ? <CircularProgress size={24} /> : '출석 반영'}
+                  </Button>
+                </Grid>
+              )}
+              <Grid item xs={12} sm={6}>
+                <Button variant="outlined" fullWidth onClick={() => window.open(session.googleFormUri, '_blank')}>
+                  Google form 열기 (제출용)
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => window.open(`https://docs.google.com/forms/d/${session.googleFormId}/edit`, '_blank')}
+                >
+                  Google form 열기 (편집용)
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
+          <Typography variant="h6">No google form attached yet!</Typography>
+          <Button variant="contained" onClick={onCreateQRCode} disabled={isCreatingForm}>
+            {isCreatingForm ? <CircularProgress size={24} /> : 'Create QR code'}
+          </Button>
         </Box>
-      </>
-    ) : (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
-        <Typography variant="h6">No google form attached yet!</Typography>
-        <Button variant="contained" onClick={onCreateQRCode} disabled={isCreatingForm}>
-          {isCreatingForm ? <CircularProgress size={24} /> : 'Create QR code'}
-        </Button>
-      </Box>
-    )}
-  </Paper>
-);
+      )}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            출석을 반영하시겠습니까? 반영 이후 세션 이름, 시작 시각, 점수는 변경할 수 없습니다.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>취소</Button>
+          <Button onClick={handleConfirmCloseSession} autoFocus>
+            확인
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Paper>
+  );
+};
 
 const onQrDownload = (qrRef: React.RefObject<HTMLDivElement>, qrSize: number, text: string) => {
   if (!qrRef.current) return;
@@ -251,23 +300,24 @@ const onQrDownload = (qrRef: React.RefObject<HTMLDivElement>, qrSize: number, te
   const ctx = newCanvas.getContext('2d');
   if (!ctx) return;
 
-  const newWidth = qrSize + 512;
-  const newHeight = qrSize + 630;
+  const paddingPx = 64;
+  const textSpacePx = 128;
+  const newCanvasWidth = qrSize + paddingPx * 2;
+  const newCanvasHeight = qrSize + paddingPx * 2 + textSpacePx;
 
-  newCanvas.width = newWidth;
-  newCanvas.height = newHeight;
+  newCanvas.width = newCanvasWidth;
+  newCanvas.height = newCanvasHeight;
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
 
-  const newQrSize = 256;
-  const qrYoffset = (newHeight - newQrSize) / 2;
-  const qrXoffset = (newWidth - newQrSize) / 2;
-  ctx.drawImage(canvas, qrXoffset, qrYoffset, 256, 256);
+  const qrYoffset = (newCanvasHeight - qrSize) / 2;
+  const qrXoffset = (newCanvasWidth - qrSize) / 2;
+  ctx.drawImage(canvas, qrXoffset, qrYoffset, qrSize, qrSize);
 
-  ctx.font = '32px Arial';
+  ctx.font = '32px Helvetica';
   ctx.fillStyle = 'black';
   ctx.textAlign = 'center';
-  ctx.fillText(text, newWidth / 2, Math.min(qrYoffset + newQrSize + 128, newHeight - 32));
+  ctx.fillText(text, newCanvasWidth / 2, Math.min(qrYoffset + qrSize + textSpacePx / 2, newCanvasHeight - 16));
 
   const a = document.createElement('a');
   a.href = newCanvas.toDataURL('image/png');
