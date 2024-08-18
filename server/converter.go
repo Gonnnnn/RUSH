@@ -9,12 +9,13 @@ import (
 
 func fromUser(user *user.User) *User {
 	return &User{
-		Id:         user.Id,
-		Name:       user.Name,
-		University: user.University,
-		Phone:      user.Phone,
-		Generation: user.Generation,
-		IsActive:   user.IsActive,
+		Id:           user.Id,
+		Name:         user.Name,
+		University:   user.University,
+		Phone:        user.Phone,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		ExternalName: user.ExternalName,
 	}
 }
 

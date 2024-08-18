@@ -9,7 +9,6 @@ const client: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
-  timeout: 500,
 });
 
 const UserSchema = z

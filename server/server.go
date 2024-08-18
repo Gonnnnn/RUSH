@@ -24,6 +24,9 @@ type User struct {
 	Generation float64 `json:"generation"`
 	// The activity status of the user. E.g., true
 	IsActive bool `json:"is_active"`
+	// The external name of the user. E.g., "김건3"
+	// It's used as an external ID for the users so that it's easier for them to identify themselves such as in Google Forms.
+	ExternalName string `json:"external_name"`
 }
 
 type Session struct {
@@ -39,7 +42,7 @@ type Session struct {
 	CreatedBy string `json:"created_by"`
 	// The URI of the Google form for the session. E.g., "https://docs.google.com/forms/d/e/1FAIpQLSd..."
 	GoogleFormUri string `json:"google_form_uri"`
-	// The external IDs of the users who joined the session. E.g., ["abc123", "def456"]
+	// The external names of the users who joined the session. E.g., ["abc123", "def456"]
 	JoinningUsers []string `json:"joinning_users"`
 	// The time in UTC when the session is created.
 	CreatedAt time.Time `json:"created_at"`
@@ -95,11 +98,14 @@ type userRepo interface {
 	GetAll() ([]user.User, error)
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
 	List(offset int, pageSize int) (*user.ListResult, error)
-	Add(user *user.User) error
 	// Returns the user that has the email. Typically used to get the user by the email from the OAuth2.0 token.
 	GetByEmail(email string) (*user.User, error)
-	// Returns the users that have the external IDs. Typically used to get users by the external IDs from the form.
-	GetAllByExternalIds(externalIds []string) ([]user.User, error)
+	// Returns the users that have the external names. Typically used to get users by the external names from the form.
+	GetAllByExternalNames(externalNames []string) ([]user.User, error)
+}
+
+type userAdder interface {
+	Add(name string, university string, phone string, generation float64, isActive bool) error
 }
 
 type sessionRepo interface {
@@ -132,6 +138,8 @@ type Server struct {
 	// Used to sign in and get the rush token for API calls.
 	authHandler authHandler
 	userRepo    userRepo
+	// Used to add a user.
+	userAdder   userAdder
 	sessionRepo sessionRepo
 	// Used to generate the form for attendance and get the submissions from the form.
 	attendanceFormHandler attendanceFormHandler
@@ -140,12 +148,13 @@ type Server struct {
 	formTimeLocation *time.Location
 }
 
-func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, sessionRepo sessionRepo,
+func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo,
 	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location) *Server {
 	return &Server{
 		tokenInspector:        tokenInspector,
 		authHandler:           authHandler,
 		userRepo:              userRepo,
+		userAdder:             userAdder,
 		sessionRepo:           sessionRepo,
 		attendanceFormHandler: attendanceFormHandler,
 		attendanceRepo:        attendanceRepo,

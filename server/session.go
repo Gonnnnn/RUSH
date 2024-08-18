@@ -71,21 +71,21 @@ func (s *Server) CloseSession(sessionId string) error {
 		}
 	}
 
-	externalIds := []string{}
+	externalNames := []string{}
 	for _, submissionOnTime := range submissionsOnTime {
-		externalIds = append(externalIds, submissionOnTime.UserExternalId)
+		externalNames = append(externalNames, submissionOnTime.UserExternalName)
 	}
 
-	users, err := s.userRepo.GetAllByExternalIds(externalIds)
+	users, err := s.userRepo.GetAllByExternalNames(externalNames)
 	if err != nil {
-		return newInternalServerError(fmt.Errorf("failed to get users by external IDs: %w", err))
+		return newInternalServerError(fmt.Errorf("failed to get users by external names: %w", err))
 	}
 
 	sort.Slice(users, func(i, j int) bool {
-		return users[i].ExternalId < users[j].ExternalId
+		return users[i].ExternalName < users[j].ExternalName
 	})
 	sort.Slice(submissionsOnTime, func(i, j int) bool {
-		return submissionsOnTime[i].UserExternalId < submissionsOnTime[j].UserExternalId
+		return submissionsOnTime[i].UserExternalName < submissionsOnTime[j].UserExternalName
 	})
 
 	addAttendanceReqs := []attendance.AddAttendanceReq{}

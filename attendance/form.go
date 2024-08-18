@@ -21,9 +21,9 @@ type Form struct {
 }
 
 type FormSubmission struct {
-	// The external ID of the user that is exposed to the form.
+	// The external name of the user that is exposed to the form.
 	// Use it to match the submission with the user. E.g., "abc123"
-	UserExternalId string
+	UserExternalName string
 	// The time when the form was submitted.
 	SubmissionTime time.Time
 }
@@ -33,15 +33,21 @@ type formHandler struct {
 	googleFormService *forms.Service
 	// The Google Drive service to manage permissions to the form.
 	googleDriveService *drive.Service
-	// The delimiter to separate the user's generation, name, and external ID in the form option.
-	userOptionDelimiter string
+	// The form option parser to get the user external name from the form.
+	formOptionParser *formOptionParser
+	// The delimiter to separate the generation and the external name in the form option.
+	delimiter string
 }
 
 // 김건, 양현우
 var adminEmails = []string{"geonkim23@gmail.com", "hyeonyi30754@gmail.com"}
 
 func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.Service) *formHandler {
-	return &formHandler{googleFormService: googleFormService, googleDriveService: googleDriveService, userOptionDelimiter: " - "}
+	delimiter := " - "
+	return &formHandler{
+		googleFormService: googleFormService, googleDriveService: googleDriveService,
+		formOptionParser: newFormOptionParser(delimiter), delimiter: delimiter,
+	}
 }
 
 func (f *formHandler) GenerateForm(title string, description string, users []user.User) (Form, error) {
@@ -61,7 +67,7 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 	}
 
 	for index, user := range users {
-		question.ChoiceQuestion.Options[index] = &forms.Option{Value: f.attendanceOption(user)}
+		question.ChoiceQuestion.Options[index] = &forms.Option{Value: newFormOption(user.Generation, user.ExternalName, f.delimiter).string()}
 	}
 
 	updateRequest := &forms.BatchUpdateFormRequest{
@@ -78,7 +84,7 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 				CreateItem: &forms.CreateItemRequest{
 					Item: &forms.Item{
 						Title:       "기수:이름",
-						Description: "기수와 이름을 선택해주세요.\n선택지는 1. 기수 2. 이름 순으로 정렬돼있습니다.\nformat: `기수 - 이름 - ID`",
+						Description: "기수와 이름을 선택해주세요.\n선택지는 1. 기수 2. 이름 순으로 정렬돼있습니다.\nformat: `기수 - 이름`",
 						QuestionItem: &forms.QuestionItem{
 							Question: question,
 						},
@@ -120,70 +126,88 @@ func (f *formHandler) GetSubmissions(formId string) ([]FormSubmission, error) {
 		return nil, fmt.Errorf("failed to fetch form responses: %w", err)
 	}
 
-	var userExternalIdSubmissionTimeMap = make(map[string]time.Time)
+	var userExternalNameSubmissionTimeMap = make(map[string]time.Time)
 	for _, response := range responses.Responses {
 		submissionTime, err := time.Parse(time.RFC3339, response.LastSubmittedTime)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse submission time: %w", err)
 		}
 
-		externalId, err := f.getUserExternalIdFromResponse(response)
+		externalName, err := f.getUserExternalName(response)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get user external ID from response: %w", err)
+			return nil, fmt.Errorf("failed to get user external name from response: %w", err)
 		}
 
-		timeFoundBefore, ok := userExternalIdSubmissionTimeMap[externalId]
+		timeFoundBefore, ok := userExternalNameSubmissionTimeMap[externalName]
 		if ok && submissionTime.After(timeFoundBefore) {
 			// The user might have submitted the form multiple times. We only keep the first submission.
 			continue
 		}
 
-		userExternalIdSubmissionTimeMap[externalId] = submissionTime
+		userExternalNameSubmissionTimeMap[externalName] = submissionTime
 	}
 
 	var submissions []FormSubmission
-	for externalId, submissionTime := range userExternalIdSubmissionTimeMap {
-		submissions = append(submissions, FormSubmission{UserExternalId: externalId, SubmissionTime: submissionTime})
+	for externalName, submissionTime := range userExternalNameSubmissionTimeMap {
+		submissions = append(submissions, FormSubmission{UserExternalName: externalName, SubmissionTime: submissionTime})
 	}
 
 	return submissions, nil
 }
 
-// TODO(#42): Save the user ID somewhere else. Not safe to include it here and couple it with the parsing logic.
-func (f *formHandler) attendanceOption(user user.User) string {
-	var generationStr string
-	if math.Trunc(user.Generation) == user.Generation {
-		generationStr = strconv.Itoa(int(user.Generation))
-	} else {
-		generationStr = fmt.Sprintf("%.1f", user.Generation)
-	}
-
-	return fmt.Sprintf("%s%s%s%s%s", generationStr, f.userOptionDelimiter, user.Name, f.userOptionDelimiter, user.ExternalId)
-}
-
-func (f *formHandler) parseUserExternalId(option string) (string, error) {
-	parts := strings.Split(option, f.userOptionDelimiter)
-	if len(parts) != 3 {
-		return "", fmt.Errorf("invalid option format: %s", option)
-	}
-
-	return parts[2], nil
-}
-
-func (f *formHandler) getUserExternalIdFromResponse(response *forms.FormResponse) (string, error) {
+func (f *formHandler) getUserExternalName(response *forms.FormResponse) (string, error) {
 	for _, answer := range response.Answers {
 		if answer.TextAnswers == nil || len(answer.TextAnswers.Answers) == 0 {
 			return "", fmt.Errorf("invalid answer was read from the form which seems like the form API problem: %v", answer)
 		}
 
 		selectedOption := answer.TextAnswers.Answers[0].Value
-		externalId, err := f.parseUserExternalId(selectedOption)
+		option, err := f.formOptionParser.parse(selectedOption)
 		if err != nil {
-			return "", fmt.Errorf("failed to parse user external ID: %w", err)
+			return "", fmt.Errorf("failed to parse user external name: %w", err)
 		}
 
-		return externalId, nil
+		return option.ExternalName, nil
 	}
 
 	return "", fmt.Errorf("no answer was found in the response")
+}
+
+type formOption struct {
+	Generation   float64
+	ExternalName string
+	delimiter    string
+}
+
+func newFormOption(generation float64, externalName string, delimiter string) formOption {
+	return formOption{Generation: generation, ExternalName: externalName, delimiter: delimiter}
+}
+
+func (f formOption) string() string {
+	if math.Trunc(f.Generation) == f.Generation {
+		return fmt.Sprintf("%s%s%s", strconv.Itoa(int(f.Generation)), f.delimiter, f.ExternalName)
+	}
+	return fmt.Sprintf("%s%s%s", fmt.Sprintf("%.1f", f.Generation), f.delimiter, f.ExternalName)
+}
+
+type formOptionParser struct {
+	delimiter string
+}
+
+func newFormOptionParser(delimiter string) *formOptionParser {
+	return &formOptionParser{delimiter: delimiter}
+}
+
+func (f *formOptionParser) parse(option string) (formOption, error) {
+	parts := strings.Split(option, f.delimiter)
+	if len(parts) != 2 {
+		return formOption{}, fmt.Errorf("invalid option format: %s", option)
+	}
+
+	generation, err := strconv.ParseFloat(parts[0], 64)
+	if err != nil {
+		return formOption{}, fmt.Errorf("failed to parse generation: %w", err)
+	}
+
+	return formOption{Generation: generation, ExternalName: parts[1], delimiter: f.delimiter}, nil
 }

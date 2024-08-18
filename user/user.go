@@ -7,7 +7,8 @@ type User struct {
 	Phone      string  `json:"phone"`
 	Generation float64 `json:"generation"`
 	IsActive   bool    `json:"is_active"`
-	// The ID of the user to expose to the external system outside of the service
-	// such as the Google Form.
-	ExternalId string `json:"external_id"`
+	// The unique name consisting of the user name and a number.
+	// It's used as an external ID for the users so that
+	// it's easier for them to identify themselves such as in Google Forms.
+	ExternalName string `json:"external_name"`
 }

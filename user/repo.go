@@ -12,13 +12,13 @@ import (
 )
 
 type mongodbUser struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty"`
-	Name       string             `bson:"name"`
-	University string             `bson:"university"`
-	Phone      string             `bson:"phone"`
-	Generation float64            `bson:"generation"`
-	IsActive   bool               `bson:"is_active"`
-	ExternalId string             `bson:"external_id"`
+	Id           primitive.ObjectID `bson:"_id,omitempty"`
+	Name         string             `bson:"name"`
+	University   string             `bson:"university"`
+	Phone        string             `bson:"phone"`
+	Generation   float64            `bson:"generation"`
+	IsActive     bool               `bson:"is_active"`
+	ExternalName string             `bson:"external_name"`
 }
 
 type mongodbRepo struct {
@@ -47,15 +47,15 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 	}
 
 	var converted []User
-	for _, u := range users {
+	for _, user := range users {
 		converted = append(converted, User{
-			Id:         u.Id.Hex(),
-			Name:       u.Name,
-			University: u.University,
-			Phone:      u.Phone,
-			Generation: u.Generation,
-			IsActive:   u.IsActive,
-			ExternalId: u.ExternalId,
+			Id:           user.Id.Hex(),
+			Name:         user.Name,
+			University:   user.University,
+			Phone:        user.Phone,
+			Generation:   user.Generation,
+			IsActive:     user.IsActive,
+			ExternalName: user.ExternalName,
 		})
 	}
 
@@ -65,8 +65,8 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 	ctx := context.Background()
 
-	var u mongodbUser
-	if err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&u); err != nil {
+	var user mongodbUser
+	if err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrNotFound
 		}
@@ -74,13 +74,13 @@ func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 	}
 
 	return &User{
-		Id:         u.Id.Hex(),
-		Name:       u.Name,
-		University: u.University,
-		Phone:      u.Phone,
-		Generation: u.Generation,
-		IsActive:   u.IsActive,
-		ExternalId: u.ExternalId,
+		Id:           user.Id.Hex(),
+		Name:         user.Name,
+		University:   user.University,
+		Phone:        user.Phone,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		ExternalName: user.ExternalName,
 	}, nil
 }
 
@@ -121,15 +121,15 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	}
 
 	converted := make([]User, len(users))
-	for i, u := range users {
-		converted[i] = User{
-			Id:         u.Id.Hex(),
-			Name:       u.Name,
-			University: u.University,
-			Phone:      u.Phone,
-			Generation: u.Generation,
-			IsActive:   u.IsActive,
-			ExternalId: u.ExternalId,
+	for index, user := range users {
+		converted[index] = User{
+			Id:           user.Id.Hex(),
+			Name:         user.Name,
+			University:   user.University,
+			Phone:        user.Phone,
+			Generation:   user.Generation,
+			IsActive:     user.IsActive,
+			ExternalName: user.ExternalName,
 		}
 	}
 
@@ -148,8 +148,8 @@ func (r *mongodbRepo) Get(id string) (*User, error) {
 		return nil, fmt.Errorf("failed to convert id: %w", err)
 	}
 
-	var u mongodbUser
-	if err := r.collection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&u); err != nil {
+	var user mongodbUser
+	if err := r.collection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrNotFound
 		}
@@ -157,30 +157,30 @@ func (r *mongodbRepo) Get(id string) (*User, error) {
 	}
 
 	return &User{
-		Id:         u.Id.Hex(),
-		Name:       u.Name,
-		University: u.University,
-		Phone:      u.Phone,
-		Generation: u.Generation,
-		IsActive:   u.IsActive,
-		ExternalId: u.ExternalId,
+		Id:           user.Id.Hex(),
+		Name:         user.Name,
+		University:   user.University,
+		Phone:        user.Phone,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		ExternalName: user.ExternalName,
 	}, nil
 }
 
-func (r *mongodbRepo) Add(u *User) error {
+func (r *mongodbRepo) CountByName(name string) (int, error) {
 	ctx := context.Background()
-	_, err := r.collection.InsertOne(ctx, u)
+	count, err := r.collection.CountDocuments(ctx, bson.M{"name": name})
 	if err != nil {
-		return fmt.Errorf("failed to insert user: %w", err)
+		return 0, fmt.Errorf("database client has failed: %w", err)
 	}
-	return nil
+	return int(count), nil
 }
 
-func (r *mongodbRepo) GetAllByExternalIds(externalIds []string) ([]User, error) {
+func (r *mongodbRepo) GetAllByExternalNames(externalNames []string) ([]User, error) {
 	ctx := context.Background()
 
 	var users []mongodbUser
-	cursor, err := r.collection.Find(ctx, bson.M{"external_id": bson.M{"$in": externalIds}})
+	cursor, err := r.collection.Find(ctx, bson.M{"external_name": bson.M{"$in": externalNames}})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find users: %w", err)
 	}
@@ -193,15 +193,33 @@ func (r *mongodbRepo) GetAllByExternalIds(externalIds []string) ([]User, error) 
 	converted := make([]User, len(users))
 	for index, user := range users {
 		converted[index] = User{
-			Id:         user.Id.Hex(),
-			Name:       user.Name,
-			University: user.University,
-			Phone:      user.Phone,
-			Generation: user.Generation,
-			IsActive:   user.IsActive,
-			ExternalId: user.ExternalId,
+			Id:           user.Id.Hex(),
+			Name:         user.Name,
+			University:   user.University,
+			Phone:        user.Phone,
+			Generation:   user.Generation,
+			IsActive:     user.IsActive,
+			ExternalName: user.ExternalName,
 		}
 	}
 
 	return converted, nil
+}
+
+func (r *mongodbRepo) Add(user User) error {
+	ctx := context.Background()
+
+	_, err := r.collection.InsertOne(ctx, mongodbUser{
+		Name:         user.Name,
+		University:   user.University,
+		Phone:        user.Phone,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		ExternalName: user.ExternalName,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert user: %w", err)
+	}
+
+	return nil
 }
