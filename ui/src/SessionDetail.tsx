@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CalendarTodayOutlined, StarBorderRounded } from '@mui/icons-material';
 import { Container, Typography, Paper, Box, Button, CircularProgress, Stack, Grid } from '@mui/material';
 import { TimeIcon } from '@mui/x-date-pickers';
@@ -13,6 +13,7 @@ import { toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from 
 const SessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { showWarning, showError } = useSnackbar();
   const { id } = useParams();
 
@@ -105,7 +106,17 @@ const SessionDetail = () => {
   return (
     <Container>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
-        <Button variant="outlined" onClick={() => navigate('/sessions')} sx={{ alignSelf: 'flex-start' }}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (state?.from) {
+              navigate(state.from);
+              return;
+            }
+            navigate('/sessions');
+          }}
+          sx={{ alignSelf: 'flex-start' }}
+        >
           Back
         </Button>
       </Box>
