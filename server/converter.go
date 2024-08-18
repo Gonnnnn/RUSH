@@ -4,7 +4,6 @@ import (
 	"rush/attendance"
 	"rush/session"
 	"rush/user"
-	"strconv"
 )
 
 func fromUser(user *user.User) *User {
@@ -24,10 +23,8 @@ func fromSession(session *session.Session) *Session {
 		Id:            session.Id,
 		Name:          session.Name,
 		Description:   session.Description,
-		HostedBy:      strconv.Itoa(session.HostedBy),
-		CreatedBy:     strconv.Itoa(session.CreatedBy),
+		CreatedBy:     session.CreatedBy,
 		GoogleFormUri: session.GoogleFormUri,
-		JoinningUsers: session.JoinningUsers,
 		CreatedAt:     session.CreatedAt,
 		StartsAt:      session.StartsAt,
 		Score:         session.Score,

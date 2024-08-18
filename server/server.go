@@ -36,14 +36,10 @@ type Session struct {
 	Name string `json:"name"`
 	// The description of the session. E.g., "연대 트랙, ..."
 	Description string `json:"description"`
-	// The ID of the user who hosts the session. E.g., "abc123"
-	HostedBy string `json:"hosted_by"`
 	// The ID of the user who created the session. E.g., "abc123"
 	CreatedBy string `json:"created_by"`
 	// The URI of the Google form for the session. E.g., "https://docs.google.com/forms/d/e/1FAIpQLSd..."
 	GoogleFormUri string `json:"google_form_uri"`
-	// The external names of the users who joined the session. E.g., ["abc123", "def456"]
-	JoinningUsers []string `json:"joinning_users"`
 	// The time in UTC when the session is created.
 	CreatedAt time.Time `json:"created_at"`
 	// The time in UTC when the session starts.
@@ -112,7 +108,7 @@ type sessionRepo interface {
 	Get(id string) (*session.Session, error)
 	GetAll() ([]session.Session, error)
 	List(offset int, pageSize int) (*session.ListResult, error)
-	Add(name string, description string, hostedBy int, createdBy int, startsAt time.Time, score int) (string, error)
+	Add(name string, description string, createdBy string, startsAt time.Time, score int) (string, error)
 	Update(id string, updateForm *session.UpdateForm) (*session.Session, error)
 }
 
