@@ -20,7 +20,7 @@ type Attendance = {
   sessionScore: number;
   sessionStartedAt: Date;
   userId: string;
-  userName: string;
+  userExternalName: string;
   userJoinedAt: Date;
   createdAt: Date;
 };
@@ -62,7 +62,7 @@ const HalfYearAttendances = () => {
             sessionScore: attendance.sessionScore,
             sessionStartedAt: attendance.sessionStartedAt,
             userId: attendance.userId,
-            userName: attendance.userName,
+            userExternalName: attendance.userExternalName,
             userJoinedAt: attendance.userJoinedAt,
             createdAt: attendance.createdAt,
           })),

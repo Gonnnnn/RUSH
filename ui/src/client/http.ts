@@ -19,6 +19,7 @@ const UserSchema = z
     phone: z.string(),
     generation: z.number(),
     is_active: z.boolean(),
+    external_name: z.string(),
   })
   .transform((data) => ({
     id: data.id,
@@ -27,6 +28,7 @@ const UserSchema = z
     phone: data.phone,
     generation: data.generation,
     isActive: data.is_active,
+    externalName: data.external_name,
   }));
 
 const SessionSchema = z
@@ -58,7 +60,7 @@ const AttendanceSchema = z
     session_score: z.number(),
     session_started_at: z.string().transform((str) => new Date(str)),
     user_id: z.string(),
-    user_name: z.string(),
+    user_external_name: z.string(),
     user_generation: z.number(),
     user_joined_at: z.string().transform((str) => new Date(str)),
     created_at: z.string().transform((str) => new Date(str)),
@@ -70,7 +72,7 @@ const AttendanceSchema = z
     sessionScore: data.session_score,
     sessionStartedAt: data.session_started_at,
     userId: data.user_id,
-    userName: data.user_name,
+    userExternalName: data.user_external_name,
     userGeneration: data.user_generation,
     userJoinedAt: data.user_joined_at,
     createdAt: data.created_at,

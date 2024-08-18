@@ -20,7 +20,7 @@ type mongodbAttendance struct {
 	SessionScore     int                `bson:"session_score"`
 	SessionStartedAt time.Time          `bson:"session_started_at"`
 	UserId           string             `bson:"user_id"`
-	UserName         string             `bson:"user_name"`
+	UserExternalName string             `bson:"user_external_name"`
 	UserJoinedAt     time.Time          `bson:"user_joined_at"`
 	UserGeneration   float64            `bson:"user_generation"`
 	CreatedAt        time.Time          `bson:"created_at"`
@@ -61,7 +61,7 @@ func (m *mongodbRepo) GetAll() ([]Attendance, error) {
 			SessionScore:     attendance.SessionScore,
 			SessionStartedAt: attendance.SessionStartedAt,
 			UserId:           attendance.UserId,
-			UserName:         attendance.UserName,
+			UserExternalName: attendance.UserExternalName,
 			UserGeneration:   attendance.UserGeneration,
 			UserJoinedAt:     attendance.UserJoinedAt,
 			CreatedAt:        attendance.CreatedAt,
@@ -101,7 +101,7 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 			SessionScore:     attendance.SessionScore,
 			SessionStartedAt: attendance.SessionStartedAt,
 			UserId:           attendance.UserId,
-			UserName:         attendance.UserName,
+			UserExternalName: attendance.UserExternalName,
 			UserGeneration:   attendance.UserGeneration,
 			UserJoinedAt:     attendance.UserJoinedAt,
 			CreatedAt:        attendance.CreatedAt,
@@ -117,7 +117,7 @@ type AddAttendanceReq struct {
 	SessionScore     int
 	SessionStartedAt time.Time
 	UserId           string
-	UserName         string
+	UserExternalName string
 	UserGeneration   float64
 	UserJoinedAt     time.Time
 }
@@ -137,7 +137,7 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 			SessionScore:     request.SessionScore,
 			SessionStartedAt: request.SessionStartedAt,
 			UserId:           request.UserId,
-			UserName:         request.UserName,
+			UserExternalName: request.UserExternalName,
 			UserGeneration:   request.UserGeneration,
 			UserJoinedAt:     request.UserJoinedAt,
 			CreatedAt:        now,

@@ -97,7 +97,7 @@ func (s *Server) CloseSession(sessionId string) error {
 			SessionScore:     dbSession.Score,
 			SessionStartedAt: dbSession.StartsAt,
 			UserId:           user.Id,
-			UserName:         user.Name,
+			UserExternalName: user.ExternalName,
 			UserGeneration:   user.Generation,
 			UserJoinedAt:     submissionOnTime.SubmissionTime,
 		})

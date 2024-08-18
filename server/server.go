@@ -65,8 +65,9 @@ type Attendance struct {
 	// The ID of the user who joined the session. E.g., "abc123"
 	UserId string `json:"user_id"`
 	// The name of the user who joined the session. E.g., "김건"
-	// It's not synced with the actual user data.
-	UserName string `json:"user_name"`
+	// It's not synced with the actual user data. It's used to show the user name in the attendance list.
+	// Thus the external name is used instead of the user name.
+	UserExternalName string `json:"user_external_name"`
 	// The generation of the user who joined the session. E.g., 9.5
 	UserGeneration float64 `json:"user_generation"`
 	// The time in UTC when the user joined the session.
