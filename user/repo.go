@@ -47,15 +47,15 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 	}
 
 	var converted []User
-	for _, u := range users {
+	for _, user := range users {
 		converted = append(converted, User{
-			Id:           u.Id.Hex(),
-			Name:         u.Name,
-			University:   u.University,
-			Phone:        u.Phone,
-			Generation:   u.Generation,
-			IsActive:     u.IsActive,
-			ExternalName: u.ExternalName,
+			Id:           user.Id.Hex(),
+			Name:         user.Name,
+			University:   user.University,
+			Phone:        user.Phone,
+			Generation:   user.Generation,
+			IsActive:     user.IsActive,
+			ExternalName: user.ExternalName,
 		})
 	}
 
@@ -65,8 +65,8 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 	ctx := context.Background()
 
-	var u mongodbUser
-	if err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&u); err != nil {
+	var user mongodbUser
+	if err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrNotFound
 		}
@@ -74,13 +74,13 @@ func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 	}
 
 	return &User{
-		Id:           u.Id.Hex(),
-		Name:         u.Name,
-		University:   u.University,
-		Phone:        u.Phone,
-		Generation:   u.Generation,
-		IsActive:     u.IsActive,
-		ExternalName: u.ExternalName,
+		Id:           user.Id.Hex(),
+		Name:         user.Name,
+		University:   user.University,
+		Phone:        user.Phone,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		ExternalName: user.ExternalName,
 	}, nil
 }
 
@@ -121,15 +121,15 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	}
 
 	converted := make([]User, len(users))
-	for i, u := range users {
-		converted[i] = User{
-			Id:           u.Id.Hex(),
-			Name:         u.Name,
-			University:   u.University,
-			Phone:        u.Phone,
-			Generation:   u.Generation,
-			IsActive:     u.IsActive,
-			ExternalName: u.ExternalName,
+	for index, user := range users {
+		converted[index] = User{
+			Id:           user.Id.Hex(),
+			Name:         user.Name,
+			University:   user.University,
+			Phone:        user.Phone,
+			Generation:   user.Generation,
+			IsActive:     user.IsActive,
+			ExternalName: user.ExternalName,
 		}
 	}
 
@@ -148,8 +148,8 @@ func (r *mongodbRepo) Get(id string) (*User, error) {
 		return nil, fmt.Errorf("failed to convert id: %w", err)
 	}
 
-	var u mongodbUser
-	if err := r.collection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&u); err != nil {
+	var user mongodbUser
+	if err := r.collection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrNotFound
 		}
@@ -157,13 +157,13 @@ func (r *mongodbRepo) Get(id string) (*User, error) {
 	}
 
 	return &User{
-		Id:           u.Id.Hex(),
-		Name:         u.Name,
-		University:   u.University,
-		Phone:        u.Phone,
-		Generation:   u.Generation,
-		IsActive:     u.IsActive,
-		ExternalName: u.ExternalName,
+		Id:           user.Id.Hex(),
+		Name:         user.Name,
+		University:   user.University,
+		Phone:        user.Phone,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		ExternalName: user.ExternalName,
 	}, nil
 }
 
