@@ -39,6 +39,7 @@ type Session = {
 
 type Row = User & {
   [sessionId: string]: string | number;
+  totalScore: number;
 };
 
 const HalfYearAttendances = () => {
@@ -101,10 +102,13 @@ const HalfYearAttendances = () => {
         id: user.id,
         name: user.name,
         generation: user.generation,
+        totalScore: 0,
       };
       attendanceData.forEach((attendance) => {
         if (attendance.userId === user.id) {
-          row[attendance.sessionId] = attendance.sessionScore > 0 ? attendance.sessionScore : '';
+          const score = attendance.sessionScore > 0 ? attendance.sessionScore : 0;
+          row[attendance.sessionId] = score;
+          row.totalScore += score;
         }
       });
       return row;
@@ -112,7 +116,8 @@ const HalfYearAttendances = () => {
 
     const transformedColumns: GridColDef[] = [
       { field: 'name', headerName: '이름', width: 150, sortable: true },
-      { field: 'generation', headerName: '기수', width: 150, sortable: true },
+      { field: 'generation', headerName: '기수', width: 100, sortable: true },
+      { field: 'totalScore', headerName: '총점', width: 100, sortable: true },
       ...sessions.map((session) => ({
         field: session.id,
         headerName: `${session.name} (${new Date(session.startedAt).toLocaleDateString()})`,
@@ -170,16 +175,22 @@ const exportToExcel = (attendanceData: Attendance[], users: User[], sessions: Se
 
 const toExcelFormat = (attendanceData: Attendance[], users: User[], sessions: Session[]) => {
   const headers = [
-    ['이름', '기수', ...sessions.map((session) => session.name)],
-    ['', '', ...sessions.map((session) => toYYslashMMslashDDspaceHHcolonMM(session.startedAt))],
+    ['이름', '기수', '총점', ...sessions.map((session) => session.name)],
+    ['', '', '', ...sessions.map((session) => toYYslashMMslashDDspaceHHcolonMM(session.startedAt))],
   ];
 
   const rows = users.map((user) => {
     const row = [user.name, user.generation];
-    sessions.forEach((session) => {
+    const totalScore = sessions.reduce((acc, session) => {
       const attendance = attendanceData.find((a) => a.userId === user.id && a.sessionId === session.id);
-      row.push(attendance && attendance.sessionScore > 0 ? attendance.sessionScore : '');
+      return acc + (attendance && attendance.sessionScore > 0 ? attendance.sessionScore : 0);
+    }, 0);
+    const sessionScores = sessions.map((session) => {
+      const attendance = attendanceData.find((a) => a.userId === user.id && a.sessionId === session.id);
+      const score = attendance && attendance.sessionScore > 0 ? attendance.sessionScore : 0;
+      return score || '';
     });
+    row.push(totalScore, ...sessionScores);
     return row;
   });
 
