@@ -40,6 +40,8 @@ type Session struct {
 	CreatedBy string `json:"created_by"`
 	// The URI of the Google form for the session. E.g., "https://docs.google.com/forms/d/e/1FAIpQLSd..."
 	GoogleFormUri string `json:"google_form_uri"`
+	// The ID of the Google form for the session. E.g., "1FAIpQLSd..."
+	GoogleFormId string `json:"google_form_id"`
 	// The time in UTC when the session is created.
 	CreatedAt time.Time `json:"created_at"`
 	// The time in UTC when the session starts.

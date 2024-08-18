@@ -25,6 +25,7 @@ func fromSession(session *session.Session) *Session {
 		Description:   session.Description,
 		CreatedBy:     session.CreatedBy,
 		GoogleFormUri: session.GoogleFormUri,
+		GoogleFormId:  session.GoogleFormId,
 		CreatedAt:     session.CreatedAt,
 		StartsAt:      session.StartsAt,
 		Score:         session.Score,
