@@ -198,7 +198,14 @@ func handleAddSession(server *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		id, err := server.AddSession(req.Name, req.Description, req.StartsAt, req.Score)
+		userId := c.GetString("userId")
+		if userId == "" {
+			log.Printf("Error getting user ID from context, it is supposed to be set by the middleware")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		id, err := server.AddSession(req.Name, req.Description, userId, req.StartsAt, req.Score)
 		if err != nil {
 			log.Printf("Error adding session: %+v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})

@@ -41,8 +41,8 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 	}, nil
 }
 
-func (s *Server) AddSession(name string, description string, startsAt time.Time, score int) (string, error) {
-	id, err := s.sessionRepo.Add(name, description, 0, 0, startsAt, score)
+func (s *Server) AddSession(name string, description string, createdBy string, startsAt time.Time, score int) (string, error) {
+	id, err := s.sessionRepo.Add(name, description, createdBy, startsAt, score)
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to add session: %w", err))
 	}

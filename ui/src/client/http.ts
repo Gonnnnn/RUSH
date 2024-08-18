@@ -34,10 +34,8 @@ const SessionSchema = z
     id: z.string(),
     name: z.string(),
     description: z.string(),
-    hosted_by: z.string(),
     created_by: z.string(),
     google_form_uri: z.string(),
-    joinning_users: z.array(z.string()),
     created_at: z.string().transform((str) => new Date(str)),
     starts_at: z.string().transform((str) => new Date(str)),
     score: z.number(),
@@ -45,10 +43,8 @@ const SessionSchema = z
   })
   .transform((data) => ({
     ...data,
-    hostedBy: data.hosted_by,
     createdBy: data.created_by,
     googleFormUri: data.google_form_uri,
-    joinningUsers: data.joinning_users,
     createdAt: data.created_at,
     startsAt: data.starts_at,
     isClosed: data.is_closed,

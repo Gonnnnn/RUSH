@@ -15,11 +15,9 @@ type mongodbSession struct {
 	Id            primitive.ObjectID `bson:"_id,omitempty"`
 	Name          string             `bson:"name"`
 	Description   string             `bson:"description"`
-	HostedBy      int                `bson:"hosted_by"`
 	CreatedBy     int                `bson:"created_by"`
 	GoogleFormId  string             `bson:"google_form_id"`
 	GoogleFormUri string             `bson:"google_form_uri"`
-	JoinningUsers []string           `bson:"joinning_users"`
 	CreatedAt     time.Time          `bson:"created_at"`
 	StartsAt      time.Time          `bson:"starts_at"`
 	Score         int                `bson:"score"`
@@ -33,10 +31,8 @@ type mongodbRepo struct {
 type UpdateForm struct {
 	Title         *string
 	Description   *string
-	HostedBy      *int
 	GoogleFormId  *string
 	GoogleFormUri *string
-	JoinningUsers *string
 	// It should be updated with the form's description.
 	StartsAt *time.Time
 	Score    *int
@@ -137,15 +133,13 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	}, nil
 }
 
-func (r *mongodbRepo) Add(name string, description string, hostedBy int, createdBy int, startsAt time.Time, score int) (string, error) {
+func (r *mongodbRepo) Add(name string, description string, createdBy int, startsAt time.Time, score int) (string, error) {
 	session := mongodbSession{
 		Name:          name,
 		Description:   description,
-		HostedBy:      hostedBy,
 		CreatedBy:     createdBy,
 		GoogleFormId:  "",
 		GoogleFormUri: "",
-		JoinningUsers: []string{},
 		CreatedAt:     time.Now(),
 		StartsAt:      startsAt,
 		Score:         score,
@@ -178,17 +172,11 @@ func (r *mongodbRepo) Update(id string, updateForm *UpdateForm) (*Session, error
 	if updateForm.Description != nil {
 		update["description"] = *updateForm.Description
 	}
-	if updateForm.HostedBy != nil {
-		update["hosted_by"] = *updateForm.HostedBy
-	}
 	if updateForm.GoogleFormId != nil {
 		update["google_form_id"] = *updateForm.GoogleFormId
 	}
 	if updateForm.GoogleFormUri != nil {
 		update["google_form_uri"] = *updateForm.GoogleFormUri
-	}
-	if updateForm.JoinningUsers != nil {
-		update["joinning_users"] = *updateForm.JoinningUsers
 	}
 	if updateForm.StartsAt != nil {
 		update["starts_at"] = *updateForm.StartsAt
@@ -216,11 +204,9 @@ func fromMongodbSession(session *mongodbSession) *Session {
 		Id:            session.Id.Hex(),
 		Name:          session.Name,
 		Description:   session.Description,
-		HostedBy:      session.HostedBy,
 		CreatedBy:     session.CreatedBy,
 		GoogleFormId:  session.GoogleFormId,
 		GoogleFormUri: session.GoogleFormUri,
-		JoinningUsers: session.JoinningUsers,
 		CreatedAt:     session.CreatedAt,
 		StartsAt:      session.StartsAt,
 		Score:         session.Score,
