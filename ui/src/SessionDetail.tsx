@@ -200,6 +200,15 @@ const AttendanceQrPanel = ({
                 Google form 열기 (제출용)
               </Button>
             </Grid>
+            <Grid item xs={12} sm={4}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => window.open(`https://docs.google.com/forms/d/${session.googleFormId}/edit`, '_blank')}
+              >
+                Google form 열기 (편집용)
+              </Button>
+            </Grid>
             {!session.isClosed && (
               <Grid item xs={12} sm={4}>
                 <Button variant="outlined" fullWidth onClick={onCloseSession} disabled={isClosingSession}>
