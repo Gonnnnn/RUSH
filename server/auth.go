@@ -19,7 +19,7 @@ func (s *Server) SignIn(token string) (string, error) {
 
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
-		return "", newNotFoundError(fmt.Errorf("failed to get user by email: %w", err))
+		return "", newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
 	}
 
 	rushToken, err := s.authHandler.SignIn(

@@ -27,6 +27,7 @@ func handleSignIn(server *server.Server) gin.HandlerFunc {
 		if err != nil {
 			code := getHttpStatus(err)
 			if code == http.StatusBadRequest {
+				log.Printf("Not supposed to happen but sign in failed with invalid token: %+v", err)
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
 				return
 			}
@@ -107,10 +108,9 @@ func handleGetUser(server *server.Server) gin.HandlerFunc {
 
 type addUserRequest struct {
 	Name       string  `json:"name"`
-	University string  `json:"university"`
-	Phone      string  `json:"phone"`
 	Generation float64 `json:"generation"`
 	IsActive   bool    `json:"is_active"`
+	Email      string  `json:"email"`
 }
 
 func handleAddUser(server *server.Server) gin.HandlerFunc {
@@ -123,10 +123,9 @@ func handleAddUser(server *server.Server) gin.HandlerFunc {
 
 		if err := server.AddUser(
 			req.Name,
-			req.University,
-			req.Phone,
 			req.Generation,
 			req.IsActive,
+			req.Email,
 		); err != nil {
 			log.Printf("Error adding user: %+v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})

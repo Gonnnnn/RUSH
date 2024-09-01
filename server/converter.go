@@ -10,10 +10,9 @@ func fromUser(user *user.User) *User {
 	return &User{
 		Id:           user.Id,
 		Name:         user.Name,
-		University:   user.University,
-		Phone:        user.Phone,
 		Generation:   user.Generation,
 		IsActive:     user.IsActive,
+		Email:        user.Email,
 		ExternalName: user.ExternalName,
 	}
 }

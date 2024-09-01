@@ -12,18 +12,14 @@ type User struct {
 	// The ID of the user. E.g., "abc123"
 	Id string `json:"id"`
 	// The name of the user. E.g., "김건"
-	// If the user name is duplicated, it might have a suffix. E.g., "김건B"
 	Name string `json:"name"`
-	// The university of the user. E.g., "Yonsei"
-	University string `json:"university"`
-	// The phone number of the user. E.g., "010-1234-5678"
-	// The format is not strictly validated.
-	Phone string `json:"phone"`
 	// The generation of the user. E.g., 9.5
 	// It's either has 0 or 5 for the decimal part.
 	Generation float64 `json:"generation"`
 	// The activity status of the user. E.g., true
 	IsActive bool `json:"is_active"`
+	// The email address of the user. E.g., "kim.geon@gmail.com"
+	Email string `json:"email"`
 	// The external name of the user. E.g., "김건3"
 	// It's used as an external ID for the users so that it's easier for them to identify themselves such as in Google Forms.
 	ExternalName string `json:"external_name"`
@@ -104,7 +100,7 @@ type userRepo interface {
 }
 
 type userAdder interface {
-	Add(name string, university string, phone string, generation float64, isActive bool) error
+	Add(name string, generation float64, isActive bool, email string) error
 }
 
 type sessionRepo interface {

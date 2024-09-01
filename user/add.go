@@ -15,7 +15,7 @@ func NewAdder(userRepo userRepo) *adder {
 	}
 }
 
-func (a *adder) Add(name string, university string, phone string, generation float64, isActive bool) error {
+func (a *adder) Add(name string, generation float64, isActive bool, email string) error {
 	count, err := a.userRepo.CountByName(name)
 	if err != nil {
 		return fmt.Errorf("failed to count users: %w", err)
@@ -23,10 +23,9 @@ func (a *adder) Add(name string, university string, phone string, generation flo
 
 	err = a.userRepo.Add(User{
 		Name:         name,
-		University:   university,
-		Phone:        phone,
 		Generation:   generation,
 		IsActive:     isActive,
+		Email:        email,
 		ExternalName: fmt.Sprintf("name%d", count+1),
 	})
 	if err != nil {

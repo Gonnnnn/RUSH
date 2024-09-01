@@ -15,19 +15,17 @@ const UserSchema = z
   .object({
     id: z.string(),
     name: z.string(),
-    university: z.string(),
-    phone: z.string(),
     generation: z.number(),
     is_active: z.boolean(),
+    email: z.string(),
     external_name: z.string(),
   })
   .transform((data) => ({
     id: data.id,
     name: data.name,
-    university: data.university,
-    phone: data.phone,
     generation: data.generation,
     isActive: data.is_active,
+    email: data.email,
     externalName: data.external_name,
   }));
 
@@ -128,19 +126,12 @@ export const getUser = async (id: string): Promise<User> => {
   return UserResponseSchema.parse(response.data);
 };
 
-export const createUser = async (
-  name: string,
-  university: string,
-  phone: string,
-  generation: string,
-  isActive: boolean,
-): Promise<User> => {
+export const createUser = async (name: string, generation: string, isActive: boolean, email: string): Promise<User> => {
   const response = await client.post('/users', {
     name,
-    university,
-    phone,
     generation,
     is_active: isActive,
+    email,
   });
   return UserResponseSchema.parse(response.data);
 };

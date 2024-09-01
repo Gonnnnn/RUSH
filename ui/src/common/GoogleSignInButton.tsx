@@ -1,4 +1,5 @@
 import { Button, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import { useAuth } from '../AuthContext';
 import { useSnackbar } from '../SnackbarContext';
@@ -8,16 +9,22 @@ import { auth, provider } from '../firebase';
 const GoogleSignInButton = ({ text = '', callBack }: { text?: string; callBack?: () => void }) => {
   const { login } = useAuth();
   const { showInfo, showError } = useSnackbar();
-  // get the previous URL and redirect to it after login.
 
   const handleGoogleSignIn = async () => {
     try {
       const credential = await signInWithPopup(auth, provider);
       const idToken = await credential.user.getIdToken();
       await login(idToken);
-      showInfo('Successfully signed in with Google.');
       callBack?.();
+      showInfo('Successfully signed in with Google.');
     } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 404) {
+          showError('You are not registered in the system. Please contact the administrator.');
+          return;
+        }
+      }
+
       // TODO(#23): Handle error after centralizing the error handler.
       // eslint-disable-next-line no-console
       console.error('Error signing in with Google:', error);
