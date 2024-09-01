@@ -128,19 +128,12 @@ export const getUser = async (id: string): Promise<User> => {
   return UserResponseSchema.parse(response.data);
 };
 
-export const createUser = async (
-  name: string,
-  university: string,
-  phone: string,
-  generation: string,
-  isActive: boolean,
-): Promise<User> => {
+export const createUser = async (name: string, generation: string, isActive: boolean, email: string): Promise<User> => {
   const response = await client.post('/users', {
     name,
-    university,
-    phone,
     generation,
     is_active: isActive,
+    email,
   });
   return UserResponseSchema.parse(response.data);
 };

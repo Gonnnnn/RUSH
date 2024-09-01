@@ -49,8 +49,8 @@ func (s *Server) GetUser(id string) (*User, error) {
 	return fromUser(user), nil
 }
 
-func (s *Server) AddUser(name string, university string, phone string, generation float64, isActive bool) error {
-	if err := s.userAdder.Add(name, university, phone, generation, isActive); err != nil {
+func (s *Server) AddUser(name string, generation float64, isActive bool, email string) error {
+	if err := s.userAdder.Add(name, generation, isActive, email); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to add user: %w", err))
 	}
 	return nil

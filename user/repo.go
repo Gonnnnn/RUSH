@@ -14,10 +14,9 @@ import (
 type mongodbUser struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty"`
 	Name         string             `bson:"name"`
-	University   string             `bson:"university"`
-	Phone        string             `bson:"phone"`
 	Generation   float64            `bson:"generation"`
 	IsActive     bool               `bson:"is_active"`
+	Email        string             `bson:"email"`
 	ExternalName string             `bson:"external_name"`
 }
 
@@ -48,15 +47,7 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 
 	var converted []User
 	for _, user := range users {
-		converted = append(converted, User{
-			Id:           user.Id.Hex(),
-			Name:         user.Name,
-			University:   user.University,
-			Phone:        user.Phone,
-			Generation:   user.Generation,
-			IsActive:     user.IsActive,
-			ExternalName: user.ExternalName,
-		})
+		converted = append(converted, convertToUser(user))
 	}
 
 	return converted, nil
@@ -73,15 +64,8 @@ func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
 
-	return &User{
-		Id:           user.Id.Hex(),
-		Name:         user.Name,
-		University:   user.University,
-		Phone:        user.Phone,
-		Generation:   user.Generation,
-		IsActive:     user.IsActive,
-		ExternalName: user.ExternalName,
-	}, nil
+	converted := convertToUser(user)
+	return &converted, nil
 }
 
 type ListResult struct {
@@ -122,15 +106,7 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 
 	converted := make([]User, len(users))
 	for index, user := range users {
-		converted[index] = User{
-			Id:           user.Id.Hex(),
-			Name:         user.Name,
-			University:   user.University,
-			Phone:        user.Phone,
-			Generation:   user.Generation,
-			IsActive:     user.IsActive,
-			ExternalName: user.ExternalName,
-		}
+		converted[index] = convertToUser(user)
 	}
 
 	return &ListResult{
@@ -156,15 +132,8 @@ func (r *mongodbRepo) Get(id string) (*User, error) {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
 
-	return &User{
-		Id:           user.Id.Hex(),
-		Name:         user.Name,
-		University:   user.University,
-		Phone:        user.Phone,
-		Generation:   user.Generation,
-		IsActive:     user.IsActive,
-		ExternalName: user.ExternalName,
-	}, nil
+	converted := convertToUser(user)
+	return &converted, nil
 }
 
 func (r *mongodbRepo) CountByName(name string) (int, error) {
@@ -192,15 +161,7 @@ func (r *mongodbRepo) GetAllByExternalNames(externalNames []string) ([]User, err
 
 	converted := make([]User, len(users))
 	for index, user := range users {
-		converted[index] = User{
-			Id:           user.Id.Hex(),
-			Name:         user.Name,
-			University:   user.University,
-			Phone:        user.Phone,
-			Generation:   user.Generation,
-			IsActive:     user.IsActive,
-			ExternalName: user.ExternalName,
-		}
+		converted[index] = convertToUser(user)
 	}
 
 	return converted, nil
@@ -211,10 +172,9 @@ func (r *mongodbRepo) Add(user User) error {
 
 	_, err := r.collection.InsertOne(ctx, mongodbUser{
 		Name:         user.Name,
-		University:   user.University,
-		Phone:        user.Phone,
 		Generation:   user.Generation,
 		IsActive:     user.IsActive,
+		Email:        user.Email,
 		ExternalName: user.ExternalName,
 	})
 	if err != nil {
@@ -222,4 +182,15 @@ func (r *mongodbRepo) Add(user User) error {
 	}
 
 	return nil
+}
+
+func convertToUser(user mongodbUser) User {
+	return User{
+		Id:           user.Id.Hex(),
+		Name:         user.Name,
+		Generation:   user.Generation,
+		IsActive:     user.IsActive,
+		Email:        user.Email,
+		ExternalName: user.ExternalName,
+	}
 }
