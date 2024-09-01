@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+package rush.proto;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/Gonnnnn/RUSH/proto";
+
+
+service Rush {
+    // Sign in with an OpenID Connect token.
+    rpc SignIn(SignInRequest) returns (SignInResponse) {}
+    rpc Auth(google.protobuf.Empty) returns (AuthResponse) {}
+
+    // User management
+    // List all users by pagination. Admins only.
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
+    rpc GetUser(GetUserRequest) returns (User) {}
+    rpc AddUser(AddUserRequest) returns (User) {}
+
+    // Session management
+    rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse) {}
+    rpc GetSession(GetSessionRequest) returns (Session) {}
+    rpc AddSession(AddSessionRequest) returns (Session) {}
+    rpc CreateAttendanceForm(CreateAttendanceFormRequest) returns (CreateAttendanceFormResponse) {}
+    // Apply attendance for a session. Admins only. Once the attendance is applied,
+    // the session is closed and the data about session can not be changed.
+    rpc ApplyAttendance(ApplyAttendanceRequest) returns (google.protobuf.Empty) {}
+
+    // Attendance management
+    rpc GetAttendanceForUser(GetAttendanceForUserRequest) returns (GetAttendanceForUserResponse) {}
+    rpc GetHalfYearAttendance(google.protobuf.Empty) returns (GetHalfYearAttendanceResponse) {}
+}
+
+message SignInRequest {
+    // The OpenID Connect token that Rush can extract user email from.
+    // Currently, only Google Sign-In is supported.
+    string token = 1;
+}
+
+message SignInResponse {
+    // The custom Rush token that can be used to authenticate the user.
+    // It should be passed in the metadata of each gRPC request with the key "rush-token".
+    string rush_token = 1;
+}
+
+message AuthResponse {
+    // The user ID of the authenticated user. E.g., abc123
+    string user_id = 1;
+}
+
+message GetUserRequest {
+    // The ID of the user to get information about. E.g., abc123
+    // Users can only get information about themselves. Admins can get information about any user.
+    string user_id = 1;
+}
+
+message ListUsersRequest {
+    // The API will skip this many users before returning results. E.g., 3
+    int32 offset = 1;
+    // The API will return at most this many users. E.g., 10
+    int32 limit = 2;
+}
+
+message ListUsersResponse {
+    // The users that match the query.
+    repeated User users = 1;
+    // The indicator of whether it is the last page.
+    bool is_end = 2;
+}
+
+message AddUserRequest {
+  string name = 1;
+  double generation = 2;
+  string email = 3;
+  bool is_active = 4;
+}
+
+message User {
+    // The ID of the user. It is unique. E.g., abc123
+    string user_id = 1;
+    // The name of the user. It can be duplicated. E.g., 김건
+    string name = 2;
+    // The RUSH generation when the user joined. E.g., 3.5
+    double generation = 3;
+    // The email of the user. It is unique. E.g., kim.geon@gmail.com
+    string email = 4;
+    // The indicator of whether the user is active this season.
+    bool is_active = 5;
+    // The external name that is assigned to the user. It's to let users
+    // recognize their name easily when there are multiple users with the same name.
+    // It is unique. It adds a number suffix to the name. E.g., 김건2
+    string external_name = 6;
+}
+
+message ListSessionsRequest {
+    // The API will skip this many sessions before returning results. E.g., 3
+    int32 offset = 1;
+    // The API will return at most this many sessions. E.g., 10
+    int32 page_size = 2;
+}
+
+message ListSessionsResponse {
+    // The sessions that match the query.
+    repeated Session sessions = 1;
+    // The indicator of whether it is the last page.
+    bool is_end = 2;
+}
+
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message Session {
+    // The ID of the session. It is unique. E.g., abc123
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    // The timestamp when the session starts. E.g., 1234567890
+    google.protobuf.Timestamp starts_at = 4;
+    // The score of the session that users will get by joining it. E.g., 2
+    int32 score = 5;
+    // The google form URI that users can apply attendance with. E.g., https://forms.gle/abc123
+    string google_form_uri = 6;
+    // The google form ID. It is used for admins to access the form admin page.
+    string google_form_id = 7;
+    // The indicator of whether the session is closed. Once the attendance is applied,
+    // the session is closed and the data about session can not be changed.
+    bool is_closed = 8;
+    // The user ID who created the session. E.g., abc123
+    string created_by = 9;
+    // The timestamp when the session is created. E.g., 1234567890
+    google.protobuf.Timestamp created_at = 10;
+}
+
+message AddSessionRequest {
+    string name = 1;
+    string description = 2;
+    google.protobuf.Timestamp starts_at = 3;
+    int32 score = 4;
+}
+
+
+message CreateAttendanceFormRequest {
+    // The ID of the session to create an attendance form for. E.g., abc123
+    string session_id = 1;
+}
+
+message CreateAttendanceFormResponse {
+    // The URL of the form that users can apply attendance with. E.g., https://forms.gle/abc123
+    string form_url = 1;
+}
+
+message ApplyAttendanceRequest {
+    // The ID of the session to apply attendance for. E.g., abc123
+    string session_id = 1;
+}
+
+message GetAttendanceForUserRequest {
+  string user_id = 1;
+}
+
+message GetAttendanceForUserResponse {
+  repeated Attendance attendances = 1;
+}
+
+message Attendance {
+    // The ID of the attendance. E.g., "abc123"
+    string id = 1;
+    // The ID of the session that the attendance is related to. E.g., "abc123"
+    string session_id = 2;
+    // The name of the session that the attendance is related to. E.g., "456회 정기 세션"
+    string session_name = 3;
+    // The score of the session. E.g., 1
+    int32 session_score = 4;
+    // The time when the session started.
+    google.protobuf.Timestamp session_started_at = 5;
+    // The ID of the user who joined the session. E.g., "abc123"
+    string user_id = 6;
+    // The name of the user who joined the session. E.g., "김건"
+    string user_external_name = 7;
+    // The generation of the user who joined the session. E.g., 9.5
+    double user_generation = 8;
+    // The timestamp when the user joined the session. E.g., 1234567890
+    google.protobuf.Timestamp user_joined_at = 9;
+    // The timestamp when the attendance is created. E.g., 1234567890
+    google.protobuf.Timestamp created_at = 10;
+}
+
+message GetHalfYearAttendanceResponse {
+    // The sessions applied in the last half year.
+    repeated Session sessions = 1;
+    // The users who joined the sessions in the last half year.
+    repeated User users = 2;
+    // The attendances of the users in the last half year.
+    repeated Attendance attendances = 3;
+
+    message User {
+        string id = 1;
+        string name = 2;
+        double generation = 3;
+    }
+
+    message Session {
+        string id = 1;
+        string name = 2;
+        google.protobuf.Timestamp started_at = 3;
+    }
+}
