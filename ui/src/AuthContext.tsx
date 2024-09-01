@@ -70,16 +70,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = useCallback(
     async (token: string) => {
       if (token) {
-        try {
-          const rushToken = await signIn(token);
-          Cookies.set(cookieName, rushToken, getCookieOptions());
-          setAuthenticated(true);
-        } catch (error) {
-          // TODO(#65): Handle this error globally.
-          // eslint-disable-next-line no-console
-          console.error(error);
-          logout();
-        }
+        const rushToken = await signIn(token);
+        Cookies.set(cookieName, rushToken, getCookieOptions());
+        setAuthenticated(true);
       }
     },
     [setAuthenticated],

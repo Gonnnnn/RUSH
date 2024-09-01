@@ -15,19 +15,17 @@ const UserSchema = z
   .object({
     id: z.string(),
     name: z.string(),
-    university: z.string(),
-    phone: z.string(),
     generation: z.number(),
     is_active: z.boolean(),
+    email: z.string(),
     external_name: z.string(),
   })
   .transform((data) => ({
     id: data.id,
     name: data.name,
-    university: data.university,
-    phone: data.phone,
     generation: data.generation,
     isActive: data.is_active,
+    email: data.email,
     externalName: data.external_name,
   }));
 
