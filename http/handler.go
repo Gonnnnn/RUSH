@@ -27,6 +27,7 @@ func handleSignIn(server *server.Server) gin.HandlerFunc {
 		if err != nil {
 			code := getHttpStatus(err)
 			if code == http.StatusBadRequest {
+				log.Printf("Not supposed to happen but sign in failed with invalid token: %+v", err)
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
 				return
 			}
