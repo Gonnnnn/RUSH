@@ -20,16 +20,19 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 		return "", newBadRequestError(errors.New("session is already closed"))
 	}
 
+	// TODO(#134): Fetch active users only.
 	users, err := s.userRepo.GetAll()
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}
 
-	sort.Slice(users, func(i, j int) bool {
-		if users[i].Generation != users[j].Generation {
-			return users[i].Generation > users[j].Generation
+	activeUsers := array.Filter(users, func(user user.User) bool { return user.IsActive })
+
+	sort.Slice(activeUsers, func(i, j int) bool {
+		if activeUsers[i].Generation != activeUsers[j].Generation {
+			return activeUsers[i].Generation > activeUsers[j].Generation
 		}
-		return users[i].Name < users[j].Name
+		return activeUsers[i].Name < activeUsers[j].Name
 	})
 
 	if dbSession.GoogleFormUri != "" {
@@ -42,7 +45,7 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 	formDescription := fmt.Sprintf(`%s을(를) 위한 출석용 구글폼입니다.
 폼 마감 시간은 %s입니다. %s 이후 요청은 무시됩니다.`, dbSession.Name, expiresAt.Format("2006-01-02 15:04:05"), startsAt.Format("2006-01-02 15:04:05"))
 
-	attendanceForm, err := s.attendanceFormHandler.GenerateForm(formTitle, formDescription, users)
+	attendanceForm, err := s.attendanceFormHandler.GenerateForm(formTitle, formDescription, activeUsers)
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to generate form: %w", err))
 	}
