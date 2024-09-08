@@ -1,6 +1,7 @@
 package user
 
 import (
+	"rush/permission"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,7 @@ func TestAdd(t *testing.T) {
 		repo.EXPECT().CountByName("name").Return(0, nil)
 		repo.EXPECT().Add(User{
 			Name:         "name",
-			Role:         RoleMember,
+			Role:         permission.RoleMember,
 			Generation:   1,
 			IsActive:     true,
 			Email:        "email",
@@ -46,7 +47,7 @@ func TestAdd(t *testing.T) {
 		repo.EXPECT().CountByName("name").Return(0, nil)
 		repo.EXPECT().Add(User{
 			Name:         "name",
-			Role:         RoleMember,
+			Role:         permission.RoleMember,
 			Generation:   1,
 			IsActive:     true,
 			Email:        "email",
@@ -61,7 +62,7 @@ func TestAdd(t *testing.T) {
 		repo.EXPECT().CountByName("name").Return(1, nil)
 		repo.EXPECT().Add(User{
 			Name:         "name",
-			Role:         RoleMember,
+			Role:         permission.RoleMember,
 			Generation:   1,
 			IsActive:     true,
 			Email:        "email",
@@ -75,7 +76,7 @@ func TestAdd(t *testing.T) {
 		repo.EXPECT().CountByName("name").Return(2, nil)
 		repo.EXPECT().Add(User{
 			Name:         "name",
-			Role:         RoleMember,
+			Role:         permission.RoleMember,
 			Generation:   1,
 			IsActive:     true,
 			Email:        "email",
