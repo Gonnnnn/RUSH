@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"rush/permission"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -16,6 +17,11 @@ type rushAuth struct {
 	clock clock.Clock
 }
 
+type rushClaims struct {
+	jwt.RegisteredClaims
+	Role permission.Role `json:"role"`
+}
+
 func NewRushAuth(secretKey string, clock clock.Clock) *rushAuth {
 	return &rushAuth{secretKey: []byte(secretKey), clock: clock}
 }
@@ -26,10 +32,13 @@ func (r *rushAuth) SignIn(userIdentifier UserIdentifier) (string, error) {
 		return "", errors.New("invalid user identifier")
 	}
 
-	tokenSpec := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Subject:   rushUserId,
-		IssuedAt:  jwt.NewNumericDate(r.clock.Now()),
-		ExpiresAt: jwt.NewNumericDate(r.clock.Now().Add(7 * 24 * time.Hour)),
+	tokenSpec := jwt.NewWithClaims(jwt.SigningMethodHS256, rushClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   rushUserId,
+			IssuedAt:  jwt.NewNumericDate(r.clock.Now()),
+			ExpiresAt: jwt.NewNumericDate(r.clock.Now().Add(7 * 24 * time.Hour)),
+		},
+		Role: userIdentifier.RushRole(),
 	})
 
 	// Can not return an error because the secret key is byte slice and SHA256 is a basic golang hash function.
@@ -39,7 +48,7 @@ func (r *rushAuth) SignIn(userIdentifier UserIdentifier) (string, error) {
 }
 
 func (r *rushAuth) GetUserIdentifier(token string) (UserIdentifier, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.ParseWithClaims(token, &rushClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return r.secretKey, nil
 	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithTimeFunc(func() time.Time {
 		// Use clock to get the current time, not the standard "time" package.
@@ -53,10 +62,22 @@ func (r *rushAuth) GetUserIdentifier(token string) (UserIdentifier, error) {
 	}
 
 	claims := parsedToken.Claims
-	subject, err := claims.GetSubject()
+	rushClaims, ok := claims.(*rushClaims)
+	if !ok {
+		return UserIdentifier{}, errors.New("Failed to parse the token")
+	}
+	subject, err := rushClaims.GetSubject()
 	if subject == "" || err != nil {
 		return UserIdentifier{}, errors.New("Failed to get information from the token")
 	}
 
-	return NewUserIdentifier(map[Provider]string{ProviderRush: subject}, map[Provider]string{ProviderRush: subject}), nil
+	return NewUserIdentifier(
+		map[Provider]string{ProviderRush: subject},
+		nil,
+		map[Provider]permission.Role{ProviderRush: rushClaims.GetRole()},
+	), nil
+}
+
+func (r *rushClaims) GetRole() permission.Role {
+	return r.Role
 }
