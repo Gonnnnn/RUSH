@@ -24,8 +24,10 @@ func (a *adder) Add(name string, generation float64, isActive bool, email string
 	err = a.userRepo.Add(User{
 		Name:       name,
 		Generation: generation,
-		IsActive:   isActive,
-		Email:      email,
+		// Always add a user as a member first and THEN update the role if necessary.
+		Role:     RoleMember,
+		IsActive: isActive,
+		Email:    email,
 		ExternalName: func() string {
 			if count == 0 {
 				return name
