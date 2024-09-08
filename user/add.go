@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"rush/permission"
 )
 
 // It is separated from userRepo because it requires additional logic and it should be centralized in one place.
@@ -25,7 +26,7 @@ func (a *adder) Add(name string, generation float64, isActive bool, email string
 		Name:       name,
 		Generation: generation,
 		// Always add a user as a member first and THEN update the role if necessary.
-		Role:     RoleMember,
+		Role:     permission.RoleMember,
 		IsActive: isActive,
 		Email:    email,
 		ExternalName: func() string {

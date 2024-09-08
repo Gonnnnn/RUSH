@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"rush/permission"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -219,14 +220,14 @@ func convertToUser(user mongodbUser) (User, error) {
 	}, nil
 }
 
-func convertRole(role string) (Role, error) {
-	switch Role(role) {
-	case RoleSuperAdmin:
-		return RoleSuperAdmin, nil
-	case RoleAdmin:
-		return RoleAdmin, nil
-	case RoleMember:
-		return RoleMember, nil
+func convertRole(role string) (permission.Role, error) {
+	switch permission.Role(role) {
+	case permission.RoleSuperAdmin:
+		return permission.RoleSuperAdmin, nil
+	case permission.RoleAdmin:
+		return permission.RoleAdmin, nil
+	case permission.RoleMember:
+		return permission.RoleMember, nil
 	default:
 		return "", fmt.Errorf("invalid role: %s", role)
 	}
