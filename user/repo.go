@@ -14,6 +14,7 @@ import (
 type mongodbUser struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty"`
 	Name         string             `bson:"name"`
+	Role         string             `bson:"role"`
 	Generation   float64            `bson:"generation"`
 	IsActive     bool               `bson:"is_active"`
 	Email        string             `bson:"email"`
@@ -47,7 +48,11 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 
 	var converted []User
 	for _, user := range users {
-		converted = append(converted, convertToUser(user))
+		convertedUser, err := convertToUser(user)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert user: %w", err)
+		}
+		converted = append(converted, convertedUser)
 	}
 
 	return converted, nil
@@ -64,8 +69,11 @@ func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
 
-	converted := convertToUser(user)
-	return &converted, nil
+	convertedUser, err := convertToUser(user)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert user: %w", err)
+	}
+	return &convertedUser, nil
 }
 
 type ListResult struct {
@@ -106,7 +114,11 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 
 	converted := make([]User, len(users))
 	for index, user := range users {
-		converted[index] = convertToUser(user)
+		convertedUser, err := convertToUser(user)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert user: %w", err)
+		}
+		converted[index] = convertedUser
 	}
 
 	return &ListResult{
@@ -132,8 +144,11 @@ func (r *mongodbRepo) Get(id string) (*User, error) {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
 
-	converted := convertToUser(user)
-	return &converted, nil
+	convertedUser, err := convertToUser(user)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert user: %w", err)
+	}
+	return &convertedUser, nil
 }
 
 func (r *mongodbRepo) CountByName(name string) (int, error) {
@@ -161,7 +176,11 @@ func (r *mongodbRepo) GetAllByExternalNames(externalNames []string) ([]User, err
 
 	converted := make([]User, len(users))
 	for index, user := range users {
-		converted[index] = convertToUser(user)
+		convertedUser, err := convertToUser(user)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert user: %w", err)
+		}
+		converted[index] = convertedUser
 	}
 
 	return converted, nil
@@ -184,13 +203,31 @@ func (r *mongodbRepo) Add(user User) error {
 	return nil
 }
 
-func convertToUser(user mongodbUser) User {
+func convertToUser(user mongodbUser) (User, error) {
+	userRole, err := convertRole(user.Role)
+	if err != nil {
+		return User{}, err
+	}
 	return User{
 		Id:           user.Id.Hex(),
 		Name:         user.Name,
+		Role:         userRole,
 		Generation:   user.Generation,
 		IsActive:     user.IsActive,
 		Email:        user.Email,
 		ExternalName: user.ExternalName,
+	}, nil
+}
+
+func convertRole(role string) (Role, error) {
+	switch Role(role) {
+	case RoleSuperAdmin:
+		return RoleSuperAdmin, nil
+	case RoleAdmin:
+		return RoleAdmin, nil
+	case RoleMember:
+		return RoleMember, nil
+	default:
+		return "", fmt.Errorf("invalid role: %s", role)
 	}
 }
