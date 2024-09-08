@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"rush/permission"
 	"testing"
 	"time"
 
@@ -21,7 +22,13 @@ func TestSignInAndVerifyIdentifier(t *testing.T) {
 
 	t.Run("Fails if it can not find the rush user id", func(t *testing.T) {
 		rushAuth := NewRushAuth("secret", clock.NewMock())
-		token, err := rushAuth.SignIn(NewUserIdentifier(map[Provider]string{ProviderFirebase: "John Doe"}, map[Provider]string{ProviderFirebase: "example@domain.com"}))
+		token, err := rushAuth.SignIn(
+			NewUserIdentifier(
+				map[Provider]string{ProviderFirebase: "John Doe"},
+				nil, /* =emails */
+				map[Provider]permission.Role{ProviderFirebase: permission.RoleAdmin},
+			),
+		)
 
 		assert.EqualError(t, err, "invalid user identifier")
 		assert.Empty(t, token)
@@ -32,7 +39,13 @@ func TestSignInAndVerifyIdentifier(t *testing.T) {
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
 		rushAuth := NewRushAuth("secret", mockClock)
-		token, err := rushAuth.SignIn(NewUserIdentifier(map[Provider]string{ProviderRush: "John Doe"}, map[Provider]string{ProviderRush: "John Doe"}))
+		token, err := rushAuth.SignIn(
+			NewUserIdentifier(
+				map[Provider]string{ProviderRush: "John Doe"},
+				nil, /* =emails */
+				map[Provider]permission.Role{ProviderRush: permission.RoleAdmin},
+			),
+		)
 
 		assert.Nil(t, err)
 

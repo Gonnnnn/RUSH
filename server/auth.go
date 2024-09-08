@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"rush/auth"
+	"rush/permission"
 )
 
 func (s *Server) SignIn(token string) (string, error) {
@@ -26,6 +27,7 @@ func (s *Server) SignIn(token string) (string, error) {
 		auth.NewUserIdentifier(
 			map[auth.Provider]string{auth.ProviderRush: user.Id},
 			map[auth.Provider]string{auth.ProviderRush: email},
+			map[auth.Provider]permission.Role{auth.ProviderRush: user.Role},
 		),
 	)
 	if err != nil {

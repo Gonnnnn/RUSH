@@ -1,5 +1,7 @@
 package auth
 
+import "rush/permission"
+
 type inspector struct{}
 
 type Provider string
@@ -20,10 +22,23 @@ type UserIdentifier struct {
 	// The email address of the user provided by the provider.
 	// E.g., Firebase: john.doe@gmail.com
 	emails map[Provider]string
+	// The role of the user. It is used to determine the access level of the user.
+	// E.g., member, admin, etc.
+	role map[Provider]permission.Role
 }
 
-func NewUserIdentifier(providerIds map[Provider]string, emails map[Provider]string) UserIdentifier {
-	return UserIdentifier{providerIds: providerIds, emails: emails}
+// TODO(#138): Identifier could be implemented for each provider and have one common interface.
+func NewUserIdentifier(providerIds map[Provider]string, emails map[Provider]string, role map[Provider]permission.Role) UserIdentifier {
+	if providerIds == nil {
+		providerIds = make(map[Provider]string)
+	}
+	if emails == nil {
+		emails = make(map[Provider]string)
+	}
+	if role == nil {
+		role = make(map[Provider]permission.Role)
+	}
+	return UserIdentifier{providerIds: providerIds, emails: emails, role: role}
 }
 
 func (u *UserIdentifier) Email(provider Provider) (string, bool) {
@@ -34,4 +49,12 @@ func (u *UserIdentifier) Email(provider Provider) (string, bool) {
 func (u *UserIdentifier) ProviderId(provider Provider) (string, bool) {
 	id, ok := u.providerIds[provider]
 	return id, ok
+}
+
+func (u *UserIdentifier) RushRole() permission.Role {
+	role, ok := u.role[ProviderRush]
+	if !ok {
+		return permission.RoleNotSpecified
+	}
+	return role
 }
