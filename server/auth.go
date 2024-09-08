@@ -44,16 +44,16 @@ func (s *Server) IsTokenValid(token string) bool {
 	return true
 }
 
-func (s *Server) GetUserIdentifier(token string) (string, error) {
+func (s *Server) GetUserIdentifier(token string) (string, permission.Role, error) {
 	userIdentifier, err := s.authHandler.GetUserIdentifier(token)
 	if err != nil {
-		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
+		return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
 	}
 
 	userId, ok := userIdentifier.ProviderId(auth.ProviderRush)
 	if !ok {
-		return "", newInternalServerError(errors.New("failed to get user ID from user identifier although there should be"))
+		return "", permission.RoleNotSpecified, newInternalServerError(errors.New("failed to get user ID from user identifier although there should be"))
 	}
 
-	return userId, nil
+	return userId, userIdentifier.RushRole(), nil
 }

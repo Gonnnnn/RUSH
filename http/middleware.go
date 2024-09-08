@@ -2,16 +2,19 @@ package http
 
 import (
 	"net/http"
+	"rush/permission"
 
 	"github.com/gin-gonic/gin"
 )
 
 type userIdFetcher interface {
-	GetUserIdentifier(token string) (string, error)
+	GetUserIdentifier(token string) (string, permission.Role, error)
 }
 
 // The name of the cookie to store the rush authentication token.
-var authCookieName = "rush-auth"
+const authCookieName = "rush-auth"
+const userIdKey = "userId"
+const userRoleKey = "userRole"
 
 func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -30,14 +33,15 @@ func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
 			return
 		}
 
-		userId, err := userIdFetcher.GetUserIdentifier(token)
+		userId, role, err := userIdFetcher.GetUserIdentifier(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 
-		c.Set("userId", userId)
+		c.Set(userIdKey, userId)
+		c.Set(userRoleKey, role)
 		c.Next()
 	}
 }
