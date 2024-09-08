@@ -1,6 +1,7 @@
 package http
 
 import (
+	"editor/golang/array"
 	"net/http"
 	"rush/permission"
 
@@ -43,5 +44,31 @@ func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
 		c.Set(userIdKey, userId)
 		c.Set(userRoleKey, role)
 		c.Next()
+	}
+}
+
+func RequireRole(requiredRoles ...permission.Role) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userRole, exists := c.Get(userRoleKey)
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User role should be found but it has not"})
+			c.Abort()
+			return
+		}
+
+		role, ok := userRole.(permission.Role)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user role"})
+			c.Abort()
+			return
+		}
+
+		if array.Contains(requiredRoles, role) {
+			c.Next()
+			return
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
+		c.Abort()
 	}
 }

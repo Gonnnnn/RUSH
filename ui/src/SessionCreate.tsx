@@ -29,10 +29,22 @@ const SessionCreate = () => {
       const id = await createSession(name, description, new Date(startsAt.toISOString()), score);
       navigate(`/sessions/${id}`);
     } catch (error: unknown) {
-      if (error instanceof AxiosError && error.response?.status === 401) {
-        showWarning('Session creation is restricted to authenticated users');
-      } else {
-        showError('Failed to create a form. Contact the administrator.');
+      if (!(error instanceof AxiosError)) {
+        showError('An unexpected error occurred. Please contact the administrator.');
+        return;
+      }
+
+      const status = error.response?.status;
+      switch (status) {
+        case 401:
+          showWarning('Session creation is restricted to admin users');
+          break;
+        case 403:
+          showWarning('Session creation is restricted to admin users');
+          break;
+        default:
+          showError('An unexpected error occurred. Please contact the administrator.');
+          break;
       }
     }
   };

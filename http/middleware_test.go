@@ -89,3 +89,59 @@ func TestUseAuthMiddleware(t *testing.T) {
 		assert.Equal(t, permission.RoleAdmin, userRole)
 	})
 }
+
+func TestRequireRole(t *testing.T) {
+	t.Run("Should return a gin.HandlerFunc", func(t *testing.T) {
+		middleware := RequireRole(permission.RoleAdmin)
+
+		assert.NotNil(t, middleware)
+		assert.IsType(t, gin.HandlerFunc(nil), middleware)
+	})
+
+	t.Run("Should return 500 when user role is not found", func(t *testing.T) {
+		resRecorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(resRecorder)
+		ctx.Request, _ = http.NewRequest("GET", "/", nil)
+
+		middleware := RequireRole(permission.RoleAdmin)
+		middleware(ctx)
+
+		assert.Equal(t, http.StatusInternalServerError, ctx.Writer.Status())
+	})
+
+	t.Run("Should return 500 when user role is invalid", func(t *testing.T) {
+		resRecorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(resRecorder)
+		ctx.Request, _ = http.NewRequest("GET", "/", nil)
+		ctx.Set(userRoleKey, "invalid")
+
+		middleware := RequireRole(permission.RoleAdmin)
+		middleware(ctx)
+
+		assert.Equal(t, http.StatusInternalServerError, ctx.Writer.Status())
+	})
+
+	t.Run("Should return 403 when user role is not sufficient", func(t *testing.T) {
+		resRecorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(resRecorder)
+		ctx.Request, _ = http.NewRequest("GET", "/", nil)
+		ctx.Set(userRoleKey, permission.RoleMember)
+
+		middleware := RequireRole(permission.RoleAdmin, permission.RoleSuperAdmin)
+		middleware(ctx)
+
+		assert.Equal(t, http.StatusForbidden, ctx.Writer.Status())
+	})
+
+	t.Run("Should call next when user role is sufficient", func(t *testing.T) {
+		resRecorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(resRecorder)
+		ctx.Request, _ = http.NewRequest("GET", "/", nil)
+		ctx.Set(userRoleKey, permission.RoleAdmin)
+
+		middleware := RequireRole(permission.RoleAdmin, permission.RoleSuperAdmin)
+		middleware(ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Writer.Status())
+	})
+}

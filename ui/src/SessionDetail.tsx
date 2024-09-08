@@ -72,11 +72,11 @@ const SessionDetail = () => {
       const updatedSession = await getSession(id);
       setSession(updatedSession);
     } catch (error) {
-      handleError(
+      handleError({
         error,
-        'Form creation is restricted to authenticated users',
-        'Failed to create a form. Contact the administrator.',
-      );
+        messageAuth: 'Form creation is restricted to authenticated users',
+        messageInternal: 'Failed to create a form. Contact the dev.',
+      });
     } finally {
       setIsCreatingForm(false);
     }
@@ -89,21 +89,41 @@ const SessionDetail = () => {
       const updatedSession = await getSession(id);
       setSession(updatedSession);
     } catch (error) {
-      handleError(
+      handleError({
         error,
-        'Form closing is restricted to authenticated users',
-        'Failed to close the form. Contact the administrator.',
-      );
+        messageAuth: 'Form closing is restricted to admin users',
+        messageInternal: 'Failed to close the session. Contact the dev.',
+      });
     } finally {
       setIsClosingSession(false);
     }
   };
 
-  const handleError = (error: unknown, warningMessage: string, errorMessage: string) => {
-    if (error instanceof AxiosError && error.response?.status === 401) {
-      showWarning(warningMessage);
-    } else {
-      showError(errorMessage);
+  const handleError = ({
+    error,
+    messageAuth,
+    messageInternal,
+  }: {
+    error: unknown;
+    messageAuth: string;
+    messageInternal: string;
+  }) => {
+    if (!(error instanceof AxiosError)) {
+      showError(messageInternal);
+      return;
+    }
+
+    const status = error.response?.status;
+    switch (status) {
+      case 401:
+        showWarning(messageAuth);
+        break;
+      case 403:
+        showWarning(messageAuth);
+        break;
+      default:
+        showError(messageInternal);
+        break;
     }
   };
 

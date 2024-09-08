@@ -18,3 +18,12 @@ func Filter[T any](array []T, predicate func(T) bool) []T {
 	// Adjust the capacity to the length of the result.
 	return result[:len(result):len(result)]
 }
+
+func Contains[T comparable](array []T, elem T) bool {
+	for _, e := range array {
+		if e == elem {
+			return true
+		}
+	}
+	return false
+}
