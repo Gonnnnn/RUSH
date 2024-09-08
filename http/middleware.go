@@ -1,8 +1,8 @@
 package http
 
 import (
-	"editor/golang/array"
 	"net/http"
+	"rush/golang/array"
 	"rush/permission"
 
 	"github.com/gin-gonic/gin"
