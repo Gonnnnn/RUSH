@@ -23,11 +23,12 @@ const formatDateToMonthDate = (date: Date) => {
   const day = date.getDate();
   const month = months[date.getMonth()];
 
-  const getOrdinalSuffix = (datyToConvert: number) => {
+  const getOrdinalSuffix = (dayToConvert: number) => {
     const suffix = ['th', 'st', 'nd', 'rd'];
-    const value = datyToConvert % 100;
-    if (value > 10 && value < 20) return datyToConvert + suffix[0];
-    return datyToConvert + suffix[value % 10];
+    if (dayToConvert > 10 && dayToConvert < 20) return dayToConvert + suffix[0];
+    const suffixIndex = dayToConvert % 10;
+    if (suffixIndex > 3) return dayToConvert + suffix[0];
+    return dayToConvert + suffix[suffixIndex];
   };
 
   return `${month} ${getOrdinalSuffix(day)}`;
