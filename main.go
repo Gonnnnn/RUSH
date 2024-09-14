@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 
 	firebase "firebase.google.com/go"
@@ -16,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ridge/must/v2"
+	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/oauth2/google"
@@ -25,8 +27,10 @@ import (
 
 	"rush/attendance"
 	"rush/auth"
+	"rush/golang/array"
 	"rush/golang/env"
 	rushHttp "rush/http"
+	"rush/job"
 	"rush/server"
 	"rush/session"
 	rushUser "rush/user"
@@ -66,13 +70,14 @@ func main() {
 
 	clock := clock.New()
 	userRepo := rushUser.NewMongoDbRepo(userCollection)
+	sessionRepo := session.NewMongoDbRepo(sessionCollection)
 	server := server.New(
 		auth.NewFbAuth(firebaseAuthClient),
 		// https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.hmacsha256.-ctor?view=net-8.0
 		// The secret key is recommended to be 64 bytes long for HMACSHA256. RushAuth uses HMACSHA256 to sign the token.
 		auth.NewRushAuth(env.GetRequiredStringVariable("JWT_SECRET_KEY"), clock),
 		userRepo, rushUser.NewAdder(userRepo),
-		session.NewMongoDbRepo(sessionCollection),
+		sessionRepo,
 		attendance.NewFormHandler(formsService, driveService),
 		attendance.NewMongoDbRepo(attendanceCollection, clock),
 		must.OK1(time.LoadLocation("Asia/Seoul")),
@@ -87,6 +92,21 @@ func main() {
 	router.Use(cors.New(corsConfig))
 
 	rushHttp.SetUpRouter(router, server)
+
+	jobExecutor := job.NewExecutor(sessionRepo, server)
+	if env.GetRequiredStringVariable("ENVIRONMENT") != "local" {
+		cron.New().AddFunc("30 * * * *", func() {
+			result, err := jobExecutor.CloseSessions()
+			if err != nil {
+				// TODO(#150): Extract the logic and test logging logic.
+				failedSessionsIds := result.FailedSessionIds
+				errors := result.Errors
+				stringifiedErrors := array.Map(errors, func(err error) string { return err.Error() })
+				log.Printf("Failed to close sessions [%s]: %s", strings.Join(failedSessionsIds, ", "), strings.Join(stringifiedErrors, ", "))
+			}
+			log.Printf("Closed sessions: %s", strings.Join(result.SessionIdsSucceeded, ", "))
+		})
+	}
 
 	log.Println("Starting server")
 	router.Run(":8080")
