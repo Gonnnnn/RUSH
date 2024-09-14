@@ -66,6 +66,26 @@ func (r *mongodbRepo) Get(id string) (*Session, error) {
 	return fromMongodbSession(session), nil
 }
 
+func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
+	cursor, err := r.collection.Find(context.Background(), bson.M{"is_closed": false})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sessions: %w", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var mongoSessions []mongodbSession
+	if err = cursor.All(context.Background(), &mongoSessions); err != nil {
+		return nil, fmt.Errorf("failed to decode sessions: %w", err)
+	}
+
+	sessions := []Session{}
+	for _, mongoSession := range mongoSessions {
+		sessions = append(sessions, *fromMongodbSession(&mongoSession))
+	}
+
+	return sessions, nil
+}
+
 func (r *mongodbRepo) GetAll() ([]Session, error) {
 	cursor, err := r.collection.Find(context.Background(), bson.M{})
 	if err != nil {
