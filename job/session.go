@@ -2,6 +2,7 @@ package job
 
 import (
 	"fmt"
+	"rush/golang/array"
 	"rush/session"
 )
 
@@ -11,11 +12,13 @@ type executor struct {
 }
 
 type CloseSessionsResult struct {
+	// The IDs of the sessions that succeeded to close.
+	SessionIdsSucceeded []string
 	// The IDs of the sessions that failed to close.
-	failedSessionIds []string
+	FailedSessionIds []string
 	// The errors that occurred while closing the sessions.
 	// The order of the errors corresponds to the order of the sessions.
-	errors []error
+	Errors []error
 }
 
 func NewExecutor(sessionGetter sessionGetter, sessionCloser sessionCloser) *executor {
@@ -40,13 +43,22 @@ func (e *executor) CloseSessions() (CloseSessionsResult, error) {
 		}
 	}
 
+	sessionsSucceeded := array.Filter(openSessions, func(session session.Session) bool {
+		return !array.Contains(failedSessions, session.Id)
+	})
+	sessionIdsSucceeded := array.Map(sessionsSucceeded, func(session session.Session) string {
+		return session.Id
+	})
 	if len(failedSessions) == 0 {
-		return CloseSessionsResult{}, nil
+		return CloseSessionsResult{
+			SessionIdsSucceeded: sessionIdsSucceeded,
+		}, nil
 	}
 
 	return CloseSessionsResult{
-		failedSessionIds: failedSessions,
-		errors:           errors,
+		SessionIdsSucceeded: sessionIdsSucceeded,
+		FailedSessionIds:    failedSessions,
+		Errors:              errors,
 	}, fmt.Errorf("failed to close some sessions")
 }
 
@@ -56,5 +68,5 @@ type sessionCloser interface {
 }
 
 type sessionGetter interface {
-	GetOpenSessions() ([]*session.Session, error)
+	GetOpenSessions() ([]session.Session, error)
 }

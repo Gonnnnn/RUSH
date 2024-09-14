@@ -77,10 +77,10 @@ func (m *MocksessionGetter) EXPECT() *MocksessionGetterMockRecorder {
 }
 
 // GetOpenSessions mocks base method.
-func (m *MocksessionGetter) GetOpenSessions() ([]*session.Session, error) {
+func (m *MocksessionGetter) GetOpenSessions() ([]session.Session, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOpenSessions")
-	ret0, _ := ret[0].([]*session.Session)
+	ret0, _ := ret[0].([]session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
