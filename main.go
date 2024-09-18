@@ -38,11 +38,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	mongodbScheme := env.GetRequiredStringVariable("MONGODB_CONNECTION_STRING_SCHEME")
 	mongodbHost := env.GetRequiredStringVariable("MONGODB_HOST")
 	mongodbPort := env.GetRequiredStringVariable("MONGODB_PORT")
 	username := env.GetRequiredStringVariable("MONGODB_USERNAME")
 	password := env.GetRequiredStringVariable("MONGODB_PASSWORD")
-	mongoDbEndpoint := fmt.Sprintf("mongodb://%s:%s@%s:%s", username, password, mongodbHost, mongodbPort)
+	mongoDbEndpoint := fmt.Sprintf("%s://%s:%s@%s:%s", mongodbScheme, username, password, mongodbHost, mongodbPort)
 	clientOptions := options.Client().ApplyURI(mongoDbEndpoint)
 
 	log.Println("Connecting to MongoDB")
