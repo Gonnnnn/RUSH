@@ -88,10 +88,10 @@ func main() {
 
 	rushHttp.SetUpRouter(router, server)
 
-	jobExecutor := job.NewExecutor(sessionRepo, server)
+	jobExecutor := job.NewExecutor(sessionRepo, server, clock)
 	if env.GetRequiredStringVariable("ENVIRONMENT") != "local" {
 		cron.New().AddFunc("30 * * * *", func() {
-			result, err := jobExecutor.CloseSessions()
+			result, err := jobExecutor.CloseExpiredSessions()
 			if err != nil {
 				// TODO(#150): Extract the logic and test logging logic.
 				failedSessionsIds := result.FailedSessionIds
@@ -99,7 +99,7 @@ func main() {
 				stringifiedErrors := array.Map(errors, func(err error) string { return err.Error() })
 				log.Printf("Failed to close sessions [%s]: %s", strings.Join(failedSessionsIds, ", "), strings.Join(stringifiedErrors, ", "))
 			}
-			log.Printf("Closed sessions: %s", strings.Join(result.SessionIdsSucceeded, ", "))
+			log.Printf("Closed sessions: %s", strings.Join(result.SucceededSessionIds, ", "))
 		})
 	}
 
