@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -42,11 +41,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	mongodbHost := env.GetRequiredStringVariable("MONGODB_HOST")
-	mongodbPort := env.GetRequiredStringVariable("MONGODB_PORT")
-	username := env.GetRequiredStringVariable("MONGODB_USERNAME")
-	password := env.GetRequiredStringVariable("MONGODB_PASSWORD")
-	mongoDbEndpoint := fmt.Sprintf("mongodb://%s:%s@%s:%s", username, password, mongodbHost, mongodbPort)
+	mongoDbEndpoint := env.GetRequiredStringVariable("MONGODB_URI")
 	clientOptions := options.Client().ApplyURI(mongoDbEndpoint)
 
 	log.Println("Connecting to MongoDB")
