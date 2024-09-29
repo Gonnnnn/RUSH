@@ -177,6 +177,10 @@ export const createSession = async (
   return response.data.id;
 };
 
+export const deleteSession = async (id: string): Promise<void> => {
+  await client.delete(`/sessions/${id}`);
+};
+
 export const createSessionForm = async (sessionId: string): Promise<string> => {
   const response = await client.post(`/sessions/${sessionId}/attendance-form`);
   return response.data.form_url;
