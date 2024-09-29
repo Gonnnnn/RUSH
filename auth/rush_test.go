@@ -19,18 +19,11 @@ func TestNewRushAuth(t *testing.T) {
 }
 
 func TestSignInAndVerifyIdentifier(t *testing.T) {
-
-	t.Run("Fails if it can not find the rush user id", func(t *testing.T) {
+	t.Run("Fails if user ID is empty", func(t *testing.T) {
 		rushAuth := NewRushAuth("secret", clock.NewMock())
-		token, err := rushAuth.SignIn(
-			NewUserIdentifier(
-				map[Provider]string{ProviderFirebase: "John Doe"},
-				nil, /* =emails */
-				map[Provider]permission.Role{ProviderFirebase: permission.RoleAdmin},
-			),
-		)
+		token, err := rushAuth.SignIn("", permission.RoleAdmin)
 
-		assert.EqualError(t, err, "invalid user identifier")
+		assert.EqualError(t, err, "user ID is empty")
 		assert.Empty(t, token)
 	})
 
@@ -39,21 +32,59 @@ func TestSignInAndVerifyIdentifier(t *testing.T) {
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
 		rushAuth := NewRushAuth("secret", mockClock)
-		token, err := rushAuth.SignIn(
-			NewUserIdentifier(
-				map[Provider]string{ProviderRush: "John Doe"},
-				nil, /* =emails */
-				map[Provider]permission.Role{ProviderRush: permission.RoleAdmin},
-			),
-		)
+		token, err := rushAuth.SignIn("John Doe", permission.RoleAdmin)
 
 		assert.Nil(t, err)
 
-		userIdentifier, err := rushAuth.GetUserIdentifier(token)
+		session, err := rushAuth.GetSession(token)
+		assert.Nil(t, err)
+		assert.Equal(t, "John Doe", session.Id)
+		assert.Equal(t, permission.RoleAdmin, session.Role)
+	})
+}
+
+func TestGetSession(t *testing.T) {
+	t.Run("Returns TokenExpiredError if token is expired", func(t *testing.T) {
+		mockClock := clock.NewMock()
+		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
+
+		rushAuth := NewRushAuth("secret", mockClock)
+		token, err := rushAuth.SignIn("John Doe", permission.RoleAdmin)
 		assert.Nil(t, err)
 
-		rushUserId, ok := userIdentifier.ProviderId(ProviderRush)
+		mockClock.Add(14 * 24 * time.Hour)
+
+		session, err := rushAuth.GetSession(token)
+		tokenExpiredErr, ok := err.(*TokenExpiredError)
 		assert.True(t, ok)
-		assert.Equal(t, "John Doe", rushUserId)
+		assert.NotNil(t, tokenExpiredErr.Err)
+		assert.Equal(t, Session{}, session)
+	})
+
+	t.Run("Returns InvalidTokenError if token is invalid", func(t *testing.T) {
+		mockClock := clock.NewMock()
+		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
+
+		rushAuth := NewRushAuth("secret", mockClock)
+		session, err := rushAuth.GetSession("invalid token")
+
+		invalidTokenErr, ok := err.(*InvalidTokenError)
+		assert.True(t, ok)
+		assert.NotNil(t, invalidTokenErr.Err)
+		assert.Equal(t, Session{}, session)
+	})
+
+	t.Run("Returns the session if the token is valid", func(t *testing.T) {
+		mockClock := clock.NewMock()
+		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
+
+		rushAuth := NewRushAuth("secret", mockClock)
+		token, err := rushAuth.SignIn("John Doe", permission.RoleAdmin)
+		assert.Nil(t, err)
+
+		session, err := rushAuth.GetSession(token)
+		assert.Nil(t, err)
+		assert.Equal(t, "John Doe", session.Id)
+		assert.Equal(t, permission.RoleAdmin, session.Role)
 	})
 }

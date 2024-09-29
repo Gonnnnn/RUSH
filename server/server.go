@@ -3,6 +3,7 @@ package server
 import (
 	"rush/attendance"
 	"rush/auth"
+	"rush/permission"
 	"rush/session"
 	"rush/user"
 	"time"
@@ -74,18 +75,16 @@ type Attendance struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type tokenInspector interface {
+type oauthClient interface {
 	// Handles the third party token that is used for signing in.
-	GetUserIdentifier(token string) (auth.UserIdentifier, error)
-	// Returns the provider of the token. authHandler uses it to extract the email address.
-	Provider() auth.Provider
+	GetEmail(token string) (string, error)
 }
 
 type authHandler interface {
-	// Handles the rush token that is used for API calls after signing in.
-	GetUserIdentifier(token string) (auth.UserIdentifier, error)
+	// Extracts session from the rush token.
+	GetSession(token string) (auth.Session, error)
 	// Returns the rush token that is used for API calls after signing in.
-	SignIn(userIdentifier auth.UserIdentifier) (string, error)
+	SignIn(userId string, role permission.Role) (string, error)
 }
 
 type userRepo interface {
@@ -128,8 +127,8 @@ type attendanceRepo interface {
 }
 
 type Server struct {
-	// Used to get the user identifier, such as an email, from the third party token.
-	tokenInspector tokenInspector
+	// Used to get the user email of the provider from the third party token.
+	oauthClient oauthClient
 	// Used to sign in and get the rush token for API calls.
 	authHandler authHandler
 	userRepo    userRepo
@@ -143,10 +142,10 @@ type Server struct {
 	formTimeLocation *time.Location
 }
 
-func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo,
+func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo,
 	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location) *Server {
 	return &Server{
-		tokenInspector:        tokenInspector,
+		oauthClient:           oauthClient,
 		authHandler:           authHandler,
 		userRepo:              userRepo,
 		userAdder:             userAdder,
