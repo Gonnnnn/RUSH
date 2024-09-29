@@ -72,6 +72,7 @@ func main() {
 		attendance.NewFormHandler(formsService, driveService),
 		attendance.NewMongoDbRepo(attendanceCollection, clock),
 		must.OK1(time.LoadLocation("Asia/Seoul")),
+		clock,
 	)
 
 	router := gin.Default()

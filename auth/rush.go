@@ -75,8 +75,9 @@ func (r *rushAuth) GetSession(token string) (Session, error) {
 	}
 
 	return Session{
-		Id:   subject,
-		Role: rushClaims.GetRole(),
+		Id:        subject,
+		Role:      rushClaims.GetRole(),
+		ExpiresAt: rushClaims.ExpiresAt.Time,
 	}, nil
 }
 
