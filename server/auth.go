@@ -8,14 +8,9 @@ import (
 )
 
 func (s *Server) SignIn(token string) (string, error) {
-	userIdentifier, err := s.tokenInspector.GetUserIdentifier(token)
+	email, err := s.oauthClient.GetEmail(token)
 	if err != nil {
 		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
-	}
-
-	email, ok := userIdentifier.Email(s.tokenInspector.Provider())
-	if !ok {
-		return "", newInternalServerError(errors.New("failed to get email from user identifier although there should be"))
 	}
 
 	user, err := s.userRepo.GetByEmail(email)
@@ -23,13 +18,7 @@ func (s *Server) SignIn(token string) (string, error) {
 		return "", newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
 	}
 
-	rushToken, err := s.authHandler.SignIn(
-		auth.NewUserIdentifier(
-			map[auth.Provider]string{auth.ProviderRush: user.Id},
-			map[auth.Provider]string{auth.ProviderRush: email},
-			map[auth.Provider]permission.Role{auth.ProviderRush: user.Role},
-		),
-	)
+	rushToken, err := s.authHandler.SignIn(user.Id, user.Role)
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to sign in: %w", err))
 	}
@@ -38,22 +27,24 @@ func (s *Server) SignIn(token string) (string, error) {
 }
 
 func (s *Server) IsTokenValid(token string) bool {
-	if _, err := s.authHandler.GetUserIdentifier(token); err != nil {
+	if _, err := s.authHandler.GetSession(token); err != nil {
 		return false
 	}
 	return true
 }
 
 func (s *Server) GetUserIdentifier(token string) (string, permission.Role, error) {
-	userIdentifier, err := s.authHandler.GetUserIdentifier(token)
+	session, err := s.authHandler.GetSession(token)
 	if err != nil {
-		return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
+		if errors.Is(err, &auth.TokenExpiredError{}) {
+			// TODO(#105): Refresh the token based on the time left.
+			return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("token expired: %w", err))
+		}
+		if errors.Is(err, &auth.InvalidTokenError{}) {
+			return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("invalid token: %w", err))
+		}
+		return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("failed to get user session: %w", err))
 	}
 
-	userId, ok := userIdentifier.ProviderId(auth.ProviderRush)
-	if !ok {
-		return "", permission.RoleNotSpecified, newInternalServerError(errors.New("failed to get user ID from user identifier although there should be"))
-	}
-
-	return userId, userIdentifier.RushRole(), nil
+	return session.Id, session.Role, nil
 }
