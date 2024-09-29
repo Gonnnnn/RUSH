@@ -115,11 +115,11 @@ type userAdder interface {
 }
 
 type sessionRepo interface {
-	Get(id string) (*session.Session, error)
+	Get(id string) (session.Session, error)
 	GetAll() ([]session.Session, error)
 	List(offset int, pageSize int) (*session.ListResult, error)
 	Add(name string, description string, createdBy string, startsAt time.Time, score int) (string, error)
-	Update(id string, updateForm *session.UpdateForm) (*session.Session, error)
+	Update(id string, updateForm session.UpdateForm) (session.Session, error)
 }
 
 type attendanceFormHandler interface {

@@ -17,8 +17,8 @@ func fromUser(user *user.User) *User {
 	}
 }
 
-func fromSession(session *session.Session) *Session {
-	return &Session{
+func fromSession(session session.Session) Session {
+	return Session{
 		Id:            session.Id,
 		Name:          session.Name,
 		Description:   session.Description,
