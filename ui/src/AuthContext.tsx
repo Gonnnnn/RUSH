@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import Cookies, { CookieAttributes } from 'js-cookie';
 import { debounce } from 'lodash';
+import { removeAuthToken, setAuthToken } from './client/auth';
 import { checkAuth, signIn } from './client/http';
 
 interface AuthContextType {
@@ -11,13 +11,17 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
+  // The indicator of whether the user is authenticated. It is refreshed when the page is loaded, users open the tab again.
+  // It is also updated when the user logs in or out.
   authenticated: false,
+  // The indicator of whether the authentication is being checked. It is provided outside so that the app can show a loading indicator
+  // to initialize the authentication state before the page is loaded.
   isLoading: true,
+  // The function to log in the user. Components should use this to log in the user.
   login: async () => {},
+  // The function to log out the user. Components should use this to log out the user.
   logout: () => {},
 });
-
-const cookieName = 'rush-auth';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -25,7 +29,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const verifyAuth = useCallback(async () => {
     try {
-      // TODO(#105): Refresh the token if it's expired.
       const isAuthenticated = await checkAuth();
       setAuthenticated(isAuthenticated);
     } catch (error) {
@@ -70,8 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = useCallback(
     async (token: string) => {
       if (token) {
-        const rushToken = await signIn(token);
-        Cookies.set(cookieName, rushToken, getCookieOptions());
+        setAuthToken(await signIn(token));
         setAuthenticated(true);
       }
     },
@@ -79,30 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const logout = () => {
-    Cookies.remove(cookieName, getCookieOptions());
+    removeAuthToken();
     setAuthenticated(false);
   };
 
   const value = useMemo(() => ({ authenticated, isLoading, login, logout }), [authenticated, isLoading, login]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-const hostName = new URL(import.meta.env.VITE_SERVER_ENDPOINT).hostname;
-const env = import.meta.env.VITE_ENV;
-
-const getCookieOptions = () => {
-  const cookieOptions: CookieAttributes = {
-    expires: 30,
-    domain: hostName,
-    path: '/',
-  };
-  if (env === 'local') {
-    return cookieOptions;
-  }
-  cookieOptions.secure = true;
-  cookieOptions.sameSite = 'Strict';
-  return cookieOptions;
 };
 
 export const useAuth = () => useContext(AuthContext);
