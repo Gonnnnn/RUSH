@@ -9,10 +9,10 @@ import (
 	"time"
 )
 
-func (s *Server) GetSession(id string) (*Session, error) {
+func (s *Server) GetSession(id string) (Session, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
-		return nil, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+		return Session{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 	return fromSession(session), nil
 }
@@ -31,7 +31,7 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 
 	converted := []Session{}
 	for _, session := range listResult.Sessions {
-		converted = append(converted, *fromSession(&session))
+		converted = append(converted, fromSession(session))
 	}
 
 	return &ListSessionsResult{
@@ -108,7 +108,7 @@ func (s *Server) CloseSession(sessionId string) error {
 	}
 
 	isClosed := true
-	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{IsClosed: &isClosed, ReturnUpdatedSession: false})
+	_, err = s.sessionRepo.Update(sessionId, session.UpdateForm{IsClosed: &isClosed, ReturnUpdatedSession: false})
 
 	if err != nil {
 		return newInternalServerError(fmt.Errorf("failed to update session to be closed: %w", err))

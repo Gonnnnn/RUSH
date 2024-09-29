@@ -22,6 +22,7 @@ type mongodbSession struct {
 	StartsAt      time.Time          `bson:"starts_at"`
 	Score         int                `bson:"score"`
 	IsClosed      bool               `bson:"is_closed"`
+	IsDeleted     bool               `bson:"is_deleted"`
 }
 
 type mongodbRepo struct {
@@ -48,26 +49,26 @@ func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	}
 }
 
-func (r *mongodbRepo) Get(id string) (*Session, error) {
+func (r *mongodbRepo) Get(id string) (Session, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid id: %w", err)
+		return Session{}, fmt.Errorf("invalid id: %w", err)
 	}
 
 	session := &mongodbSession{}
-	err = r.collection.FindOne(context.Background(), bson.M{"_id": objectID}).Decode(session)
+	err = r.collection.FindOne(context.Background(), bson.M{"_id": objectID, "is_deleted": false}).Decode(session)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("session not found")
+			return Session{}, fmt.Errorf("session not found")
 		}
-		return nil, fmt.Errorf("failed to get session: %w", err)
+		return Session{}, fmt.Errorf("failed to get session: %w", err)
 	}
 
-	return fromMongodbSession(session), nil
+	return *fromMongodbSession(session), nil
 }
 
 func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
-	cursor, err := r.collection.Find(context.Background(), bson.M{"is_closed": false})
+	cursor, err := r.collection.Find(context.Background(), bson.M{"is_closed": false, "is_deleted": false})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sessions: %w", err)
 	}
@@ -87,7 +88,7 @@ func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
 }
 
 func (r *mongodbRepo) GetAll() ([]Session, error) {
-	cursor, err := r.collection.Find(context.Background(), bson.M{})
+	cursor, err := r.collection.Find(context.Background(), bson.M{"is_deleted": false})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sessions: %w", err)
 	}
@@ -114,13 +115,13 @@ type ListResult struct {
 func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	ctx := context.Background()
 
-	total, err := r.collection.CountDocuments(ctx, bson.M{})
+	total, err := r.collection.CountDocuments(ctx, bson.M{"is_deleted": false})
 	if err != nil {
 		return nil, fmt.Errorf("failed to count sessions: %w", err)
 	}
 
 	// Fetch pageSize + 1 to check if there are more pages.
-	cursor, err := r.collection.Find(ctx, bson.M{},
+	cursor, err := r.collection.Find(ctx, bson.M{"is_deleted": false},
 		options.Find().
 			SetSkip(int64(offset)).
 			SetLimit(int64(pageSize+1)).
@@ -164,6 +165,7 @@ func (r *mongodbRepo) Add(name string, description string, createdBy string, sta
 		StartsAt:      startsAt,
 		Score:         score,
 		IsClosed:      false,
+		IsDeleted:     false,
 	}
 
 	result, err := r.collection.InsertOne(context.Background(), session)
@@ -179,10 +181,10 @@ func (r *mongodbRepo) Add(name string, description string, createdBy string, sta
 	return id.Hex(), nil
 }
 
-func (r *mongodbRepo) Update(id string, updateForm *UpdateForm) (*Session, error) {
+func (r *mongodbRepo) Update(id string, updateForm UpdateForm) (Session, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid id: %w", err)
+		return Session{}, fmt.Errorf("invalid id: %w", err)
 	}
 
 	update := bson.M{}
@@ -209,14 +211,28 @@ func (r *mongodbRepo) Update(id string, updateForm *UpdateForm) (*Session, error
 	}
 
 	if _, err = r.collection.UpdateOne(context.Background(), bson.M{"_id": objectID}, bson.M{"$set": update}); err != nil {
-		return nil, fmt.Errorf("failed to update session: %w", err)
+		return Session{}, fmt.Errorf("failed to update session: %w", err)
 	}
 
 	if updateForm.ReturnUpdatedSession {
 		return r.Get(id)
 	}
 
-	return nil, nil
+	return Session{}, nil
+}
+
+func (r *mongodbRepo) Delete(id string) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("invalid id: %w", err)
+	}
+
+	_, err = r.collection.UpdateOne(context.Background(), bson.M{"_id": objectID}, bson.M{"$set": bson.M{"is_deleted": true}})
+	if err != nil {
+		return fmt.Errorf("failed to delete session: %w", err)
+	}
+
+	return nil
 }
 
 func fromMongodbSession(session *mongodbSession) *Session {
