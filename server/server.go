@@ -119,7 +119,13 @@ type sessionRepo interface {
 	GetAll() ([]session.Session, error)
 	List(offset int, pageSize int) (*session.ListResult, error)
 	Add(name string, description string, createdBy string, startsAt time.Time, score int) (string, error)
-	Update(id string, updateForm session.UpdateForm) (session.Session, error)
+}
+
+// The repo that includes logics to update or delete the open sessions.
+type openSessionRepo interface {
+	UpdateOpenSession(id string, updateForm session.OpenSessionUpdateForm) (session.Session, error)
+	DeleteOpenSession(id string) error
+	CloseOpenSession(id string) error
 }
 
 type attendanceFormHandler interface {
@@ -147,6 +153,8 @@ type Server struct {
 	// Used to add a user.
 	userAdder   userAdder
 	sessionRepo sessionRepo
+	// Used to handle open sessions.
+	openSessionRepo openSessionRepo
 	// Used to generate the form for attendance and get the submissions from the form.
 	attendanceFormHandler attendanceFormHandler
 	attendanceRepo        attendanceRepo
@@ -156,7 +164,7 @@ type Server struct {
 	clock clock.Clock
 }
 
-func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo,
+func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo, openSessionRepo openSessionRepo,
 	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location, clock clock.Clock) *Server {
 	return &Server{
 		oauthClient:           oauthClient,
@@ -164,6 +172,7 @@ func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, us
 		userRepo:              userRepo,
 		userAdder:             userAdder,
 		sessionRepo:           sessionRepo,
+		openSessionRepo:       openSessionRepo,
 		attendanceFormHandler: attendanceFormHandler,
 		attendanceRepo:        attendanceRepo,
 		formTimeLocation:      formTimeLocation,

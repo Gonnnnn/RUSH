@@ -215,6 +215,24 @@ func handleAddSession(server *server.Server) gin.HandlerFunc {
 	}
 }
 
+func handleDeleteSession(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if err := server.DeleteSession(id); err != nil {
+			if isNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+				return
+			}
+
+			log.Printf("Error deleting session: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Session deleted successfully"})
+	}
+}
+
 func handleCreateAttendanceForm(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionId := c.Param("id")

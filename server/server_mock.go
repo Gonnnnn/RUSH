@@ -285,11 +285,25 @@ func (mr *MocksessionRepoMockRecorder) Add(name, description, createdBy, startsA
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MocksessionRepo)(nil).Add), name, description, createdBy, startsAt, score)
 }
 
+// Delete mocks base method.
+func (m *MocksessionRepo) Delete(id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MocksessionRepoMockRecorder) Delete(id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MocksessionRepo)(nil).Delete), id)
+}
+
 // Get mocks base method.
-func (m *MocksessionRepo) Get(id string) (*session.Session, error) {
+func (m *MocksessionRepo) Get(id string) (session.Session, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", id)
-	ret0, _ := ret[0].(*session.Session)
+	ret0, _ := ret[0].(session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -331,10 +345,10 @@ func (mr *MocksessionRepoMockRecorder) List(offset, pageSize any) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MocksessionRepo) Update(id string, updateForm *session.UpdateForm) (*session.Session, error) {
+func (m *MocksessionRepo) Update(id string, updateForm session.UpdateForm) (session.Session, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", id, updateForm)
-	ret0, _ := ret[0].(*session.Session)
+	ret0, _ := ret[0].(session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
