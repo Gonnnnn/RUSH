@@ -38,6 +38,11 @@ func UseAuthMiddleware(userSessionFetcher userSessionFetcher) gin.HandlerFunc {
 
 		userSession, newToken, err := userSessionFetcher.GetUserSession(token)
 		if err != nil {
+			if getHttpStatus(err) == http.StatusInternalServerError {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				c.Abort()
+				return
+			}
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return

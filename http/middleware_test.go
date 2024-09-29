@@ -75,11 +75,27 @@ func TestUseAuthMiddleware(t *testing.T) {
 		middleware := UseAuthMiddleware(&mockServer{
 			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
 			newTokenToReturn: "",
-			errorToReturn:    assert.AnError,
+			errorToReturn:    &server.BadRequestError{},
 		})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
+	})
+
+	t.Run("Should return 500 when server returns internal server error", func(t *testing.T) {
+		resRecorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(resRecorder)
+		ctx.Request, _ = http.NewRequest("GET", "/", nil)
+		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: "token"})
+
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "",
+			errorToReturn:    &server.InternalServerError{},
+		})
+		middleware(ctx)
+
+		assert.Equal(t, http.StatusInternalServerError, ctx.Writer.Status())
 	})
 
 	t.Run("Should call next when token is valid", func(t *testing.T) {
