@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"rush/permission"
+	"rush/server"
 	"testing"
+	"time"
 
 	// assert
 	"github.com/gin-gonic/gin"
@@ -12,18 +14,22 @@ import (
 )
 
 type mockServer struct {
-	idToReturn    string
-	roleToReturn  permission.Role
-	errorToReturn error
+	sessionToReturn  server.UserSession
+	newTokenToReturn string
+	errorToReturn    error
 }
 
-func (s *mockServer) GetUserIdentifier(token string) (string, permission.Role, error) {
-	return s.idToReturn, s.roleToReturn, s.errorToReturn
+func (s *mockServer) GetUserSession(token string) (server.UserSession, string, error) {
+	return s.sessionToReturn, s.newTokenToReturn, s.errorToReturn
 }
 
 func TestUseAuthMiddleware(t *testing.T) {
 	t.Run("Should return a gin.HandlerFunc", func(t *testing.T) {
-		middleware := UseAuthMiddleware(&mockServer{"token", permission.RoleAdmin, nil})
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "new-token",
+			errorToReturn:    nil,
+		})
 
 		assert.NotNil(t, middleware)
 		assert.IsType(t, gin.HandlerFunc(nil), middleware)
@@ -34,7 +40,11 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(resRecorder)
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 
-		middleware := UseAuthMiddleware(&mockServer{"", permission.RoleAdmin, nil})
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "",
+			errorToReturn:    nil,
+		})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
@@ -46,7 +56,11 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: ""})
 
-		middleware := UseAuthMiddleware(&mockServer{"", permission.RoleAdmin, nil})
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "",
+			errorToReturn:    nil,
+		})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
@@ -58,7 +72,11 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: "token"})
 
-		middleware := UseAuthMiddleware(&mockServer{"", permission.RoleAdmin, assert.AnError})
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "",
+			errorToReturn:    assert.AnError,
+		})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
@@ -70,7 +88,11 @@ func TestUseAuthMiddleware(t *testing.T) {
 		ctx.Request, _ = http.NewRequest("GET", "/", nil)
 		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: "token"})
 
-		middleware := UseAuthMiddleware(&mockServer{"user-id", permission.RoleMember, nil})
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleMember, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "new-token",
+			errorToReturn:    nil,
+		})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Writer.Status())
@@ -79,7 +101,11 @@ func TestUseAuthMiddleware(t *testing.T) {
 		assert.True(t, exists)
 		assert.Equal(t, permission.RoleMember, userRole)
 
-		middleware = UseAuthMiddleware(&mockServer{"user-id", permission.RoleAdmin, nil})
+		middleware = UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleAdmin, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "new-token",
+			errorToReturn:    nil,
+		})
 		middleware(ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Writer.Status())
@@ -87,6 +113,23 @@ func TestUseAuthMiddleware(t *testing.T) {
 		userRole, exists = ctx.Get("userRole")
 		assert.True(t, exists)
 		assert.Equal(t, permission.RoleAdmin, userRole)
+	})
+
+	t.Run("Should pass a new token in the designated header when it's refreshed", func(t *testing.T) {
+		resRecorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(resRecorder)
+		ctx.Request, _ = http.NewRequest("GET", "/", nil)
+		ctx.Request.AddCookie(&http.Cookie{Name: authCookieName, Value: "token"})
+
+		middleware := UseAuthMiddleware(&mockServer{
+			sessionToReturn:  server.UserSession{UserId: "user-id", Role: permission.RoleMember, ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+			newTokenToReturn: "new-token",
+			errorToReturn:    nil,
+		})
+		middleware(ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Writer.Status())
+		assert.Equal(t, "new-token", resRecorder.Header().Get(replaceCookieHeader))
 	})
 }
 

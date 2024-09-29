@@ -86,5 +86,6 @@ func TestGetSession(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, "John Doe", session.Id)
 		assert.Equal(t, permission.RoleAdmin, session.Role)
+		assert.Equal(t, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).Add(7*24*time.Hour).UnixNano(), session.ExpiresAt.UnixNano())
 	})
 }

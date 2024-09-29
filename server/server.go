@@ -7,7 +7,11 @@ import (
 	"rush/session"
 	"rush/user"
 	"time"
+
+	"github.com/benbjohnson/clock"
 )
+
+//go:generate mockgen -source=server.go -destination=server_mock.go -package=server
 
 type User struct {
 	// The ID of the user. E.g., "abc123"
@@ -75,6 +79,14 @@ type Attendance struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// The API request session. It contains the user information and some more to
+// specify the session for the API request.
+type UserSession struct {
+	UserId    string          `json:"user_id"`
+	Role      permission.Role `json:"role"`
+	ExpiresAt time.Time       `json:"expires_at"`
+}
+
 type oauthClient interface {
 	// Handles the third party token that is used for signing in.
 	GetEmail(token string) (string, error)
@@ -140,10 +152,12 @@ type Server struct {
 	attendanceRepo        attendanceRepo
 	// The location of the time for the form. It's used to convert the time in the form to the local time.
 	formTimeLocation *time.Location
+	// Used to get the current time.
+	clock clock.Clock
 }
 
 func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo,
-	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location) *Server {
+	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location, clock clock.Clock) *Server {
 	return &Server{
 		oauthClient:           oauthClient,
 		authHandler:           authHandler,
@@ -153,5 +167,6 @@ func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, us
 		attendanceFormHandler: attendanceFormHandler,
 		attendanceRepo:        attendanceRepo,
 		formTimeLocation:      formTimeLocation,
+		clock:                 clock,
 	}
 }

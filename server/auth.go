@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"rush/auth"
-	"rush/permission"
+	"time"
 )
 
 func (s *Server) SignIn(token string) (string, error) {
@@ -33,18 +33,36 @@ func (s *Server) IsTokenValid(token string) bool {
 	return true
 }
 
-func (s *Server) GetUserIdentifier(token string) (string, permission.Role, error) {
+// Returns the user session and the new token if it was refreshed.
+func (s *Server) GetUserSession(token string) (UserSession, string, error) {
 	session, err := s.authHandler.GetSession(token)
 	if err != nil {
-		if errors.Is(err, &auth.TokenExpiredError{}) {
-			// TODO(#105): Refresh the token based on the time left.
-			return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("token expired: %w", err))
+		var tokenExpiredError *auth.TokenExpiredError
+		if errors.As(err, &tokenExpiredError) {
+			return UserSession{}, "", newBadRequestError(fmt.Errorf("token expired: %w", tokenExpiredError))
 		}
-		if errors.Is(err, &auth.InvalidTokenError{}) {
-			return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("invalid token: %w", err))
+		var invalidTokenError *auth.InvalidTokenError
+		if errors.As(err, &invalidTokenError) {
+			return UserSession{}, "", newBadRequestError(fmt.Errorf("invalid token: %w", invalidTokenError))
 		}
-		return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("failed to get user session: %w", err))
+		return UserSession{}, "", newInternalServerError(fmt.Errorf("failed to get user session: %w", err))
 	}
 
-	return session.Id, session.Role, nil
+	if session.ExpiresAt.Sub(s.clock.Now()) > 24*time.Hour {
+		return UserSession{
+			UserId:    session.Id,
+			Role:      session.Role,
+			ExpiresAt: session.ExpiresAt,
+		}, token, nil
+	}
+
+	newToken, err := s.authHandler.SignIn(session.Id, session.Role)
+	if err != nil {
+		return UserSession{}, "", newInternalServerError(fmt.Errorf("failed to refresh token: %w", err))
+	}
+	return UserSession{
+		UserId:    session.Id,
+		Role:      session.Role,
+		ExpiresAt: session.ExpiresAt,
+	}, newToken, nil
 }

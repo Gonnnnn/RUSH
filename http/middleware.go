@@ -4,20 +4,22 @@ import (
 	"net/http"
 	"rush/golang/array"
 	"rush/permission"
+	"rush/server"
 
 	"github.com/gin-gonic/gin"
 )
 
-type userIdFetcher interface {
-	GetUserIdentifier(token string) (string, permission.Role, error)
+type userSessionFetcher interface {
+	GetUserSession(token string) (server.UserSession, string, error)
 }
 
 // The name of the cookie to store the rush authentication token.
 const authCookieName = "rush-auth"
 const userIdKey = "userId"
 const userRoleKey = "userRole"
+const replaceCookieHeader = "X-Replace-Cookie"
 
-func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
+func UseAuthMiddleware(userSessionFetcher userSessionFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie(authCookieName)
 		// https://pkg.go.dev/github.com/gin-gonic/gin#Context.Cookie
@@ -34,15 +36,19 @@ func UseAuthMiddleware(userIdFetcher userIdFetcher) gin.HandlerFunc {
 			return
 		}
 
-		userId, role, err := userIdFetcher.GetUserIdentifier(token)
+		userSession, newToken, err := userSessionFetcher.GetUserSession(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 
-		c.Set(userIdKey, userId)
-		c.Set(userRoleKey, role)
+		if newToken != "" {
+			c.Header(replaceCookieHeader, newToken)
+		}
+
+		c.Set(userIdKey, userSession.UserId)
+		c.Set(userRoleKey, userSession.Role)
 		c.Next()
 	}
 }

@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"rush/permission"
+	"time"
 )
 
 type inspector struct{}
@@ -13,6 +14,8 @@ type Session struct {
 	// The role of the user. It is used to determine the access level of the user.
 	// E.g., member, admin, etc.
 	Role permission.Role
+	// The time when the session will expire.
+	ExpiresAt time.Time
 }
 
 type TokenExpiredError struct {
