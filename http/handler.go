@@ -312,3 +312,16 @@ func handleHalfYearAttendance(server *server.Server) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"sessions": result.Sessions, "users": result.Users, "attendances": result.Attendances})
 	}
 }
+
+func handleAggregateAttendance(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := server.AggregateAttendance()
+		if err != nil {
+			log.Printf("Error aggregating attendance: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Attendance aggregated successfully"})
+	}
+}
