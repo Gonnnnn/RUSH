@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { z } from 'zod';
+import { replaceCookieHeader, setAuthToken } from './auth';
 
 const BASE_URL = import.meta.env.VITE_SERVER_ENDPOINT;
 
@@ -9,6 +10,14 @@ const client: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
+});
+
+client.interceptors.response.use((response) => {
+  const newToken = response.headers[replaceCookieHeader];
+  if (newToken) {
+    setAuthToken(newToken);
+  }
+  return response;
 });
 
 const UserSchema = z
@@ -166,6 +175,10 @@ export const createSession = async (
     score,
   });
   return response.data.id;
+};
+
+export const deleteSession = async (id: string): Promise<void> => {
+  await client.delete(`/sessions/${id}`);
 };
 
 export const createSessionForm = async (sessionId: string): Promise<string> => {

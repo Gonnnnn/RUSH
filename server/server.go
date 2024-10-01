@@ -3,10 +3,15 @@ package server
 import (
 	"rush/attendance"
 	"rush/auth"
+	"rush/permission"
 	"rush/session"
 	"rush/user"
 	"time"
+
+	"github.com/benbjohnson/clock"
 )
+
+//go:generate mockgen -source=server.go -destination=server_mock.go -package=server
 
 type User struct {
 	// The ID of the user. E.g., "abc123"
@@ -74,18 +79,24 @@ type Attendance struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type tokenInspector interface {
+// The API request session. It contains the user information and some more to
+// specify the session for the API request.
+type UserSession struct {
+	UserId    string          `json:"user_id"`
+	Role      permission.Role `json:"role"`
+	ExpiresAt time.Time       `json:"expires_at"`
+}
+
+type oauthClient interface {
 	// Handles the third party token that is used for signing in.
-	GetUserIdentifier(token string) (auth.UserIdentifier, error)
-	// Returns the provider of the token. authHandler uses it to extract the email address.
-	Provider() auth.Provider
+	GetEmail(token string) (string, error)
 }
 
 type authHandler interface {
-	// Handles the rush token that is used for API calls after signing in.
-	GetUserIdentifier(token string) (auth.UserIdentifier, error)
+	// Extracts session from the rush token.
+	GetSession(token string) (auth.Session, error)
 	// Returns the rush token that is used for API calls after signing in.
-	SignIn(userIdentifier auth.UserIdentifier) (string, error)
+	SignIn(userId string, role permission.Role) (string, error)
 }
 
 type userRepo interface {
@@ -104,11 +115,17 @@ type userAdder interface {
 }
 
 type sessionRepo interface {
-	Get(id string) (*session.Session, error)
+	Get(id string) (session.Session, error)
 	GetAll() ([]session.Session, error)
 	List(offset int, pageSize int) (*session.ListResult, error)
 	Add(name string, description string, createdBy string, startsAt time.Time, score int) (string, error)
-	Update(id string, updateForm *session.UpdateForm) (*session.Session, error)
+}
+
+// The repo that includes logics to update or delete the open sessions.
+type openSessionRepo interface {
+	UpdateOpenSession(id string, updateForm session.OpenSessionUpdateForm) (session.Session, error)
+	DeleteOpenSession(id string) error
+	CloseOpenSession(id string) error
 }
 
 type attendanceFormHandler interface {
@@ -128,31 +145,37 @@ type attendanceRepo interface {
 }
 
 type Server struct {
-	// Used to get the user identifier, such as an email, from the third party token.
-	tokenInspector tokenInspector
+	// Used to get the user email of the provider from the third party token.
+	oauthClient oauthClient
 	// Used to sign in and get the rush token for API calls.
 	authHandler authHandler
 	userRepo    userRepo
 	// Used to add a user.
 	userAdder   userAdder
 	sessionRepo sessionRepo
+	// Used to handle open sessions.
+	openSessionRepo openSessionRepo
 	// Used to generate the form for attendance and get the submissions from the form.
 	attendanceFormHandler attendanceFormHandler
 	attendanceRepo        attendanceRepo
 	// The location of the time for the form. It's used to convert the time in the form to the local time.
 	formTimeLocation *time.Location
+	// Used to get the current time.
+	clock clock.Clock
 }
 
-func New(tokenInspector tokenInspector, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo,
-	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location) *Server {
+func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo, openSessionRepo openSessionRepo,
+	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location, clock clock.Clock) *Server {
 	return &Server{
-		tokenInspector:        tokenInspector,
+		oauthClient:           oauthClient,
 		authHandler:           authHandler,
 		userRepo:              userRepo,
 		userAdder:             userAdder,
 		sessionRepo:           sessionRepo,
+		openSessionRepo:       openSessionRepo,
 		attendanceFormHandler: attendanceFormHandler,
 		attendanceRepo:        attendanceRepo,
 		formTimeLocation:      formTimeLocation,
+		clock:                 clock,
 	}
 }

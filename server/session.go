@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"rush/attendance"
-	"rush/session"
 	"sort"
 	"time"
 )
 
-func (s *Server) GetSession(id string) (*Session, error) {
+func (s *Server) GetSession(id string) (Session, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
-		return nil, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+		return Session{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 	return fromSession(session), nil
 }
@@ -31,7 +30,7 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 
 	converted := []Session{}
 	for _, session := range listResult.Sessions {
-		converted = append(converted, *fromSession(&session))
+		converted = append(converted, fromSession(session))
 	}
 
 	return &ListSessionsResult{
@@ -47,6 +46,13 @@ func (s *Server) AddSession(name string, description string, createdBy string, s
 		return "", newInternalServerError(fmt.Errorf("failed to add session: %w", err))
 	}
 	return id, nil
+}
+
+func (s *Server) DeleteSession(id string) error {
+	if err := s.openSessionRepo.DeleteOpenSession(id); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to delete session: %w", err))
+	}
+	return nil
 }
 
 func (s *Server) CloseSession(sessionId string) error {
@@ -107,11 +113,8 @@ func (s *Server) CloseSession(sessionId string) error {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
 	}
 
-	isClosed := true
-	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{IsClosed: &isClosed, ReturnUpdatedSession: false})
-
-	if err != nil {
-		return newInternalServerError(fmt.Errorf("failed to update session to be closed: %w", err))
+	if err := s.openSessionRepo.CloseOpenSession(sessionId); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to close open session: %w", err))
 	}
 
 	return nil

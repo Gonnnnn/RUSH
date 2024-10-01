@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useHeader } from './Layout';
 import { useSnackbar } from './SnackbarContext';
-import { Session, createSessionForm, getSession } from './client/http';
+import { Session, createSessionForm, deleteSession, getSession } from './client/http';
 import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from './common/date';
 
 const SessionDetail = () => {
@@ -50,6 +50,19 @@ const SessionDetail = () => {
     navigate('/sessions');
     return null;
   }
+
+  const handleDeleteBtnClick = async () => {
+    try {
+      await deleteSession(id);
+      navigate('/sessions');
+    } catch (error) {
+      handleError({
+        error,
+        messageAuth: 'Session deletion is restricted to admin users',
+        messageInternal: 'Failed to delete the session. Contact the dev.',
+      });
+    }
+  };
 
   const handleQrCodeCreateClick = async () => {
     try {
@@ -108,7 +121,7 @@ const SessionDetail = () => {
 
   return (
     <Container>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', mb: 3 }}>
         <Button
           variant="outlined"
           onClick={() => {
@@ -121,6 +134,9 @@ const SessionDetail = () => {
           sx={{ alignSelf: 'flex-start' }}
         >
           Back
+        </Button>
+        <Button variant="outlined" color="error" onClick={handleDeleteBtnClick} disabled={session.isClosed}>
+          {session.isClosed ? 'Closed already' : 'Delete'}
         </Button>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

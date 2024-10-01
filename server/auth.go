@@ -4,18 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"rush/auth"
-	"rush/permission"
+	"time"
 )
 
 func (s *Server) SignIn(token string) (string, error) {
-	userIdentifier, err := s.tokenInspector.GetUserIdentifier(token)
+	email, err := s.oauthClient.GetEmail(token)
 	if err != nil {
 		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
-	}
-
-	email, ok := userIdentifier.Email(s.tokenInspector.Provider())
-	if !ok {
-		return "", newInternalServerError(errors.New("failed to get email from user identifier although there should be"))
 	}
 
 	user, err := s.userRepo.GetByEmail(email)
@@ -23,13 +18,7 @@ func (s *Server) SignIn(token string) (string, error) {
 		return "", newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
 	}
 
-	rushToken, err := s.authHandler.SignIn(
-		auth.NewUserIdentifier(
-			map[auth.Provider]string{auth.ProviderRush: user.Id},
-			map[auth.Provider]string{auth.ProviderRush: email},
-			map[auth.Provider]permission.Role{auth.ProviderRush: user.Role},
-		),
-	)
+	rushToken, err := s.authHandler.SignIn(user.Id, user.Role)
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to sign in: %w", err))
 	}
@@ -38,22 +27,42 @@ func (s *Server) SignIn(token string) (string, error) {
 }
 
 func (s *Server) IsTokenValid(token string) bool {
-	if _, err := s.authHandler.GetUserIdentifier(token); err != nil {
+	if _, err := s.authHandler.GetSession(token); err != nil {
 		return false
 	}
 	return true
 }
 
-func (s *Server) GetUserIdentifier(token string) (string, permission.Role, error) {
-	userIdentifier, err := s.authHandler.GetUserIdentifier(token)
+// Returns the user session and the new token if it was refreshed.
+func (s *Server) GetUserSession(token string) (UserSession, string, error) {
+	session, err := s.authHandler.GetSession(token)
 	if err != nil {
-		return "", permission.RoleNotSpecified, newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
+		var tokenExpiredError *auth.TokenExpiredError
+		if errors.As(err, &tokenExpiredError) {
+			return UserSession{}, "", newBadRequestError(fmt.Errorf("token expired: %w", tokenExpiredError))
+		}
+		var invalidTokenError *auth.InvalidTokenError
+		if errors.As(err, &invalidTokenError) {
+			return UserSession{}, "", newBadRequestError(fmt.Errorf("invalid token: %w", invalidTokenError))
+		}
+		return UserSession{}, "", newInternalServerError(fmt.Errorf("failed to get user session: %w", err))
 	}
 
-	userId, ok := userIdentifier.ProviderId(auth.ProviderRush)
-	if !ok {
-		return "", permission.RoleNotSpecified, newInternalServerError(errors.New("failed to get user ID from user identifier although there should be"))
+	if session.ExpiresAt.Sub(s.clock.Now()) > 24*time.Hour {
+		return UserSession{
+			UserId:    session.Id,
+			Role:      session.Role,
+			ExpiresAt: session.ExpiresAt,
+		}, token, nil
 	}
 
-	return userId, userIdentifier.RushRole(), nil
+	newToken, err := s.authHandler.SignIn(session.Id, session.Role)
+	if err != nil {
+		return UserSession{}, "", newInternalServerError(fmt.Errorf("failed to refresh token: %w", err))
+	}
+	return UserSession{
+		UserId:    session.Id,
+		Role:      session.Role,
+		ExpiresAt: session.ExpiresAt,
+	}, newToken, nil
 }

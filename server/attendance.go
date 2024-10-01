@@ -50,8 +50,10 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 		return "", newInternalServerError(fmt.Errorf("failed to generate form: %w", err))
 	}
 
-	_, err = s.sessionRepo.Update(sessionId, &session.UpdateForm{
-		GoogleFormId: &attendanceForm.Id, GoogleFormUri: &attendanceForm.Uri, ReturnUpdatedSession: false})
+	_, err = s.openSessionRepo.UpdateOpenSession(sessionId, session.OpenSessionUpdateForm{
+		GoogleFormId:  &attendanceForm.Id,
+		GoogleFormUri: &attendanceForm.Uri,
+	})
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to update session: %w", err))
 	}

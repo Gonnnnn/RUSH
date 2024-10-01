@@ -30,6 +30,7 @@ import (
 	"rush/golang/env"
 	rushHttp "rush/http"
 	"rush/job"
+	"rush/oauth"
 	"rush/server"
 	"rush/session"
 	rushUser "rush/user"
@@ -67,15 +68,17 @@ func main() {
 	userRepo := rushUser.NewMongoDbRepo(userCollection)
 	sessionRepo := session.NewMongoDbRepo(sessionCollection)
 	server := server.New(
-		auth.NewFbAuth(firebaseAuthClient),
+		oauth.NewFbClient(firebaseAuthClient),
 		// https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.hmacsha256.-ctor?view=net-8.0
 		// The secret key is recommended to be 64 bytes long for HMACSHA256. RushAuth uses HMACSHA256 to sign the token.
 		auth.NewRushAuth(env.GetRequiredStringVariable("JWT_SECRET_KEY"), clock),
 		userRepo, rushUser.NewAdder(userRepo),
 		sessionRepo,
+		session.NewService(sessionRepo),
 		attendance.NewFormHandler(formsService, driveService),
 		attendance.NewMongoDbRepo(attendanceCollection, clock),
 		must.OK1(time.LoadLocation("Asia/Seoul")),
+		clock,
 	)
 
 	router := gin.Default()
