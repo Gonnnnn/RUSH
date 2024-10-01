@@ -174,6 +174,15 @@ func (s *Server) AggregateAttendance() error {
 		userScoreMap[attendance.UserId] += attendance.SessionScore
 	}
 
+	sessionIdSet := map[string]bool{}
+	for _, attendance := range attendances {
+		sessionIdSet[attendance.SessionId] = true
+	}
+	sessionIds := []string{}
+	for sessionId := range sessionIdSet {
+		sessionIds = append(sessionIds, sessionId)
+	}
+
 	userInfosForAggregation := array.Map(attendances, func(attendance attendance.Attendance) attendanceAggregation.UserInfo {
 		userScore, ok := userScoreMap[attendance.UserId]
 		if !ok {
@@ -187,10 +196,7 @@ func (s *Server) AggregateAttendance() error {
 		}
 	})
 
-	if _, err := s.attendanceAggregationRepo.AddAggregation(
-		array.Map(attendances, func(attendance attendance.Attendance) string { return attendance.SessionId }),
-		userInfosForAggregation,
-	); err != nil {
+	if _, err := s.attendanceAggregationRepo.AddAggregation(sessionIds, userInfosForAggregation); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to add aggregation: %w", err))
 	}
 
