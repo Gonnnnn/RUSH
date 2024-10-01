@@ -2,6 +2,7 @@ package server
 
 import (
 	"rush/attendance"
+	attendanceAggregation "rush/attendance/aggregation"
 	"rush/auth"
 	"rush/permission"
 	"rush/session"
@@ -144,6 +145,11 @@ type attendanceRepo interface {
 	FindByUserId(userId string) ([]attendance.Attendance, error)
 }
 
+type attendanceAggregationRepo interface {
+	// Adds the aggregation of the attendances for the given session IDs and aggregated user information.
+	AddAggregation(sessionIds []string, userInfos []attendanceAggregation.UserInfo) (attendanceAggregation.Aggregation, error)
+}
+
 type Server struct {
 	// Used to get the user email of the provider from the third party token.
 	oauthClient oauthClient
@@ -158,6 +164,8 @@ type Server struct {
 	// Used to generate the form for attendance and get the submissions from the form.
 	attendanceFormHandler attendanceFormHandler
 	attendanceRepo        attendanceRepo
+	// Used to add the aggregation of the attendances.
+	attendanceAggregationRepo attendanceAggregationRepo
 	// The location of the time for the form. It's used to convert the time in the form to the local time.
 	formTimeLocation *time.Location
 	// Used to get the current time.
@@ -165,17 +173,18 @@ type Server struct {
 }
 
 func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo, openSessionRepo openSessionRepo,
-	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, formTimeLocation *time.Location, clock clock.Clock) *Server {
+	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, attendanceAggregationRepo attendanceAggregationRepo, formTimeLocation *time.Location, clock clock.Clock) *Server {
 	return &Server{
-		oauthClient:           oauthClient,
-		authHandler:           authHandler,
-		userRepo:              userRepo,
-		userAdder:             userAdder,
-		sessionRepo:           sessionRepo,
-		openSessionRepo:       openSessionRepo,
-		attendanceFormHandler: attendanceFormHandler,
-		attendanceRepo:        attendanceRepo,
-		formTimeLocation:      formTimeLocation,
-		clock:                 clock,
+		oauthClient:               oauthClient,
+		authHandler:               authHandler,
+		userRepo:                  userRepo,
+		userAdder:                 userAdder,
+		sessionRepo:               sessionRepo,
+		openSessionRepo:           openSessionRepo,
+		attendanceFormHandler:     attendanceFormHandler,
+		attendanceRepo:            attendanceRepo,
+		attendanceAggregationRepo: attendanceAggregationRepo,
+		formTimeLocation:          formTimeLocation,
+		clock:                     clock,
 	}
 }

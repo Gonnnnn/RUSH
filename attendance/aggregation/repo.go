@@ -13,7 +13,7 @@ import (
 type mongodbAggregation struct {
 	Id         primitive.ObjectID `bson:"_id,omitempty"`
 	SessionIds []string           `bson:"session_ids"`
-	UserScores []UserScorePair    `bson:"user_scores"`
+	UserInfos  []UserInfo         `bson:"user_infos"`
 	CreatedAt  time.Time          `bson:"created_at"`
 }
 
@@ -30,11 +30,11 @@ func NewMongoDbRepo(collection *mongo.Collection, clock clock.Clock) *mongodbRep
 	}
 }
 
-func (m *mongodbRepo) AddAggregation(sessionIds []string, userScores []UserScorePair) (Aggregation, error) {
+func (m *mongodbRepo) AddAggregation(sessionIds []string, userInfos []UserInfo) (Aggregation, error) {
 	now := m.clock.Now()
 	aggregation := mongodbAggregation{
 		SessionIds: sessionIds,
-		UserScores: userScores,
+		UserInfos:  userInfos,
 		CreatedAt:  now,
 	}
 
@@ -51,7 +51,7 @@ func (m *mongodbRepo) AddAggregation(sessionIds []string, userScores []UserScore
 	return Aggregation{
 		Id:         id.Hex(),
 		SessionIds: sessionIds,
-		UserScores: userScores,
+		UserInfos:  userInfos,
 		CreatedAt:  now,
 	}, nil
 }
