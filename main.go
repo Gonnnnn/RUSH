@@ -25,6 +25,7 @@ import (
 	"google.golang.org/api/option"
 
 	"rush/attendance"
+	attendanceAggregation "rush/attendance/aggregation"
 	"rush/auth"
 	"rush/golang/env"
 	rushHttp "rush/http"
@@ -52,9 +53,11 @@ func main() {
 	mongodbSessionColName := env.GetRequiredStringVariable("MONGODB_SESSION_COLLECTION_NAME")
 	mongodbUserColName := env.GetRequiredStringVariable("MONGODB_USER_COLLECTION_NAME")
 	mongodbAttendanceColName := env.GetRequiredStringVariable("MONGODB_ATTENDANCE_COLLECTION_NAME")
+	mongodbAttendanceAggregationColName := env.GetRequiredStringVariable("MONGODB_ATTENDANCE_AGGREGATION_COLLECTION_NAME")
 	sessionCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbSessionColName)
 	userCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbUserColName)
 	attendanceCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceColName)
+	attendanceAggregationCollection := mongodbClient.Database(mongodbDatabaseName).Collection(mongodbAttendanceAggregationColName)
 
 	googleCreds := getGoogleCredentials(ctx, env.GetRequiredStringVariable("ENVIRONMENT"))
 	log.Printf("project id: %s", googleCreds.ProjectID)
@@ -76,6 +79,7 @@ func main() {
 		session.NewService(sessionRepo),
 		attendance.NewFormHandler(formsService, driveService),
 		attendance.NewMongoDbRepo(attendanceCollection, clock),
+		attendanceAggregation.NewMongoDbRepo(attendanceAggregationCollection, clock),
 		must.OK1(time.LoadLocation("Asia/Seoul")),
 		clock,
 	)

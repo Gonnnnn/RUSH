@@ -4,15 +4,15 @@ import "time"
 
 type Aggregation struct {
 	Id string
-	// The scores of the users. It is not ordered by the scores.
-	UserScores []UserScorePair
+	// The aggregated information for each user.
+	UserInfos []UserInfo
 	// The IDs of the sessions that have been used to get the aggregation.
 	SessionIds []string
 	// The time when the document was created.
 	CreatedAt time.Time
 }
 
-type UserScorePair struct {
+type UserInfo struct {
 	UserId     string
 	UserName   string
 	Generation float64

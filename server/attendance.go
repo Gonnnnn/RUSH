@@ -3,6 +3,8 @@ package server
 import (
 	"errors"
 	"fmt"
+	"rush/attendance"
+	attendanceAggregation "rush/attendance/aggregation"
 	"rush/golang/array"
 	"rush/session"
 	"rush/user"
@@ -159,4 +161,39 @@ func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 		Attendances: convertedAttendances,
 	}
 	return halfYearAttendace, nil
+}
+
+func (s *Server) AggregateAttendance() error {
+	attendances, err := s.attendanceRepo.GetAll()
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to get all attendances: %w", err))
+	}
+
+	userScoreMap := map[string]int{}
+	for _, attendance := range attendances {
+		userScoreMap[attendance.UserId] += attendance.SessionScore
+	}
+
+	userInfosForAggregation := array.Map(attendances, func(attendance attendance.Attendance) attendanceAggregation.UserInfo {
+		userScore, ok := userScoreMap[attendance.UserId]
+		if !ok {
+			userScore = 0
+		}
+		return attendanceAggregation.UserInfo{
+			UserId:     attendance.UserId,
+			UserName:   attendance.UserExternalName,
+			Generation: attendance.UserGeneration,
+			Score:      userScore,
+		}
+	})
+
+	if _, err := s.attendanceAggregationRepo.AddAggregation(
+		array.Map(attendances, func(attendance attendance.Attendance) string { return attendance.SessionId }),
+		userInfosForAggregation,
+	); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to add aggregation: %w", err))
+	}
+
+	// TODO(#165) Apply user rankings so that their current ranking can be fetched from the user document.
+	return nil
 }
