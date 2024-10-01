@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"time"
 
 	firebase "firebase.google.com/go"
@@ -19,6 +18,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/forms/v1"
@@ -26,7 +26,6 @@ import (
 
 	"rush/attendance"
 	"rush/auth"
-	"rush/golang/array"
 	"rush/golang/env"
 	rushHttp "rush/http"
 	"rush/job"
@@ -91,19 +90,9 @@ func main() {
 
 	rushHttp.SetUpRouter(router, server)
 
-	jobExecutor := job.NewExecutor(sessionRepo, server, clock)
+	jobExecutor := job.NewExecutor(sessionRepo, server, must.OK1(zap.NewProduction()).Sugar(), clock)
 	if env.GetRequiredStringVariable("ENVIRONMENT") != "local" {
-		cron.New().AddFunc("30 * * * *", func() {
-			result, err := jobExecutor.CloseExpiredSessions()
-			if err != nil {
-				// TODO(#150): Extract the logic and test logging logic.
-				failedSessionsIds := result.FailedSessionIds
-				errors := result.Errors
-				stringifiedErrors := array.Map(errors, func(err error) string { return err.Error() })
-				log.Printf("Failed to close sessions [%s]: %s", strings.Join(failedSessionsIds, ", "), strings.Join(stringifiedErrors, ", "))
-			}
-			log.Printf("Closed sessions: %s", strings.Join(result.SucceededSessionIds, ", "))
-		})
+		cron.New().AddFunc("30 * * * *", func() { jobExecutor.CloseExpiredSessions() })
 	}
 
 	log.Println("Starting server")

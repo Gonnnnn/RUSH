@@ -1,9 +1,9 @@
 package job
 
 import (
-	"fmt"
 	"rush/golang/array"
 	"rush/session"
+	"strings"
 
 	"github.com/benbjohnson/clock"
 )
@@ -11,61 +11,50 @@ import (
 type executor struct {
 	sessionGetter sessionGetter
 	sessionCloser sessionCloser
+	logger        Logger
 	clock         clock.Clock
 }
 
-type CloseExpiredSessionsResult struct {
-	// The IDs of the sessions that succeeded to close.
-	SucceededSessionIds []string
-	// The IDs of the sessions that failed to close.
-	FailedSessionIds []string
-	// The errors that occurred while closing the sessions.
-	// The order of the errors corresponds to the order of the sessions.
-	Errors []error
-}
-
-func NewExecutor(sessionGetter sessionGetter, sessionCloser sessionCloser, clock clock.Clock) *executor {
+func NewExecutor(sessionGetter sessionGetter, sessionCloser sessionCloser, logger Logger, clock clock.Clock) *executor {
 	return &executor{
 		sessionGetter: sessionGetter,
 		sessionCloser: sessionCloser,
+		logger:        logger,
 		clock:         clock,
 	}
 }
 
 // Closes the open sessions that are past the start time.
-func (e *executor) CloseExpiredSessions() (CloseExpiredSessionsResult, error) {
+func (e *executor) CloseExpiredSessions() {
 	openSessions, err := e.sessionGetter.GetOpenSessions()
 	if err != nil {
-		return CloseExpiredSessionsResult{}, fmt.Errorf("failed to get open sessions: %w", err)
+		e.logger.Errorw("Failed to get open sessions", "error", err.Error())
+		return
 	}
 
-	openSessions = array.Filter(openSessions, func(session session.Session) bool {
-		return session.StartsAt.Before(e.clock.Now()) || session.StartsAt.Equal(e.clock.Now())
+	now := e.clock.Now()
+	sessionsToClose := array.Filter(openSessions, func(session session.Session) bool {
+		return now.After(session.StartsAt) || now.Equal(session.StartsAt)
 	})
 
 	failedSessionIds := []string{}
 	succeededSessionIds := []string{}
-	errors := []error{}
-	for _, session := range openSessions {
+	closeErr := []error{}
+	for _, session := range sessionsToClose {
 		if err := e.sessionCloser.CloseSession(session.Id); err != nil {
 			failedSessionIds = append(failedSessionIds, session.Id)
-			errors = append(errors, err)
+			closeErr = append(closeErr, err)
 			continue
 		}
 		succeededSessionIds = append(succeededSessionIds, session.Id)
 	}
 
-	if len(failedSessionIds) == 0 {
-		return CloseExpiredSessionsResult{
-			SucceededSessionIds: succeededSessionIds,
-		}, nil
+	e.logger.Infow("Closed sessions", "session_ids", strings.Join(succeededSessionIds, ", "))
+	if len(failedSessionIds) > 0 {
+		e.logger.Errorw("Failed to close sessions", "session_ids", strings.Join(failedSessionIds, ", "),
+			"errors", strings.Join(array.Map(closeErr, func(err error) string { return err.Error() }), ", "))
+		return
 	}
-
-	return CloseExpiredSessionsResult{
-		SucceededSessionIds: succeededSessionIds,
-		FailedSessionIds:    failedSessionIds,
-		Errors:              errors,
-	}, fmt.Errorf("failed to close some sessions")
 }
 
 //go:generate mockgen -source=session.go -destination=session_mock.go -package=job
@@ -75,4 +64,13 @@ type sessionCloser interface {
 
 type sessionGetter interface {
 	GetOpenSessions() ([]session.Session, error)
+}
+
+type Logger interface {
+	// Logs the given info with the info level.
+	// Info level indicates any information that should be logged.
+	Infow(msg string, keysAndValues ...any)
+	// Logs the given info with the error level.
+	// Error level indicates any issue that should be resolved as soon as possible.
+	Errorw(msg string, keysAndValues ...any)
 }

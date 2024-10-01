@@ -285,20 +285,6 @@ func (mr *MocksessionRepoMockRecorder) Add(name, description, createdBy, startsA
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MocksessionRepo)(nil).Add), name, description, createdBy, startsAt, score)
 }
 
-// Delete mocks base method.
-func (m *MocksessionRepo) Delete(id string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Delete indicates an expected call of Delete.
-func (mr *MocksessionRepoMockRecorder) Delete(id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MocksessionRepo)(nil).Delete), id)
-}
-
 // Get mocks base method.
 func (m *MocksessionRepo) Get(id string) (session.Session, error) {
 	m.ctrl.T.Helper()
@@ -344,19 +330,70 @@ func (mr *MocksessionRepoMockRecorder) List(offset, pageSize any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MocksessionRepo)(nil).List), offset, pageSize)
 }
 
-// Update mocks base method.
-func (m *MocksessionRepo) Update(id string, updateForm session.UpdateForm) (session.Session, error) {
+// MockopenSessionRepo is a mock of openSessionRepo interface.
+type MockopenSessionRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockopenSessionRepoMockRecorder
+}
+
+// MockopenSessionRepoMockRecorder is the mock recorder for MockopenSessionRepo.
+type MockopenSessionRepoMockRecorder struct {
+	mock *MockopenSessionRepo
+}
+
+// NewMockopenSessionRepo creates a new mock instance.
+func NewMockopenSessionRepo(ctrl *gomock.Controller) *MockopenSessionRepo {
+	mock := &MockopenSessionRepo{ctrl: ctrl}
+	mock.recorder = &MockopenSessionRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockopenSessionRepo) EXPECT() *MockopenSessionRepoMockRecorder {
+	return m.recorder
+}
+
+// CloseOpenSession mocks base method.
+func (m *MockopenSessionRepo) CloseOpenSession(id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", id, updateForm)
+	ret := m.ctrl.Call(m, "CloseOpenSession", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CloseOpenSession indicates an expected call of CloseOpenSession.
+func (mr *MockopenSessionRepoMockRecorder) CloseOpenSession(id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseOpenSession", reflect.TypeOf((*MockopenSessionRepo)(nil).CloseOpenSession), id)
+}
+
+// DeleteOpenSession mocks base method.
+func (m *MockopenSessionRepo) DeleteOpenSession(id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOpenSession", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOpenSession indicates an expected call of DeleteOpenSession.
+func (mr *MockopenSessionRepoMockRecorder) DeleteOpenSession(id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOpenSession", reflect.TypeOf((*MockopenSessionRepo)(nil).DeleteOpenSession), id)
+}
+
+// UpdateOpenSession mocks base method.
+func (m *MockopenSessionRepo) UpdateOpenSession(id string, updateForm session.OpenSessionUpdateForm) (session.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateOpenSession", id, updateForm)
 	ret0, _ := ret[0].(session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Update indicates an expected call of Update.
-func (mr *MocksessionRepoMockRecorder) Update(id, updateForm any) *gomock.Call {
+// UpdateOpenSession indicates an expected call of UpdateOpenSession.
+func (mr *MockopenSessionRepoMockRecorder) UpdateOpenSession(id, updateForm any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MocksessionRepo)(nil).Update), id, updateForm)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOpenSession", reflect.TypeOf((*MockopenSessionRepo)(nil).UpdateOpenSession), id, updateForm)
 }
 
 // MockattendanceFormHandler is a mock of attendanceFormHandler interface.
