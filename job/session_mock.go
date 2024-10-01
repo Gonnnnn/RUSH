@@ -90,3 +90,60 @@ func (mr *MocksessionGetterMockRecorder) GetOpenSessions() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOpenSessions", reflect.TypeOf((*MocksessionGetter)(nil).GetOpenSessions))
 }
+
+// MockLogger is a mock of Logger interface.
+type MockLogger struct {
+	ctrl     *gomock.Controller
+	recorder *MockLoggerMockRecorder
+}
+
+// MockLoggerMockRecorder is the mock recorder for MockLogger.
+type MockLoggerMockRecorder struct {
+	mock *MockLogger
+}
+
+// NewMockLogger creates a new mock instance.
+func NewMockLogger(ctrl *gomock.Controller) *MockLogger {
+	mock := &MockLogger{ctrl: ctrl}
+	mock.recorder = &MockLoggerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockLogger) EXPECT() *MockLoggerMockRecorder {
+	return m.recorder
+}
+
+// Errorw mocks base method.
+func (m *MockLogger) Errorw(msg string, keysAndValues ...any) {
+	m.ctrl.T.Helper()
+	varargs := []any{msg}
+	for _, a := range keysAndValues {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Errorw", varargs...)
+}
+
+// Errorw indicates an expected call of Errorw.
+func (mr *MockLoggerMockRecorder) Errorw(msg any, keysAndValues ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{msg}, keysAndValues...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorw", reflect.TypeOf((*MockLogger)(nil).Errorw), varargs...)
+}
+
+// Infow mocks base method.
+func (m *MockLogger) Infow(msg string, keysAndValues ...any) {
+	m.ctrl.T.Helper()
+	varargs := []any{msg}
+	for _, a := range keysAndValues {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Infow", varargs...)
+}
+
+// Infow indicates an expected call of Infow.
+func (mr *MockLoggerMockRecorder) Infow(msg any, keysAndValues ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{msg}, keysAndValues...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Infow", reflect.TypeOf((*MockLogger)(nil).Infow), varargs...)
+}

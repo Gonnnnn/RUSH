@@ -15,8 +15,10 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ridge/must/v2"
+	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/forms/v1"
@@ -26,6 +28,7 @@ import (
 	"rush/auth"
 	"rush/golang/env"
 	rushHttp "rush/http"
+	"rush/job"
 	"rush/oauth"
 	"rush/server"
 	"rush/session"
@@ -86,6 +89,11 @@ func main() {
 	router.Use(cors.New(corsConfig))
 
 	rushHttp.SetUpRouter(router, server)
+
+	jobExecutor := job.NewExecutor(sessionRepo, server, must.OK1(zap.NewProduction()).Sugar(), clock)
+	if env.GetRequiredStringVariable("ENVIRONMENT") != "local" {
+		cron.New().AddFunc("30 * * * *", func() { jobExecutor.CloseExpiredSessions() })
+	}
 
 	log.Println("Starting server")
 	router.Run(":8080")

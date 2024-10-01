@@ -1,6 +1,7 @@
 package job
 
 import (
+	"errors"
 	"rush/session"
 	"testing"
 	"time"
@@ -15,21 +16,21 @@ func TestCloseExpiredSessions(t *testing.T) {
 		controller := gomock.NewController(t)
 		sessionGetter := NewMocksessionGetter(controller)
 		sessionCloser := NewMocksessionCloser(controller)
-		executor := NewExecutor(sessionGetter, sessionCloser, clock.NewMock())
+		mockLogger := NewMockLogger(controller)
+		executor := NewExecutor(sessionGetter, sessionCloser, mockLogger, clock.NewMock())
 
 		sessionGetter.EXPECT().GetOpenSessions().Return([]session.Session{}, assert.AnError)
-		result, err := executor.CloseExpiredSessions()
-
-		assert.Equal(t, CloseExpiredSessionsResult{}, result)
-		assert.EqualError(t, err, "failed to get open sessions: "+assert.AnError.Error())
+		mockLogger.EXPECT().Errorw("Failed to get open sessions", "error", assert.AnError.Error())
+		executor.CloseExpiredSessions()
 	})
 
 	t.Run("Fails if it fails to close ession", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		sessionGetter := NewMocksessionGetter(controller)
 		sessionCloser := NewMocksessionCloser(controller)
+		mockLogger := NewMockLogger(controller)
 		clock := clock.NewMock()
-		executor := NewExecutor(sessionGetter, sessionCloser, clock)
+		executor := NewExecutor(sessionGetter, sessionCloser, mockLogger, clock)
 
 		clock.Set(time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC))
 		sessionGetter.EXPECT().GetOpenSessions().Return([]session.Session{
@@ -37,25 +38,21 @@ func TestCloseExpiredSessions(t *testing.T) {
 			{Id: "sessionId2", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId3", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 		}, nil)
-		sessionCloser.EXPECT().CloseSession("sessionId1").Return(assert.AnError)
+		sessionCloser.EXPECT().CloseSession("sessionId1").Return(errors.New("error1"))
 		sessionCloser.EXPECT().CloseSession("sessionId2").Return(nil)
-		sessionCloser.EXPECT().CloseSession("sessionId3").Return(assert.AnError)
-		result, err := executor.CloseExpiredSessions()
-
-		assert.Equal(t, CloseExpiredSessionsResult{
-			SucceededSessionIds: []string{"sessionId2"},
-			FailedSessionIds:    []string{"sessionId1", "sessionId3"},
-			Errors:              []error{assert.AnError, assert.AnError},
-		}, result)
-		assert.EqualError(t, err, "failed to close some sessions")
+		sessionCloser.EXPECT().CloseSession("sessionId3").Return(errors.New("error2"))
+		mockLogger.EXPECT().Infow("Closed sessions", "session_ids", "sessionId2")
+		mockLogger.EXPECT().Errorw("Failed to close sessions", "session_ids", "sessionId1, sessionId3", "errors", "error1, error2")
+		executor.CloseExpiredSessions()
 	})
 
 	t.Run("Successfully close open and also expired sessions", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		sessionGetter := NewMocksessionGetter(controller)
 		sessionCloser := NewMocksessionCloser(controller)
+		mockLogger := NewMockLogger(controller)
 		clock := clock.NewMock()
-		executor := NewExecutor(sessionGetter, sessionCloser, clock)
+		executor := NewExecutor(sessionGetter, sessionCloser, mockLogger, clock)
 
 		clock.Set(time.Date(2024, 1, 2, 12, 30, 0, 0, time.UTC))
 		sessionGetter.EXPECT().GetOpenSessions().Return([]session.Session{
@@ -66,11 +63,7 @@ func TestCloseExpiredSessions(t *testing.T) {
 		sessionCloser.EXPECT().CloseSession("sessionId1").Return(nil)
 		sessionCloser.EXPECT().CloseSession("sessionId2").Return(nil)
 		// sessionId3 is not expired yet.
-		result, err := executor.CloseExpiredSessions()
-
-		assert.Equal(t, CloseExpiredSessionsResult{
-			SucceededSessionIds: []string{"sessionId1", "sessionId2"},
-		}, result)
-		assert.NoError(t, err)
+		mockLogger.EXPECT().Infow("Closed sessions", "session_ids", "sessionId1, sessionId2")
+		executor.CloseExpiredSessions()
 	})
 }
