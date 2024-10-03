@@ -23,7 +23,22 @@ type Session struct {
 	StartsAt time.Time `json:"starts_at"`
 	// The attendance score of the session that the user can get. E.g., 2
 	Score int `json:"score"`
-	// If the session is closed, no one can fix the metadata besides the developer.
-	// It's to prevent cheating. E.g., false
-	IsClosed bool `json:"is_closed"`
+	// The status of the session's attendance.
+	// It indicates if it is applied, ignored, etc.
+	AttendanceStatus AttendanceStatus `json:"attendance_status"`
+}
+
+type AttendanceStatus string
+
+const (
+	// not applied yet.
+	AttendanceStatusNotAppliedYet AttendanceStatus = "not_applied_yet"
+	// The attendance has been applied. Once it's applied, the session data is immutable.
+	AttendanceStatusApplied AttendanceStatus = "applied"
+	// It has been tried to apply the attendance but ignored for some reasons. It should be checked manually.
+	AttendanceStatusIgnored AttendanceStatus = "ignored"
+)
+
+func (s *Session) CanUpdateMetadata() bool {
+	return s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored
 }

@@ -12,17 +12,17 @@ import (
 )
 
 type mongodbSession struct {
-	Id            primitive.ObjectID `bson:"_id,omitempty"`
-	Name          string             `bson:"name"`
-	Description   string             `bson:"description"`
-	CreatedBy     string             `bson:"created_by"`
-	GoogleFormId  string             `bson:"google_form_id"`
-	GoogleFormUri string             `bson:"google_form_uri"`
-	CreatedAt     time.Time          `bson:"created_at"`
-	StartsAt      time.Time          `bson:"starts_at"`
-	Score         int                `bson:"score"`
-	IsClosed      bool               `bson:"is_closed"`
-	IsDeleted     bool               `bson:"is_deleted"`
+	Id               primitive.ObjectID `bson:"_id,omitempty"`
+	Name             string             `bson:"name"`
+	Description      string             `bson:"description"`
+	CreatedBy        string             `bson:"created_by"`
+	GoogleFormId     string             `bson:"google_form_id"`
+	GoogleFormUri    string             `bson:"google_form_uri"`
+	CreatedAt        time.Time          `bson:"created_at"`
+	StartsAt         time.Time          `bson:"starts_at"`
+	Score            int                `bson:"score"`
+	AttendanceStatus AttendanceStatus   `bson:"attendance_status"`
+	IsDeleted        bool               `bson:"is_deleted"`
 }
 
 type mongodbRepo struct {
@@ -35,9 +35,9 @@ type UpdateForm struct {
 	GoogleFormId  *string
 	GoogleFormUri *string
 	// It should be updated with the form's description.
-	StartsAt *time.Time
-	Score    *int
-	IsClosed *bool
+	StartsAt         *time.Time
+	Score            *int
+	AttendanceStatus *AttendanceStatus
 
 	// Indicator to return the updated session.
 	ReturnUpdatedSession bool
@@ -156,16 +156,16 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 
 func (r *mongodbRepo) Add(name string, description string, createdBy string, startsAt time.Time, score int) (string, error) {
 	session := mongodbSession{
-		Name:          name,
-		Description:   description,
-		CreatedBy:     createdBy,
-		GoogleFormId:  "",
-		GoogleFormUri: "",
-		CreatedAt:     time.Now(),
-		StartsAt:      startsAt,
-		Score:         score,
-		IsClosed:      false,
-		IsDeleted:     false,
+		Name:             name,
+		Description:      description,
+		CreatedBy:        createdBy,
+		GoogleFormId:     "",
+		GoogleFormUri:    "",
+		CreatedAt:        time.Now(),
+		StartsAt:         startsAt,
+		Score:            score,
+		AttendanceStatus: AttendanceStatusNotAppliedYet,
+		IsDeleted:        false,
 	}
 
 	result, err := r.collection.InsertOne(context.Background(), session)
@@ -206,8 +206,8 @@ func (r *mongodbRepo) Update(id string, updateForm UpdateForm) (Session, error) 
 	if updateForm.Score != nil {
 		update["score"] = *updateForm.Score
 	}
-	if updateForm.IsClosed != nil {
-		update["is_closed"] = *updateForm.IsClosed
+	if updateForm.AttendanceStatus != nil {
+		update["attendance_status"] = *updateForm.AttendanceStatus
 	}
 
 	if _, err = r.collection.UpdateOne(context.Background(), bson.M{"_id": objectID}, bson.M{"$set": update}); err != nil {
@@ -237,15 +237,15 @@ func (r *mongodbRepo) Delete(id string) error {
 
 func fromMongodbSession(session *mongodbSession) *Session {
 	return &Session{
-		Id:            session.Id.Hex(),
-		Name:          session.Name,
-		Description:   session.Description,
-		CreatedBy:     session.CreatedBy,
-		GoogleFormId:  session.GoogleFormId,
-		GoogleFormUri: session.GoogleFormUri,
-		CreatedAt:     session.CreatedAt,
-		StartsAt:      session.StartsAt,
-		Score:         session.Score,
-		IsClosed:      session.IsClosed,
+		Id:               session.Id.Hex(),
+		Name:             session.Name,
+		Description:      session.Description,
+		CreatedBy:        session.CreatedBy,
+		GoogleFormId:     session.GoogleFormId,
+		GoogleFormUri:    session.GoogleFormUri,
+		CreatedAt:        session.CreatedAt,
+		StartsAt:         session.StartsAt,
+		Score:            session.Score,
+		AttendanceStatus: session.AttendanceStatus,
 	}
 }

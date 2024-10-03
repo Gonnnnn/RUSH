@@ -27,7 +27,7 @@ func TestDeleteOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		sessionRepo.EXPECT().Get("session-id").Return(Session{IsClosed: true}, nil)
+		sessionRepo.EXPECT().Get("session-id").Return(Session{AttendanceStatus: AttendanceStatusApplied}, nil)
 		err := service.DeleteOpenSession("session-id")
 
 		assert.Equal(t, errors.New("session is already closed"), err)
@@ -38,7 +38,7 @@ func TestDeleteOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		sessionRepo.EXPECT().Get("session-id").Return(Session{IsClosed: false}, nil)
+		sessionRepo.EXPECT().Get("session-id").Return(Session{AttendanceStatus: AttendanceStatusNotAppliedYet}, nil)
 		sessionRepo.EXPECT().Delete("session-id").Return(errors.New("failed to delete session"))
 		err := service.DeleteOpenSession("session-id")
 
@@ -50,7 +50,7 @@ func TestDeleteOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		sessionRepo.EXPECT().Get("session-id").Return(Session{IsClosed: false}, nil)
+		sessionRepo.EXPECT().Get("session-id").Return(Session{AttendanceStatus: AttendanceStatusNotAppliedYet}, nil)
 		sessionRepo.EXPECT().Delete("session-id").Return(nil)
 		err := service.DeleteOpenSession("session-id")
 
@@ -75,7 +75,7 @@ func TestUpdateOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		sessionRepo.EXPECT().Get("session-id").Return(Session{IsClosed: true}, nil)
+		sessionRepo.EXPECT().Get("session-id").Return(Session{AttendanceStatus: AttendanceStatusApplied}, nil)
 		_, err := service.UpdateOpenSession("session-id", OpenSessionUpdateForm{})
 
 		assert.Equal(t, errors.New("session is already closed"), err)
@@ -86,7 +86,7 @@ func TestUpdateOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		sessionRepo.EXPECT().Get("session-id").Return(Session{IsClosed: false}, nil)
+		sessionRepo.EXPECT().Get("session-id").Return(Session{AttendanceStatus: AttendanceStatusNotAppliedYet}, nil)
 		newTitle := "new-title"
 		newDescription := "new-description"
 		newStartsAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -118,7 +118,7 @@ func TestUpdateOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		sessionRepo.EXPECT().Get("session-id").Return(Session{IsClosed: false}, nil)
+		sessionRepo.EXPECT().Get("session-id").Return(Session{AttendanceStatus: AttendanceStatusNotAppliedYet}, nil)
 		newTitle := "new-title"
 		newDescription := "new-description"
 		newStartsAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -140,7 +140,6 @@ func TestUpdateOpenSession(t *testing.T) {
 			Description:   newDescription,
 			StartsAt:      newStartsAt,
 			Score:         newScore,
-			IsClosed:      false,
 			CreatedBy:     "created-by",
 			GoogleFormId:  newGoogleFormId,
 			GoogleFormUri: newGoogleFormUri,
@@ -170,9 +169,9 @@ func TestCloseOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		isClosed := true
+		attendanceStatus := AttendanceStatusApplied
 		sessionRepo.EXPECT().Update("session-id", UpdateForm{
-			IsClosed: &isClosed,
+			AttendanceStatus: &attendanceStatus,
 		}).Return(Session{}, errors.New("failed to update session"))
 		err := service.CloseOpenSession("session-id")
 
@@ -184,9 +183,9 @@ func TestCloseOpenSession(t *testing.T) {
 		sessionRepo := NewMockSessionRepo(controller)
 		service := NewService(sessionRepo)
 
-		isClosed := true
+		attendanceStatus := AttendanceStatusApplied
 		sessionRepo.EXPECT().Update("session-id", UpdateForm{
-			IsClosed: &isClosed,
+			AttendanceStatus: &attendanceStatus,
 		}).Return(Session{}, nil)
 
 		err := service.CloseOpenSession("session-id")
