@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip } from 'react-tooltip';
 import { CheckCircleOutlineRounded } from '@mui/icons-material';
 import {
   Table,
@@ -21,7 +22,7 @@ import {
 import { useHeader } from './Layout';
 import SessionCreate from './SessionCreate';
 import { Session, listSessions } from './client/http';
-import { toYYslashMMslashDDspaceHHcolonMM } from './common/date';
+import { toYYslashMMslashDDspaceHHcolonMMwithDay } from './common/date';
 
 const SessionList = () => {
   const navigate = useNavigate();
@@ -90,25 +91,61 @@ const SessionList = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="center" sx={{ width: '40%' }}>
-                  이름
-                </TableCell>
-                <TableCell align="center" sx={{ width: '40%' }}>
+                <TableCell align="center" sx={{ width: '25%' }}>
                   시작 시간
                 </TableCell>
-                <TableCell align="center" sx={{ width: '20%' }}>
-                  출석 반영
+                <TableCell align="center" sx={{ width: '25%' }}>
+                  이름
                 </TableCell>
+                <TableCell align="center" sx={{ width: '50%' }}>
+                  <Box display="flex" flexDirection="row" gap={1} alignItems="center" justifyContent="center">
+                    출석 반영
+                    <CheckCircleOutlineRounded color="primary" data-tooltip-id="attendance-status-applied-tooltip" />
+                    <CheckCircleOutlineRounded color="warning" data-tooltip-id="attendance-status-ignored-tooltip" />
+                    <CheckCircleOutlineRounded
+                      color="disabled"
+                      data-tooltip-id="attendance-status-not-applied-tooltip"
+                    />
+                  </Box>
+                </TableCell>
+                <Tooltip
+                  id="attendance-status-applied-tooltip"
+                  place="top"
+                  content="출석 반영 완료"
+                  openEvents={{ click: true, mouseover: true }}
+                />
+                <Tooltip
+                  id="attendance-status-ignored-tooltip"
+                  place="top"
+                  content="출석 반영이 시도됐으나 무시된 상태 (ex) dummy session으로 간주되는 경우"
+                  openEvents={{ click: true, mouseover: true }}
+                />
+                <Tooltip
+                  id="attendance-status-not-applied-tooltip"
+                  place="top"
+                  content="세션 출석이 마감되지 않아, 아직 반영되지 않은 상태"
+                  openEvents={{ click: true, mouseover: true }}
+                />
               </TableRow>
             </TableHead>
             <TableBody>
               {sessions.map((session) => (
                 <TableRow key={session.id} onClick={() => handleRowClick(session)} style={{ cursor: 'pointer' }}>
+                  <TableCell align="center">{toYYslashMMslashDDspaceHHcolonMMwithDay(session.startsAt)}</TableCell>
                   <TableCell align="center">{session.name}</TableCell>
-                  <TableCell align="center">{toYYslashMMslashDDspaceHHcolonMM(session.startsAt)}</TableCell>
-                  {/* center the children */}
                   <TableCell align="center">
-                    <CheckCircleOutlineRounded color={session.isClosed ? 'primary' : 'disabled'} />
+                    {(() => {
+                      switch (session.attendanceStatus) {
+                        case 'applied':
+                          return <CheckCircleOutlineRounded color="primary" />;
+                        case 'ignored':
+                          return <CheckCircleOutlineRounded color="warning" />;
+                        case 'not_applied_yet':
+                          return <CheckCircleOutlineRounded color="disabled" />;
+                        default:
+                          return 'UNKNOWN - Contact dev';
+                      }
+                    })()}
                   </TableCell>
                 </TableRow>
               ))}
