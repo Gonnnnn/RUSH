@@ -50,8 +50,9 @@ type Session struct {
 	StartsAt time.Time `json:"starts_at"`
 	// The score of the session. E.g., 100
 	Score int `json:"score"`
-	// The indicator if the session is closed. E.g., true
-	IsClosed bool `json:"is_closed"`
+	// The status of the session's attendance.
+	// It indicates if it is applied, ignored, etc.
+	AttendanceStatus session.AttendanceStatus `json:"attendance_status"`
 }
 
 type Attendance struct {

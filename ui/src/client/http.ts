@@ -38,6 +38,8 @@ const UserSchema = z
     externalName: data.external_name,
   }));
 
+const AttendanceStatusSchema = z.enum(['not_applied_yet', 'applied', 'ignored']);
+
 const SessionSchema = z
   .object({
     id: z.string(),
@@ -49,7 +51,7 @@ const SessionSchema = z
     created_at: z.string().transform((str) => new Date(str)),
     starts_at: z.string().transform((str) => new Date(str)),
     score: z.number(),
-    is_closed: z.boolean(),
+    attendance_status: AttendanceStatusSchema,
   })
   .transform((data) => ({
     ...data,
@@ -58,7 +60,7 @@ const SessionSchema = z
     googleFormId: data.google_form_id,
     createdAt: data.created_at,
     startsAt: data.starts_at,
-    isClosed: data.is_closed,
+    attendanceStatus: data.attendance_status,
   }));
 
 const AttendanceSchema = z

@@ -135,8 +135,13 @@ const SessionDetail = () => {
         >
           Back
         </Button>
-        <Button variant="outlined" color="error" onClick={handleDeleteBtnClick} disabled={session.isClosed}>
-          {session.isClosed ? 'Closed already' : 'Delete'}
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={handleDeleteBtnClick}
+          disabled={session.attendanceStatus === 'applied'}
+        >
+          {session.attendanceStatus === 'applied' ? 'Applied already' : 'Delete'}
         </Button>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
