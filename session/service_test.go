@@ -93,21 +93,24 @@ func TestUpdateOpenSession(t *testing.T) {
 		newScore := 100
 		newGoogleFormId := "google-form-id"
 		newGoogleFormUri := "google-form-uri"
+		newAttendanceStatus := AttendanceStatusIgnored
 		sessionRepo.EXPECT().Update("session-id", UpdateForm{
-			Title:         &newTitle,
-			Description:   &newDescription,
-			StartsAt:      &newStartsAt,
-			Score:         &newScore,
-			GoogleFormId:  &newGoogleFormId,
-			GoogleFormUri: &newGoogleFormUri,
+			Title:            &newTitle,
+			Description:      &newDescription,
+			StartsAt:         &newStartsAt,
+			Score:            &newScore,
+			GoogleFormId:     &newGoogleFormId,
+			GoogleFormUri:    &newGoogleFormUri,
+			AttendanceStatus: &newAttendanceStatus,
 		}).Return(Session{}, errors.New("failed to update session"))
 		_, err := service.UpdateOpenSession("session-id", OpenSessionUpdateForm{
-			Title:         &newTitle,
-			Description:   &newDescription,
-			StartsAt:      &newStartsAt,
-			Score:         &newScore,
-			GoogleFormId:  &newGoogleFormId,
-			GoogleFormUri: &newGoogleFormUri,
+			Title:            &newTitle,
+			Description:      &newDescription,
+			StartsAt:         &newStartsAt,
+			Score:            &newScore,
+			GoogleFormId:     &newGoogleFormId,
+			GoogleFormUri:    &newGoogleFormUri,
+			AttendanceStatus: &newAttendanceStatus,
 		})
 
 		assert.Equal(t, fmt.Errorf("repo failed to update session: %w", errors.New("failed to update session")), err)
@@ -125,24 +128,26 @@ func TestUpdateOpenSession(t *testing.T) {
 		newScore := 100
 		newGoogleFormId := "google-form-id"
 		newGoogleFormUri := "google-form-uri"
+		newAttendanceStatus := AttendanceStatusIgnored
 		sessionRepo.EXPECT().Update("session-id", UpdateForm{
-			Title:         &newTitle,
-			Description:   &newDescription,
-			StartsAt:      &newStartsAt,
-			Score:         &newScore,
-			GoogleFormId:  &newGoogleFormId,
-			GoogleFormUri: &newGoogleFormUri,
-
+			Title:                &newTitle,
+			Description:          &newDescription,
+			StartsAt:             &newStartsAt,
+			Score:                &newScore,
+			GoogleFormId:         &newGoogleFormId,
+			GoogleFormUri:        &newGoogleFormUri,
+			AttendanceStatus:     &newAttendanceStatus,
 			ReturnUpdatedSession: true,
 		}).Return(Session{
-			Id:            "session-id",
-			Name:          newTitle,
-			Description:   newDescription,
-			StartsAt:      newStartsAt,
-			Score:         newScore,
-			CreatedBy:     "created-by",
-			GoogleFormId:  newGoogleFormId,
-			GoogleFormUri: newGoogleFormUri,
+			Id:               "session-id",
+			Name:             newTitle,
+			Description:      newDescription,
+			StartsAt:         newStartsAt,
+			Score:            newScore,
+			CreatedBy:        "created-by",
+			GoogleFormId:     newGoogleFormId,
+			GoogleFormUri:    newGoogleFormUri,
+			AttendanceStatus: newAttendanceStatus,
 		}, nil)
 
 		updatedSession, err := service.UpdateOpenSession("session-id", OpenSessionUpdateForm{
@@ -152,6 +157,7 @@ func TestUpdateOpenSession(t *testing.T) {
 			Score:                &newScore,
 			GoogleFormId:         &newGoogleFormId,
 			GoogleFormUri:        &newGoogleFormUri,
+			AttendanceStatus:     &newAttendanceStatus,
 			ReturnUpdatedSession: true,
 		})
 
