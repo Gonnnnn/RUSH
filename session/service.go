@@ -40,6 +40,8 @@ type OpenSessionUpdateForm struct {
 	GoogleFormId  *string
 	GoogleFormUri *string
 
+	AttendanceStatus *AttendanceStatus
+
 	ReturnUpdatedSession bool
 }
 
@@ -54,12 +56,13 @@ func (s *service) UpdateOpenSession(id string, updateForm OpenSessionUpdateForm)
 
 	updatedSession, err := s.sessionRepo.Update(id,
 		UpdateForm{
-			Title:         updateForm.Title,
-			Description:   updateForm.Description,
-			StartsAt:      updateForm.StartsAt,
-			Score:         updateForm.Score,
-			GoogleFormId:  updateForm.GoogleFormId,
-			GoogleFormUri: updateForm.GoogleFormUri,
+			Title:            updateForm.Title,
+			Description:      updateForm.Description,
+			StartsAt:         updateForm.StartsAt,
+			Score:            updateForm.Score,
+			GoogleFormId:     updateForm.GoogleFormId,
+			GoogleFormUri:    updateForm.GoogleFormUri,
+			AttendanceStatus: updateForm.AttendanceStatus,
 
 			ReturnUpdatedSession: updateForm.ReturnUpdatedSession,
 		})
@@ -67,6 +70,15 @@ func (s *service) UpdateOpenSession(id string, updateForm OpenSessionUpdateForm)
 		return Session{}, fmt.Errorf("repo failed to update session: %w", err)
 	}
 	return updatedSession, nil
+}
+
+func (s *service) MarkAttendanceIsIgnored(id string) error {
+	attendanceStatus := AttendanceStatusIgnored
+	_, err := s.sessionRepo.Update(id, UpdateForm{AttendanceStatus: &attendanceStatus})
+	if err != nil {
+		return fmt.Errorf("repo failed to update session: %w", err)
+	}
+	return nil
 }
 
 func (s *service) CloseOpenSession(id string) error {

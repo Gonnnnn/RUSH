@@ -70,6 +70,13 @@ func (s *Server) CloseSession(sessionId string) error {
 		return newInternalServerError(fmt.Errorf("failed to get form submissions: %w", err))
 	}
 
+	if len(formSubmissions) == 0 {
+		if err := s.openSessionRepo.MarkAttendanceIsIgnored(sessionId); err != nil {
+			return newInternalServerError(fmt.Errorf("failed to mark the session's attendance as ignored: %w", err))
+		}
+		return nil
+	}
+
 	submissionsOnTime := []attendance.FormSubmission{}
 	for _, submission := range formSubmissions {
 		if submission.SubmissionTime.Before(dbSession.StartsAt) {
