@@ -17,18 +17,18 @@ func fromUser(user *user.User) *User {
 	}
 }
 
-func fromSession(session session.Session) Session {
+func fromSession(dbSession session.Session) Session {
 	return Session{
-		Id:            session.Id,
-		Name:          session.Name,
-		Description:   session.Description,
-		CreatedBy:     session.CreatedBy,
-		GoogleFormUri: session.GoogleFormUri,
-		GoogleFormId:  session.GoogleFormId,
-		CreatedAt:     session.CreatedAt,
-		StartsAt:      session.StartsAt,
-		Score:         session.Score,
-		IsClosed:      session.IsClosed,
+		Id:            dbSession.Id,
+		Name:          dbSession.Name,
+		Description:   dbSession.Description,
+		CreatedBy:     dbSession.CreatedBy,
+		GoogleFormUri: dbSession.GoogleFormUri,
+		GoogleFormId:  dbSession.GoogleFormId,
+		CreatedAt:     dbSession.CreatedAt,
+		StartsAt:      dbSession.StartsAt,
+		Score:         dbSession.Score,
+		IsClosed:      dbSession.AttendanceStatus == session.AttendanceStatusApplied,
 	}
 }
 

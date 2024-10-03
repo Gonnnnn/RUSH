@@ -18,7 +18,7 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 	if err != nil {
 		return "", newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
-	if dbSession.IsClosed {
+	if !dbSession.CanUpdateMetadata() {
 		return "", newBadRequestError(errors.New("session is already closed"))
 	}
 

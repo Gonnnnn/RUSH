@@ -61,7 +61,7 @@ func (s *Server) CloseSession(sessionId string) error {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 
-	if dbSession.IsClosed {
+	if !dbSession.CanUpdateMetadata() {
 		return newBadRequestError(errors.New("session is already closed"))
 	}
 

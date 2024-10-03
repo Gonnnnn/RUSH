@@ -21,7 +21,7 @@ func (s *service) DeleteOpenSession(id string) error {
 	if err != nil {
 		return fmt.Errorf("repo failed to get session: %w", err)
 	}
-	if session.IsClosed {
+	if !session.CanUpdateMetadata() {
 		return errors.New("session is already closed")
 	}
 
@@ -48,7 +48,7 @@ func (s *service) UpdateOpenSession(id string, updateForm OpenSessionUpdateForm)
 	if err != nil {
 		return Session{}, fmt.Errorf("repo failed to get session: %w", err)
 	}
-	if session.IsClosed {
+	if !session.CanUpdateMetadata() {
 		return Session{}, errors.New("session is already closed")
 	}
 
@@ -70,8 +70,8 @@ func (s *service) UpdateOpenSession(id string, updateForm OpenSessionUpdateForm)
 }
 
 func (s *service) CloseOpenSession(id string) error {
-	closed := true
-	_, err := s.sessionRepo.Update(id, UpdateForm{IsClosed: &closed})
+	attendanceStatus := AttendanceStatusApplied
+	_, err := s.sessionRepo.Update(id, UpdateForm{AttendanceStatus: &attendanceStatus})
 	if err != nil {
 		return fmt.Errorf("repo failed to update session: %w", err)
 	}
