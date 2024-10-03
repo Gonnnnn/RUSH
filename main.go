@@ -96,7 +96,9 @@ func main() {
 
 	jobExecutor := job.NewExecutor(sessionRepo, server, must.OK1(zap.NewProduction()).Sugar(), clock)
 	if env.GetRequiredStringVariable("ENVIRONMENT") != "local" {
-		cron.New().AddFunc("30 * * * *", func() { jobExecutor.CloseExpiredSessions() })
+		scheduler := cron.New()
+		scheduler.AddFunc("30 * * * *", func() { jobExecutor.CloseExpiredSessions() })
+		scheduler.Start()
 	}
 
 	log.Println("Starting server")
