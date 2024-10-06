@@ -28,7 +28,8 @@ type TabTypes = 'attendance' | 'addAttendance';
 
 /**
  * The attendance table for the session. It handles the attendance data view and the add attendance action.
- * Thus, it fetches the attendance and updates it by itself, not by the parent component.
+ * It fetches the attendance and updates it by itself, not by the parent component on purpose
+ * to avoid unnecessary props passing, and also to not affect the parent component render when it fails.
  */
 const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
   const { authenticated } = useAuth();
