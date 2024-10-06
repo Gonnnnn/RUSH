@@ -26,6 +26,10 @@ type OrderKeys = 'userExternalName' | 'userGeneration' | 'userJoinedAt';
 
 type TabTypes = 'attendance' | 'addAttendance';
 
+/**
+ * The attendance table for the session. It handles the attendance data view and the add attendance action.
+ * Thus, it fetches the attendance and updates it by itself, not by the parent component.
+ */
 const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
   const { authenticated } = useAuth();
   const { handleError } = useHandleError();
