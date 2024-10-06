@@ -225,17 +225,29 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
 		return newBadRequestError(errors.New("session is already closed"))
 	}
 
-	users, err := s.userRepo.GetAll()
+	attendances, err := s.attendanceRepo.FindBySessionId(sessionId)
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to get attendances: %w", err))
+	}
+	attendedUserIdSet := map[string]bool{}
+	for _, attendance := range attendances {
+		attendedUserIdSet[attendance.UserId] = true
+	}
+	userIdsNotAttendedYet := array.Filter(userIds, func(userId string) bool {
+		return !attendedUserIdSet[userId]
+	})
+
+	allUsers, err := s.userRepo.GetAll()
 	if err != nil {
 		return newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}
-	userIdToUser := map[string]user.User{}
-	for _, user := range users {
-		userIdToUser[user.Id] = user
+	allUserIdToUser := map[string]user.User{}
+	for _, user := range allUsers {
+		allUserIdToUser[user.Id] = user
 	}
 	usersToMark := []user.User{}
-	for _, userId := range userIds {
-		user, ok := userIdToUser[userId]
+	for _, userIdNotAttendedYet := range userIdsNotAttendedYet {
+		user, ok := allUserIdToUser[userIdNotAttendedYet]
 		if !ok {
 			continue
 		}
@@ -244,9 +256,10 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
 		}
 		usersToMark = append(usersToMark, user)
 	}
-	if len(usersToMark) != len(userIds) {
-		return newBadRequestError(fmt.Errorf("it received %d user IDs (%s), but only %d users (%s) are active",
+	if len(usersToMark) != len(userIdsNotAttendedYet) {
+		return newBadRequestError(fmt.Errorf("it received %d user IDs (%s) where %d users are not attended yet but only %d users (%s) are active among them",
 			len(userIds), strings.Join(userIds, ","),
+			len(userIdsNotAttendedYet), strings.Join(userIdsNotAttendedYet, ","),
 			len(usersToMark), strings.Join(array.Map(usersToMark, func(user user.User) string { return user.Id }), ",")))
 	}
 
