@@ -7,17 +7,9 @@ import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useHeader } from '../Layout';
 import { useSnackbar } from '../SnackbarContext';
-import {
-  Attendance,
-  Session,
-  createSessionForm,
-  deleteSession,
-  getSession,
-  getSessionAttendances,
-  markUsersAsPresent,
-} from '../client/http';
+import { Session, createSessionForm, deleteSession, getSession } from '../client/http';
 import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from '../common/date';
-import AttendanceTable from './AttendanceTable';
+import SessionAttendanceTable from './AttendanceTable';
 
 const SessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
@@ -27,10 +19,7 @@ const SessionDetail = () => {
   const { id } = useParams();
 
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = useState(false);
-
-  const [attendances, setAttendances] = useState<Attendance[]>([]);
-  const [isLoadingAttendances, setIsLoadingAttendances] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [isCreatingForm, setIsCreatingForm] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
@@ -45,31 +34,18 @@ const SessionDetail = () => {
 
     const fetchSession = async () => {
       try {
-        setIsLoadingSession(true);
+        setIsLoading(true);
         const fetchedSession = await getSession(id);
         setSession(fetchedSession);
       } catch (error) {
         console.error(error);
         navigate('/sessions');
       } finally {
-        setIsLoadingSession(false);
-      }
-    };
-
-    const fetchAttendances = async () => {
-      try {
-        setIsLoadingAttendances(true);
-        const fetchedAttendances = await getSessionAttendances(id);
-        setAttendances(fetchedAttendances);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoadingAttendances(false);
+        setIsLoading(false);
       }
     };
 
     fetchSession();
-    fetchAttendances();
   }, [navigate, id]);
 
   if (!id) {
@@ -88,10 +64,6 @@ const SessionDetail = () => {
         messageInternal: 'Failed to delete the session. Contact the dev.',
       });
     }
-  };
-
-  const applyAttendances = (userIds: string[]) => {
-    markUsersAsPresent(id, userIds);
   };
 
   const handleQrCodeCreateClick = async () => {
@@ -139,7 +111,7 @@ const SessionDetail = () => {
     }
   };
 
-  if (isLoadingSession || !session) {
+  if (isLoading || !session) {
     return (
       <Container>
         <Box display="flex" justifyContent="center" alignItems="center">
@@ -176,11 +148,7 @@ const SessionDetail = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <SessionInfo session={session} />
-        <AttendanceTable
-          isLoading={isLoadingAttendances}
-          attendances={attendances}
-          applyAttendances={applyAttendances}
-        />
+        <SessionAttendanceTable sessionId={id} />
         <AttendanceQrPanel
           session={session}
           qrRef={qrRef}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,11 +12,15 @@ import {
 } from '@mui/material';
 import { DataGrid, GridRowSelectionModel, GridToolbarContainer, GridToolbarQuickFilter } from '@mui/x-data-grid';
 import { listUsers, User } from '../client/http';
+import useHandleError from '../common/error';
 
-const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: string[]) => void }) => {
+const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: string[]) => Promise<void> }) => {
+  const { handleError } = useHandleError();
+
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
+  const [isApplyingAttendances, setIsApplyingAttendances] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const [showOnlySelected, setShowOnlySelected] = useState(false);
@@ -37,7 +42,7 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
   }, []);
 
   const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
-    setSelectionModel(newSelectionModel);
+    setSelectedUserIds(newSelectionModel.map((id) => id.toString()));
   };
 
   const handleApplyButtonClick = () => {
@@ -48,9 +53,20 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
     setConfirmDialogOpen(false);
   };
 
-  const handleConfirmDialogConfirm = () => {
-    const userIds = selectionModel.map((id) => id.toString());
-    applyAttendances(userIds);
+  const handleConfirmDialogConfirm = async () => {
+    try {
+      setIsApplyingAttendances(true);
+      await applyAttendances(selectedUserIds);
+      setConfirmDialogOpen(false);
+    } catch (error) {
+      handleError({
+        error,
+        messageAuth: 'Manual attendance application is restricted to admins.',
+        messageInternal: 'Failed to apply attendances. Contact the dev.',
+      });
+    } finally {
+      setIsApplyingAttendances(false);
+    }
   };
 
   const columns = [
@@ -58,7 +74,7 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
     { field: 'generation', headerName: '기수', width: 150 },
   ];
 
-  const usersToShow = showOnlySelected ? users.filter((user) => selectionModel.includes(user.id)) : users;
+  const usersToShow = showOnlySelected ? users.filter((user) => selectedUserIds.includes(user.id)) : users;
 
   return (
     <Box display="flex" flexDirection="column" gap={2} p={2}>
@@ -78,7 +94,7 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
           },
         }}
         checkboxSelection
-        rowSelectionModel={selectionModel}
+        rowSelectionModel={selectedUserIds}
         onRowSelectionModelChange={handleSelectionChange}
         slots={{
           toolbar: () => CustomToolbar(showOnlySelected, () => setShowOnlySelected((prev) => !prev)),
@@ -86,6 +102,7 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
         sx={{ width: '100%', height: '70vh' }}
       />
       <ConfirmDialog
+        isConfirming={isApplyingAttendances}
         open={confirmDialogOpen}
         onClose={handleConfirmDialogClose}
         onConfirm={handleConfirmDialogConfirm}
@@ -103,7 +120,17 @@ const CustomToolbar = (showOnlySelected: boolean, handleButtonClick: () => void)
   </GridToolbarContainer>
 );
 
-const ConfirmDialog = ({ open, onClose, onConfirm }: { open: boolean; onClose: () => void; onConfirm: () => void }) => (
+const ConfirmDialog = ({
+  isConfirming,
+  open,
+  onClose,
+  onConfirm,
+}: {
+  isConfirming: boolean;
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) => (
   <Dialog open={open} onClose={onClose}>
     <DialogTitle>출석 추가</DialogTitle>
     <DialogContent>
@@ -114,9 +141,11 @@ const ConfirmDialog = ({ open, onClose, onConfirm }: { open: boolean; onClose: (
       </DialogContentText>
     </DialogContent>
     <DialogActions>
-      <Button onClick={onClose}>Cancel</Button>
-      <Button onClick={onConfirm} color="primary">
-        Confirm
+      <Button onClick={onClose} disabled={isConfirming}>
+        Cancel
+      </Button>
+      <Button onClick={onConfirm} color="primary" disabled={isConfirming}>
+        {isConfirming ? <CircularProgress size={24} /> : 'Confirm'}
       </Button>
     </DialogActions>
   </Dialog>

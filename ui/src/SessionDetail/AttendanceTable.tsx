@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 import {
   Typography,
@@ -14,8 +14,10 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import { Attendance } from '../client/http';
+import { useAuth } from '../AuthContext';
+import { Attendance, getSessionAttendances, markUsersAsPresent } from '../client/http';
 import { toYYslashMMslashDDspaceHHcolonMMcolonSS } from '../common/date';
+import useHandleError from '../common/error';
 import AddAttendance from './AddAttendance';
 
 type OrderBy = 'asc' | 'desc';
@@ -24,20 +26,48 @@ type OrderKeys = 'userExternalName' | 'userGeneration' | 'userJoinedAt';
 
 type TabTypes = 'attendance' | 'addAttendance';
 
-const AttendanceTable = ({
-  isLoading,
-  attendances,
-  applyAttendances,
-}: {
-  isLoading: boolean;
-  attendances: Attendance[];
-  applyAttendances: (userIds: string[]) => void;
-}) => {
+const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
+  const { authenticated } = useAuth();
+  const { handleError } = useHandleError();
+
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [nameOrder, setNameOrder] = useState<OrderBy>('asc');
   const [generationOrder, setGenerationOrder] = useState<OrderBy>('asc');
   const [joinedAtOrder, setJoinedAtOrder] = useState<OrderBy>('asc');
   const [orderBy, setOrderBy] = useState<OrderKeys>('userExternalName');
   const [tab, setTab] = useState<TabTypes>('attendance');
+
+  useEffect(() => {
+    const fetchAttendances = async () => {
+      if (!authenticated) {
+        return;
+      }
+      try {
+        setIsLoading(true);
+        const fetchedAttendances = await getSessionAttendances(sessionId);
+        setAttendances(fetchedAttendances);
+      } catch (error) {
+        handleError({
+          error,
+          messageAuth: 'Requires login',
+          messageInternal: 'Failed to load attendance list',
+        });
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAttendances();
+  }, [sessionId, authenticated, handleError]);
+
+  const applyAttendances = async (userIds: string[]) => {
+    await markUsersAsPresent(sessionId, userIds);
+    const newAttendances = await getSessionAttendances(sessionId);
+    setAttendances(newAttendances);
+  };
 
   const onSortChange = (newOrderBy: OrderKeys) => {
     switch (newOrderBy) {
@@ -82,6 +112,22 @@ const AttendanceTable = ({
       <Paper sx={{ p: 2 }} elevation={4}>
         <Box display="flex" justifyContent="center" alignItems="center">
           <CircularProgress />
+        </Box>
+      </Paper>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <Paper sx={{ p: 2 }} elevation={4}>
+        <Box display="flex" flexDirection="column">
+          <Typography variant="h6">출석</Typography>
+          <Tabs value={tab} onChange={(_, newTab) => handleTabChange(newTab)} sx={{ mb: 2 }}>
+            <Tab label="출석 현황" value="attendance" disabled />
+            {/* TODO(#177): Hide it if the user is not admin. */}
+            <Tab label="출석 추가" value="addAttendance" disabled />
+          </Tabs>
+          <Typography variant="body1">로그인이 필요한 서비스입니다.</Typography>
         </Box>
       </Paper>
     );
@@ -161,7 +207,12 @@ const AttendanceTable = ({
 
         {tab === 'addAttendance' && (
           <Box>
-            <AddAttendance applyAttendances={applyAttendances} />
+            <AddAttendance
+              applyAttendances={async (userIds) => {
+                await applyAttendances(userIds);
+                setTab('attendance');
+              }}
+            />
           </Box>
         )}
       </Box>
@@ -179,4 +230,4 @@ const OrderArrows = ({ active, order, onClick }: { active: boolean; order: Order
   </Box>
 );
 
-export default AttendanceTable;
+export default SessionAttendanceTable;
