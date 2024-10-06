@@ -18,6 +18,7 @@ import {
   LinearProgress,
   useTheme,
   useMediaQuery,
+  Typography,
 } from '@mui/material';
 import { useHeader } from './Layout';
 import SessionCreate from './SessionCreate';
@@ -85,6 +86,14 @@ const SessionList = () => {
             New
           </Button>
         </Box>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="body2">출석 상태</Typography>
+          <Box display="flex" alignItems="center">
+            <CheckCircleOutlineRounded color="primary" data-tooltip-id="attendance-status-applied-tooltip" />
+            <CheckCircleOutlineRounded color="warning" data-tooltip-id="attendance-status-ignored-tooltip" />
+            <CheckCircleOutlineRounded color="disabled" data-tooltip-id="attendance-status-not-applied-tooltip" />
+          </Box>
+        </Box>
         <TableContainer component={Paper}>
           {/* TODO(#31): Implements the common table UI with a loader. */}
           <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
@@ -98,15 +107,7 @@ const SessionList = () => {
                   이름
                 </TableCell>
                 <TableCell align="center" sx={{ width: '50%' }}>
-                  <Box display="flex" flexDirection="row" gap={1} alignItems="center" justifyContent="center">
-                    출석 반영
-                    <CheckCircleOutlineRounded color="primary" data-tooltip-id="attendance-status-applied-tooltip" />
-                    <CheckCircleOutlineRounded color="warning" data-tooltip-id="attendance-status-ignored-tooltip" />
-                    <CheckCircleOutlineRounded
-                      color="disabled"
-                      data-tooltip-id="attendance-status-not-applied-tooltip"
-                    />
-                  </Box>
+                  출석 반영
                 </TableCell>
                 <Tooltip
                   id="attendance-status-applied-tooltip"
@@ -117,7 +118,7 @@ const SessionList = () => {
                 <Tooltip
                   id="attendance-status-ignored-tooltip"
                   place="top"
-                  content="출석 반영이 시도됐으나 무시된 상태 (ex) dummy session으로 간주되는 경우"
+                  content="출석 반영이 시도됐으나 무시된 상태"
                   openEvents={{ click: true, mouseover: true }}
                 />
                 <Tooltip
