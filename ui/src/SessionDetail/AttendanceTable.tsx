@@ -56,8 +56,8 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
       } catch (error) {
         handleError({
           error,
-          messageAuth: 'Requires login',
-          messageInternal: 'Failed to load attendance list',
+          messageAuth: 'Requires login.',
+          messageInternal: 'Failed to load attendance list. Contact the dev.',
         });
         console.error(error);
       } finally {
@@ -108,10 +108,6 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
     }
   });
 
-  const handleTabChange = (newTab: TabTypes) => {
-    setTab(newTab);
-  };
-
   if (isLoading) {
     return (
       <Paper sx={{ p: 2 }} elevation={4}>
@@ -127,7 +123,7 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
       <Paper sx={{ p: 2 }} elevation={4}>
         <Box display="flex" flexDirection="column">
           <Typography variant="h6">출석</Typography>
-          <Tabs value={tab} onChange={(_, newTab) => handleTabChange(newTab)} sx={{ mb: 2 }}>
+          <Tabs value={tab} onChange={(_, newTab) => setTab(newTab)} sx={{ mb: 2 }}>
             <Tab label="출석 현황" value="attendance" disabled />
             {/* TODO(#177): Hide it if the user is not admin. */}
             <Tab label="출석 추가" value="addAttendance" disabled />
@@ -142,7 +138,7 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
     <Paper sx={{ p: 2 }} elevation={4}>
       <Box display="flex" flexDirection="column">
         <Typography variant="h6">출석</Typography>
-        <Tabs value={tab} onChange={(_, newTab) => handleTabChange(newTab)}>
+        <Tabs value={tab} onChange={(_, newTab) => setTab(newTab)}>
           <Tab label="출석 현황" value="attendance" />
           {/* TODO(#177): Hide it if the user is not admin. */}
           <Tab label="출석 추가" value="addAttendance" />

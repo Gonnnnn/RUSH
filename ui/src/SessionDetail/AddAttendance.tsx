@@ -14,11 +14,16 @@ import { DataGrid, GridRowSelectionModel, GridToolbarContainer, GridToolbarQuick
 import { listUsers, User } from '../client/http';
 import useHandleError from '../common/error';
 
+/**
+ * It handles the addition of attendances. As it has to fetch all the users,
+ * the user fetching logic is implemented here so that it wouldn't be fetched when the parent component
+ * doesn't need this component.
+ */
 const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: string[]) => Promise<void> }) => {
   const { handleError } = useHandleError();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isApplyingAttendances, setIsApplyingAttendances] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -28,18 +33,22 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        setIsLoading(true);
+        setIsLoadingUsers(true);
         // TODO(#177): Implement getAllUsers.
         const res = await listUsers(1, 9999999);
         setUsers(res.users);
       } catch (error) {
-        console.error(error);
+        handleError({
+          error,
+          messageAuth: 'Failed to fetch users. Contact the dev.',
+          messageInternal: 'Failed to fetch users. Contact the dev.',
+        });
       } finally {
-        setIsLoading(false);
+        setIsLoadingUsers(false);
       }
     };
     fetchUsers();
-  }, []);
+  }, [handleError]);
 
   const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
     setSelectedUserIds(newSelectionModel.map((id) => id.toString()));
@@ -86,7 +95,7 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
       <DataGrid
         rows={usersToShow}
         columns={columns}
-        loading={isLoading}
+        loading={isLoadingUsers}
         disableColumnFilter
         initialState={{
           pagination: {
