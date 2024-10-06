@@ -206,6 +206,10 @@ export const getSessionAttendances = async (sessionId: string): Promise<Attendan
   return GetSessionAttendancesResponseSchema.parse(response.data).attendances;
 };
 
+export const markUsersAsPresent = async (sessionId: string, userIds: string[]): Promise<void> => {
+  await client.post(`/sessions/${sessionId}/present`, { user_ids: userIds });
+};
+
 const GetHalfYearAttendancesResponseSchema = z
   .object({
     sessions: z.array(
