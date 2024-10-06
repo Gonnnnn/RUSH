@@ -221,7 +221,7 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
-	if !dbSession.CanUpdateMetadata() {
+	if !dbSession.CanApplyAttendanceManually() {
 		return newBadRequestError(errors.New("session is already closed"))
 	}
 
@@ -276,6 +276,10 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
 		}
 	})); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendances: %w", err))
+	}
+
+	if err := s.openSessionRepo.CloseOpenSession(sessionId); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to close the session: %w", err))
 	}
 
 	return nil

@@ -55,6 +55,7 @@ func (s *Server) DeleteSession(id string) error {
 	return nil
 }
 
+// TODO(#177): Fix the name to be `applyFormSubmissions` as we have more than one way to close the session now.
 func (s *Server) CloseSession(sessionId string) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
@@ -63,6 +64,10 @@ func (s *Server) CloseSession(sessionId string) error {
 
 	if !dbSession.CanUpdateMetadata() {
 		return newBadRequestError(errors.New("session is already closed"))
+	}
+
+	if !dbSession.CanApplyGoogleFormSubmissions() {
+		return newBadRequestError(errors.New("session cannot apply google form submissions"))
 	}
 
 	formSubmissions, err := s.attendanceFormHandler.GetSubmissions(dbSession.GoogleFormId)
