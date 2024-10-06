@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 import {
   Typography,
   Paper,
@@ -10,7 +11,6 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  TableSortLabel,
 } from '@mui/material';
 import { Attendance } from '../client/http';
 import { toYYslashMMslashDDspaceHHcolonMMcolonSS } from '../common/date';
@@ -20,23 +20,41 @@ type OrderBy = 'asc' | 'desc';
 type OrderKeys = 'userExternalName' | 'userGeneration' | 'userJoinedAt';
 
 const AttendanceTable = ({ isLoading, attendances }: { isLoading: boolean; attendances: Attendance[] }) => {
-  const [order, setOrder] = useState<OrderBy>('asc');
-  const [orderBy, setOrderBy] = useState<OrderKeys>('userJoinedAt');
+  const [nameOrder, setNameOrder] = useState<OrderBy>('asc');
+  const [generationOrder, setGenerationOrder] = useState<OrderBy>('asc');
+  const [joinedAtOrder, setJoinedAtOrder] = useState<OrderBy>('asc');
 
-  const handleSort = (property: OrderKeys) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
+  const [orderBy, setOrderBy] = useState<OrderKeys>('userExternalName');
+
+  const onSortChange = (newOrderBy: OrderKeys) => {
+    switch (newOrderBy) {
+      case 'userExternalName':
+        setNameOrder(oppositeOrder(nameOrder));
+        setOrderBy(newOrderBy);
+        break;
+      case 'userGeneration':
+        setGenerationOrder(oppositeOrder(generationOrder));
+        setOrderBy(newOrderBy);
+        break;
+      case 'userJoinedAt':
+        setJoinedAtOrder(oppositeOrder(joinedAtOrder));
+        setOrderBy(newOrderBy);
+        break;
+      default:
+        break;
+    }
   };
+
+  const oppositeOrder = (order: OrderBy) => (order === 'asc' ? 'desc' : 'asc');
 
   const sortedAttendances = attendances.slice().sort((a, b) => {
     switch (orderBy) {
       case 'userExternalName':
-        return (a.userExternalName < b.userExternalName ? -1 : 1) * (order === 'asc' ? 1 : -1);
+        return (a.userExternalName < b.userExternalName ? -1 : 1) * (nameOrder === 'asc' ? 1 : -1);
       case 'userGeneration':
-        return (a.userGeneration < b.userGeneration ? -1 : 1) * (order === 'asc' ? 1 : -1);
+        return (a.userGeneration < b.userGeneration ? -1 : 1) * (generationOrder === 'asc' ? 1 : -1);
       case 'userJoinedAt':
-        return (a.userJoinedAt < b.userJoinedAt ? -1 : 1) * (order === 'asc' ? 1 : -1);
+        return (a.userJoinedAt < b.userJoinedAt ? -1 : 1) * (joinedAtOrder === 'asc' ? 1 : -1);
       default:
         return 0;
     }
@@ -53,40 +71,41 @@ const AttendanceTable = ({ isLoading, attendances }: { isLoading: boolean; atten
   }
 
   return (
-    // make it scrollable
     <Paper sx={{ p: 2 }} elevation={4}>
       <Typography variant="h6">출석 제출 목록</Typography>
       <TableContainer sx={{ overflowY: 'auto', maxHeight: 400 }}>
         <Table>
-          {/* make the header sticky */}
           <TableHead sx={{ position: 'sticky', top: 0, backgroundColor: 'background.paper' }}>
             <TableRow>
-              <TableCell align="center" sx={{ width: '30%' }}>
-                <TableSortLabel
-                  active={orderBy === 'userExternalName'}
-                  direction={orderBy === 'userExternalName' ? order : 'asc'}
-                  onClick={() => handleSort('userExternalName')}
-                >
+              <TableCell align="center" sx={{ width: '30%' }} onClick={() => onSortChange('userExternalName')}>
+                <Box display="flex" alignItems="center" gap={1}>
                   이름
-                </TableSortLabel>
+                  <OrderArrows
+                    active={orderBy === 'userExternalName'}
+                    order={nameOrder}
+                    onClick={() => onSortChange('userExternalName')}
+                  />
+                </Box>
               </TableCell>
-              <TableCell align="center" sx={{ width: '30%' }}>
-                <TableSortLabel
-                  active={orderBy === 'userGeneration'}
-                  direction={orderBy === 'userGeneration' ? order : 'asc'}
-                  onClick={() => handleSort('userGeneration')}
-                >
+              <TableCell align="center" sx={{ width: '30%' }} onClick={() => onSortChange('userGeneration')}>
+                <Box display="flex" alignItems="center" gap={1}>
                   기수
-                </TableSortLabel>
+                  <OrderArrows
+                    active={orderBy === 'userGeneration'}
+                    order={generationOrder}
+                    onClick={() => onSortChange('userGeneration')}
+                  />
+                </Box>
               </TableCell>
-              <TableCell align="center" sx={{ width: '40%' }}>
-                <TableSortLabel
-                  active={orderBy === 'userJoinedAt'}
-                  direction={orderBy === 'userJoinedAt' ? order : 'asc'}
-                  onClick={() => handleSort('userJoinedAt')}
-                >
+              <TableCell align="center" sx={{ width: '40%' }} onClick={() => onSortChange('userJoinedAt')}>
+                <Box display="flex" alignItems="center" gap={1}>
                   제출 시간
-                </TableSortLabel>
+                  <OrderArrows
+                    active={orderBy === 'userJoinedAt'}
+                    order={joinedAtOrder}
+                    onClick={() => onSortChange('userJoinedAt')}
+                  />
+                </Box>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -116,5 +135,15 @@ const AttendanceTable = ({ isLoading, attendances }: { isLoading: boolean; atten
     </Paper>
   );
 };
+
+const OrderArrows = ({ active, order, onClick }: { active: boolean; order: OrderBy; onClick: () => void }) => (
+  <Box display="flex" alignItems="center" onClick={onClick}>
+    {order === 'asc' ? (
+      <ArrowUpward color={active ? 'primary' : 'action'} sx={{ width: 16, height: 16, p: 0 }} />
+    ) : (
+      <ArrowDownward color={active ? 'primary' : 'action'} sx={{ width: 16, height: 16, p: 0 }} />
+    )}
+  </Box>
+);
 
 export default AttendanceTable;
