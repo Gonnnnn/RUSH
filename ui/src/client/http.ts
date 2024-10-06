@@ -93,6 +93,10 @@ const GetUserAttendancesResponseSchema = z.object({
   attendances: z.array(AttendanceSchema),
 });
 
+const GetSessionAttendancesResponseSchema = z.object({
+  attendances: z.array(AttendanceSchema),
+});
+
 export type User = z.infer<typeof UserSchema>;
 export type Session = z.infer<typeof SessionSchema>;
 export type Attendance = z.infer<typeof AttendanceSchema>;
@@ -195,6 +199,11 @@ export const closeSession = async (sessionId: string): Promise<void> => {
 export const getUserAttendances = async (userId: string): Promise<Attendance[]> => {
   const response = await client.get(`/users/${userId}/attendances`);
   return GetUserAttendancesResponseSchema.parse(response.data).attendances;
+};
+
+export const getSessionAttendances = async (sessionId: string): Promise<Attendance[]> => {
+  const response = await client.get(`/sessions/${sessionId}/attendances`);
+  return GetSessionAttendancesResponseSchema.parse(response.data).attendances;
 };
 
 const GetHalfYearAttendancesResponseSchema = z
