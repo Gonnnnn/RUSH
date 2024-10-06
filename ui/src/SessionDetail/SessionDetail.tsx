@@ -14,6 +14,7 @@ import {
   deleteSession,
   getSession,
   getSessionAttendances,
+  markUsersAsPresent,
 } from '../client/http';
 import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from '../common/date';
 import AttendanceTable from './AttendanceTable';
@@ -87,6 +88,10 @@ const SessionDetail = () => {
         messageInternal: 'Failed to delete the session. Contact the dev.',
       });
     }
+  };
+
+  const applyAttendances = (userIds: string[]) => {
+    markUsersAsPresent(id, userIds);
   };
 
   const handleQrCodeCreateClick = async () => {
@@ -171,7 +176,11 @@ const SessionDetail = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <SessionInfo session={session} />
-        <AttendanceTable isLoading={isLoadingAttendances} attendances={attendances} />
+        <AttendanceTable
+          isLoading={isLoadingAttendances}
+          attendances={attendances}
+          applyAttendances={applyAttendances}
+        />
         <AttendanceQrPanel
           session={session}
           qrRef={qrRef}

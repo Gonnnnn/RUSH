@@ -11,20 +11,33 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import { Attendance } from '../client/http';
 import { toYYslashMMslashDDspaceHHcolonMMcolonSS } from '../common/date';
+import AddAttendance from './AddAttendance';
 
 type OrderBy = 'asc' | 'desc';
 
 type OrderKeys = 'userExternalName' | 'userGeneration' | 'userJoinedAt';
 
-const AttendanceTable = ({ isLoading, attendances }: { isLoading: boolean; attendances: Attendance[] }) => {
+type TabTypes = 'attendance' | 'addAttendance';
+
+const AttendanceTable = ({
+  isLoading,
+  attendances,
+  applyAttendances,
+}: {
+  isLoading: boolean;
+  attendances: Attendance[];
+  applyAttendances: (userIds: string[]) => void;
+}) => {
   const [nameOrder, setNameOrder] = useState<OrderBy>('asc');
   const [generationOrder, setGenerationOrder] = useState<OrderBy>('asc');
   const [joinedAtOrder, setJoinedAtOrder] = useState<OrderBy>('asc');
-
   const [orderBy, setOrderBy] = useState<OrderKeys>('userExternalName');
+  const [tab, setTab] = useState<TabTypes>('attendance');
 
   const onSortChange = (newOrderBy: OrderKeys) => {
     switch (newOrderBy) {
@@ -60,6 +73,10 @@ const AttendanceTable = ({ isLoading, attendances }: { isLoading: boolean; atten
     }
   });
 
+  const handleTabChange = (newTab: TabTypes) => {
+    setTab(newTab);
+  };
+
   if (isLoading) {
     return (
       <Paper sx={{ p: 2 }} elevation={4}>
@@ -72,66 +89,82 @@ const AttendanceTable = ({ isLoading, attendances }: { isLoading: boolean; atten
 
   return (
     <Paper sx={{ p: 2 }} elevation={4}>
-      <Typography variant="h6">출석 제출 목록</Typography>
-      <TableContainer sx={{ overflowY: 'auto', maxHeight: 400 }}>
-        <Table>
-          <TableHead sx={{ position: 'sticky', top: 0, backgroundColor: 'background.paper' }}>
-            <TableRow>
-              <TableCell align="center" sx={{ width: '30%' }} onClick={() => onSortChange('userExternalName')}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  이름
-                  <OrderArrows
-                    active={orderBy === 'userExternalName'}
-                    order={nameOrder}
-                    onClick={() => onSortChange('userExternalName')}
-                  />
-                </Box>
-              </TableCell>
-              <TableCell align="center" sx={{ width: '30%' }} onClick={() => onSortChange('userGeneration')}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  기수
-                  <OrderArrows
-                    active={orderBy === 'userGeneration'}
-                    order={generationOrder}
-                    onClick={() => onSortChange('userGeneration')}
-                  />
-                </Box>
-              </TableCell>
-              <TableCell align="center" sx={{ width: '40%' }} onClick={() => onSortChange('userJoinedAt')}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  제출 시간
-                  <OrderArrows
-                    active={orderBy === 'userJoinedAt'}
-                    order={joinedAtOrder}
-                    onClick={() => onSortChange('userJoinedAt')}
-                  />
-                </Box>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedAttendances.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3}>출석 제출 목록이 없습니다.</TableCell>
-              </TableRow>
-            ) : (
-              sortedAttendances.map((attendance) => (
-                <TableRow key={attendance.id}>
-                  <TableCell align="center" sx={{ width: '30%' }}>
-                    {attendance.userExternalName}
+      <Box display="flex" flexDirection="column">
+        <Typography variant="h6">출석</Typography>
+        <Tabs value={tab} onChange={(_, newTab) => handleTabChange(newTab)}>
+          <Tab label="출석 현황" value="attendance" />
+          {/* TODO(#177): Hide it if the user is not admin. */}
+          <Tab label="출석 추가" value="addAttendance" />
+        </Tabs>
+
+        {tab === 'attendance' && (
+          <TableContainer sx={{ overflowY: 'auto', maxHeight: 400 }}>
+            <Table>
+              <TableHead sx={{ position: 'sticky', top: 0, backgroundColor: 'background.paper' }}>
+                <TableRow>
+                  <TableCell align="center" sx={{ width: '30%' }} onClick={() => onSortChange('userExternalName')}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      이름
+                      <OrderArrows
+                        active={orderBy === 'userExternalName'}
+                        order={nameOrder}
+                        onClick={() => onSortChange('userExternalName')}
+                      />
+                    </Box>
                   </TableCell>
-                  <TableCell align="center" sx={{ width: '30%' }}>
-                    {attendance.userGeneration}
+                  <TableCell align="center" sx={{ width: '30%' }} onClick={() => onSortChange('userGeneration')}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      기수
+                      <OrderArrows
+                        active={orderBy === 'userGeneration'}
+                        order={generationOrder}
+                        onClick={() => onSortChange('userGeneration')}
+                      />
+                    </Box>
                   </TableCell>
-                  <TableCell align="center" sx={{ width: '40%' }}>
-                    {toYYslashMMslashDDspaceHHcolonMMcolonSS(attendance.userJoinedAt)}
+                  <TableCell align="center" sx={{ width: '40%' }} onClick={() => onSortChange('userJoinedAt')}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      제출 시간
+                      <OrderArrows
+                        active={orderBy === 'userJoinedAt'}
+                        order={joinedAtOrder}
+                        onClick={() => onSortChange('userJoinedAt')}
+                      />
+                    </Box>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </TableHead>
+              <TableBody>
+                {sortedAttendances.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3}>출석 제출 목록이 없습니다.</TableCell>
+                  </TableRow>
+                ) : (
+                  sortedAttendances.map((attendance) => (
+                    <TableRow key={attendance.id}>
+                      <TableCell align="center" sx={{ width: '30%' }}>
+                        {attendance.userExternalName}
+                      </TableCell>
+                      <TableCell align="center" sx={{ width: '30%' }}>
+                        {attendance.userGeneration}
+                      </TableCell>
+                      <TableCell align="center" sx={{ width: '40%' }}>
+                        {toYYslashMMslashDDspaceHHcolonMMcolonSS(attendance.userJoinedAt)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
+        {tab === 'addAttendance' && (
+          <Box>
+            <AddAttendance applyAttendances={applyAttendances} />
+          </Box>
+        )}
+      </Box>
     </Paper>
   );
 };
