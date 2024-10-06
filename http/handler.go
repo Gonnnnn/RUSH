@@ -300,6 +300,20 @@ func handleGetAttendanceForUser(server *server.Server) gin.HandlerFunc {
 	}
 }
 
+func handleGetAttendanceForSession(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sessionId := c.Param("id")
+		attendances, err := server.GetAttendanceBySessionId(sessionId)
+		if err != nil {
+			log.Printf("Error getting attendance for session: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"attendances": attendances})
+	}
+}
+
 func handleHalfYearAttendance(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		result, err := server.GetHalfYearAttendance()

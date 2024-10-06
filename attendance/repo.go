@@ -2,7 +2,6 @@ package attendance
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -72,7 +71,39 @@ func (m *mongodbRepo) GetAll() ([]Attendance, error) {
 }
 
 func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
-	return nil, errors.New("not implemented")
+	ctx := context.Background()
+
+	cursor, err := m.collection.Find(
+		ctx, bson.M{"session_id": sessionId},
+		options.Find().SetSort(bson.D{{Key: "user_joined_at", Value: 1}}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query attendances: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var attendances []mongodbAttendance
+	if err = cursor.All(ctx, &attendances); err != nil {
+		return nil, fmt.Errorf("failed to decode attendances: %w", err)
+	}
+
+	var converted []Attendance
+	for _, attendance := range attendances {
+		converted = append(converted, Attendance{
+			Id:               attendance.Id.Hex(),
+			SessionId:        attendance.SessionId,
+			SessionName:      attendance.SessionName,
+			SessionScore:     attendance.SessionScore,
+			SessionStartedAt: attendance.SessionStartedAt,
+			UserId:           attendance.UserId,
+			UserExternalName: attendance.UserExternalName,
+			UserGeneration:   attendance.UserGeneration,
+			UserJoinedAt:     attendance.UserJoinedAt,
+			CreatedAt:        attendance.CreatedAt,
+		})
+	}
+
+	return converted, nil
 }
 
 func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
