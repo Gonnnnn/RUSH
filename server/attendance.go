@@ -10,6 +10,7 @@ import (
 	"rush/user"
 	"slices"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -201,5 +202,57 @@ func (s *Server) AggregateAttendance() error {
 	}
 
 	// TODO(#165) Apply user rankings so that their current ranking can be fetched from the user document.
+	return nil
+}
+
+func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
+	dbSession, err := s.sessionRepo.Get(sessionId)
+	if err != nil {
+		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+	}
+	if !dbSession.CanUpdateMetadata() {
+		return newBadRequestError(errors.New("session is already closed"))
+	}
+
+	users, err := s.userRepo.GetAll()
+	if err != nil {
+		return newInternalServerError(fmt.Errorf("failed to get users: %w", err))
+	}
+	userIdToUser := map[string]user.User{}
+	for _, user := range users {
+		userIdToUser[user.Id] = user
+	}
+	usersToMark := []user.User{}
+	for _, userId := range userIds {
+		user, ok := userIdToUser[userId]
+		if !ok {
+			continue
+		}
+		if !user.IsActive {
+			continue
+		}
+		usersToMark = append(usersToMark, user)
+	}
+	if len(usersToMark) != len(userIds) {
+		return newBadRequestError(fmt.Errorf("it received %d user IDs (%s), but only %d users (%s) are active",
+			len(userIds), strings.Join(userIds, ","),
+			len(usersToMark), strings.Join(array.Map(usersToMark, func(user user.User) string { return user.Id }), ",")))
+	}
+
+	if err := s.attendanceRepo.BulkInsert(array.Map(usersToMark, func(user user.User) attendance.AddAttendanceReq {
+		return attendance.AddAttendanceReq{
+			SessionId:        sessionId,
+			SessionName:      dbSession.Name,
+			SessionScore:     dbSession.Score,
+			SessionStartedAt: dbSession.StartsAt,
+			UserId:           user.Id,
+			UserExternalName: user.ExternalName,
+			UserGeneration:   user.Generation,
+			UserJoinedAt:     s.clock.Now(),
+		}
+	})); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to bulk insert attendances: %w", err))
+	}
+
 	return nil
 }

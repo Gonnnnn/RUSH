@@ -325,3 +325,36 @@ func handleAggregateAttendance(server *server.Server) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Attendance aggregated successfully"})
 	}
 }
+
+type markUsersAsPresentRequest struct {
+	UserIds []string `json:"user_ids"`
+}
+
+func handleMarkUsersAsPresent(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sessionId := c.Param("id")
+		var req markUsersAsPresentRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := server.MarkUsersAsPresent(sessionId, req.UserIds); err != nil {
+			if isBadRequest(err) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			if isNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+
+			log.Printf("Error marking users as present: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Users marked as present successfully"})
+	}
+}
