@@ -6,6 +6,9 @@ const toYYYY년MM월DD일HH시MM분 = (date: Date) =>
 const toYYslashMMslashDDspaceHHcolonMM = (date: Date) =>
   `${date.getFullYear()}/${twoDigit(date.getMonth() + 1)}/${twoDigit(date.getDate())} ${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
 
+const toYYslashMMslashDDspaceHHcolonMMcolonSS = (date: Date) =>
+  `${date.getFullYear()}/${twoDigit(date.getMonth() + 1)}/${twoDigit(date.getDate())} ${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}:${twoDigit(date.getSeconds())}`;
+
 const toYYslashMMslashDDspaceHHcolonMMwithDay = (date: Date) =>
   `${date.getFullYear()}/${twoDigit(date.getMonth() + 1)}/${twoDigit(date.getDate())} (${days[date.getDay()]}) ${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
 
@@ -44,6 +47,7 @@ const twoDigit = (n: number) => String(n).padStart(2, '0');
 export {
   toYYYY년MM월DD일HH시MM분,
   toYYslashMMslashDDspaceHHcolonMM,
+  toYYslashMMslashDDspaceHHcolonMMcolonSS,
   toYYslashMMslashDDspaceHHcolonMMwithDay,
   formatDateToMonthDate,
 };

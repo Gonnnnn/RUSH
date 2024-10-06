@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { toYYYY년MM월DD일HH시MM분, toYYslashMMslashDDspaceHHcolonMM, formatDateToMonthDate } from './date';
+import {
+  toYYYY년MM월DD일HH시MM분,
+  toYYslashMMslashDDspaceHHcolonMM,
+  formatDateToMonthDate,
+  toYYslashMMslashDDspaceHHcolonMMcolonSS,
+} from './date';
 
 describe('toYYYY년MM월DD일HH시MM분', () => {
   it('Success cases', () => {
@@ -16,6 +21,15 @@ describe('toYYslashMMslashDDspaceHHcolonMM', () => {
     expect(toYYslashMMslashDDspaceHHcolonMM(new Date('2024-02-28T00:00:00'))).toBe('2024/02/28 00:00');
     expect(toYYslashMMslashDDspaceHHcolonMM(new Date('2024-03-31T00:01:12'))).toBe('2024/03/31 00:01');
     expect(toYYslashMMslashDDspaceHHcolonMM(new Date('2024-04-30T00:00:00'))).toBe('2024/04/30 00:00');
+  });
+});
+
+describe('toYYslashMMslashDDspaceHHcolonMMcolonSS', () => {
+  it('Success cases', () => {
+    expect(toYYslashMMslashDDspaceHHcolonMMcolonSS(new Date('2024-01-01T00:12:31'))).toBe('2024/01/01 00:12:31');
+    expect(toYYslashMMslashDDspaceHHcolonMMcolonSS(new Date('2024-02-28T00:00:20'))).toBe('2024/02/28 00:00:20');
+    expect(toYYslashMMslashDDspaceHHcolonMMcolonSS(new Date('2024-03-31T00:01:57'))).toBe('2024/03/31 00:01:57');
+    expect(toYYslashMMslashDDspaceHHcolonMMcolonSS(new Date('2024-04-30T00:00:03'))).toBe('2024/04/30 00:00:03');
   });
 });
 

@@ -5,10 +5,18 @@ import { Container, Typography, Paper, Box, Button, CircularProgress, Stack, Gri
 import { TimeIcon } from '@mui/x-date-pickers';
 import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useHeader } from './Layout';
-import { useSnackbar } from './SnackbarContext';
-import { Session, createSessionForm, deleteSession, getSession } from './client/http';
-import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from './common/date';
+import { useHeader } from '../Layout';
+import { useSnackbar } from '../SnackbarContext';
+import {
+  Attendance,
+  Session,
+  createSessionForm,
+  deleteSession,
+  getSession,
+  getSessionAttendances,
+} from '../client/http';
+import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from '../common/date';
+import AttendanceTable from './AttendanceTable';
 
 const SessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
@@ -18,7 +26,11 @@ const SessionDetail = () => {
   const { id } = useParams();
 
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
+
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [isLoadingAttendances, setIsLoadingAttendances] = useState(false);
+
   const [isCreatingForm, setIsCreatingForm] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const qrSizePx = 128;
@@ -32,18 +44,31 @@ const SessionDetail = () => {
 
     const fetchSession = async () => {
       try {
-        setIsLoading(true);
+        setIsLoadingSession(true);
         const fetchedSession = await getSession(id);
         setSession(fetchedSession);
       } catch (error) {
         console.error(error);
         navigate('/sessions');
       } finally {
-        setIsLoading(false);
+        setIsLoadingSession(false);
+      }
+    };
+
+    const fetchAttendances = async () => {
+      try {
+        setIsLoadingAttendances(true);
+        const fetchedAttendances = await getSessionAttendances(id);
+        setAttendances(fetchedAttendances);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoadingAttendances(false);
       }
     };
 
     fetchSession();
+    fetchAttendances();
   }, [navigate, id]);
 
   if (!id) {
@@ -109,7 +134,7 @@ const SessionDetail = () => {
     }
   };
 
-  if (isLoading || !session) {
+  if (isLoadingSession || !session) {
     return (
       <Container>
         <Box display="flex" justifyContent="center" alignItems="center">
@@ -146,6 +171,7 @@ const SessionDetail = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <SessionInfo session={session} />
+        <AttendanceTable isLoading={isLoadingAttendances} attendances={attendances} />
         <AttendanceQrPanel
           session={session}
           qrRef={qrRef}
@@ -207,7 +233,7 @@ const AttendanceQrPanel = ({
   isCreatingForm: boolean;
   onCreateQRCode: () => void;
 }) => (
-  <Paper sx={{ p: 2, mb: 3 }} elevation={4}>
+  <Paper sx={{ p: 2 }} elevation={4}>
     {session.googleFormUri ? (
       <>
         <Typography variant="h6" gutterBottom>
