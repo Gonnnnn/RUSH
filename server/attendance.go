@@ -76,6 +76,17 @@ func (s *Server) GetAttendanceByUserId(userId string) ([]Attendance, error) {
 	return converted, nil
 }
 
+func (s *Server) GetAttendanceBySessionId(sessionId string) ([]Attendance, error) {
+	attendances, err := s.attendanceRepo.FindBySessionId(sessionId)
+	if err != nil {
+		return nil, newInternalServerError(fmt.Errorf("failed to find attendance by session ID: %w", err))
+	}
+
+	return array.Map(attendances, func(attendance attendance.Attendance) Attendance {
+		return *fromAttendance(&attendance)
+	}), nil
+}
+
 type HalfYearAttendace struct {
 	// All the sessions that are held in the half year so far.
 	Sessions []sessionForAttendance `json:"sessions"`

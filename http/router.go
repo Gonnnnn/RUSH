@@ -28,6 +28,8 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			protected.GET("/users/:id", handleGetUser(server))
 			protected.POST("/users", handleAddUser(server))
 
+			protected.GET("/sessions/:id/attendances", handleGetAttendanceForSession(server))
+
 			// TODO(#138): Move it to the admin group after fixing the UI to handle permission denied error on it more properly.
 			protected.GET("attendances/half-year", handleHalfYearAttendance(server))
 

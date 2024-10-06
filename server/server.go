@@ -148,6 +148,8 @@ type attendanceRepo interface {
 	BulkInsert(requests []attendance.AddAttendanceReq) error
 	// Returns the attendances that are related to the user. Typically used to get the attendances for each user.
 	FindByUserId(userId string) ([]attendance.Attendance, error)
+	// Returns the attendances that are related to the session. Typically used for admins to see if attendance is applied well.
+	FindBySessionId(sessionId string) ([]attendance.Attendance, error)
 }
 
 type attendanceAggregationRepo interface {
