@@ -108,16 +108,6 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
     }
   });
 
-  if (isLoading) {
-    return (
-      <Paper sx={{ p: 2 }} elevation={4}>
-        <Box display="flex" justifyContent="center" alignItems="center">
-          <CircularProgress />
-        </Box>
-      </Paper>
-    );
-  }
-
   if (!authenticated) {
     return (
       <Paper sx={{ p: 2 }} elevation={4}>
@@ -129,6 +119,16 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
             <Tab label="출석 추가" value="addAttendance" disabled />
           </Tabs>
           <Typography variant="body1">로그인이 필요한 서비스입니다.</Typography>
+        </Box>
+      </Paper>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Paper sx={{ p: 2 }} elevation={4}>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <CircularProgress />
         </Box>
       </Paper>
     );
