@@ -42,3 +42,27 @@ const (
 func (s *Session) CanUpdateMetadata() bool {
 	return s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored
 }
+
+func (s *Session) CanApplyGoogleFormSubmissions() bool {
+	if s.AttendanceStatus == AttendanceStatusApplied {
+		return false
+	}
+
+	if s.GoogleFormId == "" || s.GoogleFormUri == "" {
+		return false
+	}
+
+	return true
+}
+
+func (s *Session) CanApplyAttendanceManually() bool {
+	if s.AttendanceStatus == AttendanceStatusApplied {
+		return false
+	}
+
+	if s.GoogleFormId != "" || s.GoogleFormUri != "" {
+		return false
+	}
+
+	return true
+}
