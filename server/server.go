@@ -127,7 +127,9 @@ type sessionRepo interface {
 type openSessionRepo interface {
 	UpdateOpenSession(id string, updateForm session.OpenSessionUpdateForm) (session.Session, error)
 	DeleteOpenSession(id string) error
-	CloseOpenSession(id string) error
+	// Marks the attendance status of the open session to be applied.
+	// Use it after inserting attendances for the open session.
+	MarkAsAttendanceApplied(id string) error
 	// Marks the attendance status of the open session to be ignored.
 	// Use it when the session's attendance or anything about session is not correct,
 	// or suspicious, so that the server decides to not apply the attendance.

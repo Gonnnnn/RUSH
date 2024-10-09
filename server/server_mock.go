@@ -354,20 +354,6 @@ func (m *MockopenSessionRepo) EXPECT() *MockopenSessionRepoMockRecorder {
 	return m.recorder
 }
 
-// CloseOpenSession mocks base method.
-func (m *MockopenSessionRepo) CloseOpenSession(id string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CloseOpenSession", id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CloseOpenSession indicates an expected call of CloseOpenSession.
-func (mr *MockopenSessionRepoMockRecorder) CloseOpenSession(id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseOpenSession", reflect.TypeOf((*MockopenSessionRepo)(nil).CloseOpenSession), id)
-}
-
 // DeleteOpenSession mocks base method.
 func (m *MockopenSessionRepo) DeleteOpenSession(id string) error {
 	m.ctrl.T.Helper()
@@ -380,6 +366,20 @@ func (m *MockopenSessionRepo) DeleteOpenSession(id string) error {
 func (mr *MockopenSessionRepoMockRecorder) DeleteOpenSession(id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOpenSession", reflect.TypeOf((*MockopenSessionRepo)(nil).DeleteOpenSession), id)
+}
+
+// MarkAsAttendanceApplied mocks base method.
+func (m *MockopenSessionRepo) MarkAsAttendanceApplied(id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarkAsAttendanceApplied", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MarkAsAttendanceApplied indicates an expected call of MarkAsAttendanceApplied.
+func (mr *MockopenSessionRepoMockRecorder) MarkAsAttendanceApplied(id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAsAttendanceApplied", reflect.TypeOf((*MockopenSessionRepo)(nil).MarkAsAttendanceApplied), id)
 }
 
 // MarkAttendanceIsIgnored mocks base method.

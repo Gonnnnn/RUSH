@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+// Session represents a session of a running event. It has data to identify the session,
+// and the score. Plus, it has data about its attendance.
+// session attendance can be applied by Google form submissions or manually.
+// Once it's applied, the session data is immutable. Whether it's applied is indicated by `AttendanceStatus`.
 type Session struct {
 	// The ID of the session. It's a unique identifier. E.g., "abc123"
 	Id string `json:"id"`
@@ -39,11 +43,13 @@ const (
 	AttendanceStatusIgnored AttendanceStatus = "ignored"
 )
 
+// If the session attendance is applied, the session data is immutable. It checks if the data can be updated.
 func (s *Session) CanUpdateMetadata() bool {
 	return s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored
 }
 
-func (s *Session) CanApplyGoogleFormSubmissions() bool {
+// Checks the session data and returns true if the attendance can be applied by Google form submissions.
+func (s *Session) CanApplyAttendanceByFormSubmissions() bool {
 	if s.AttendanceStatus == AttendanceStatusApplied {
 		return false
 	}
@@ -55,6 +61,7 @@ func (s *Session) CanApplyGoogleFormSubmissions() bool {
 	return true
 }
 
+// Checks the session data and returns true if the attendance can be applied manually.
 func (s *Session) CanApplyAttendanceManually() bool {
 	if s.AttendanceStatus == AttendanceStatusApplied {
 		return false

@@ -258,11 +258,11 @@ func handleCreateAttendanceForm(server *server.Server) gin.HandlerFunc {
 	}
 }
 
-func handleApplyAttendance(server *server.Server) gin.HandlerFunc {
+func handleApplyAttendanceByFormSubmissions(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionId := c.Param("id")
 		userId := c.GetString("userId")
-		if err := server.CloseSession(sessionId, userId); err != nil {
+		if err := server.ApplyAttendanceByFormSubmissions(sessionId, userId); err != nil {
 			if isBadRequest(err) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Session already closed"})
 				return

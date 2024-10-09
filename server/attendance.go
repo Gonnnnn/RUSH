@@ -279,7 +279,7 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendances: %w", err))
 	}
 
-	if err := s.openSessionRepo.CloseOpenSession(sessionId); err != nil {
+	if err := s.openSessionRepo.MarkAsAttendanceApplied(sessionId); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to close the session: %w", err))
 	}
 

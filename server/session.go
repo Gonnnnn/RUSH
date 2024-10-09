@@ -56,7 +56,7 @@ func (s *Server) DeleteSession(id string) error {
 }
 
 // TODO(#177): Fix the name to be `applyFormSubmissions` as we have more than one way to close the session now.
-func (s *Server) CloseSession(sessionId string, calledBy string) error {
+func (s *Server) ApplyAttendanceByFormSubmissions(sessionId string, calledBy string) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
@@ -66,8 +66,8 @@ func (s *Server) CloseSession(sessionId string, calledBy string) error {
 		return newBadRequestError(errors.New("session is already closed"))
 	}
 
-	if !dbSession.CanApplyGoogleFormSubmissions() {
-		return newBadRequestError(errors.New("session cannot apply google form submissions"))
+	if !dbSession.CanApplyAttendanceByFormSubmissions() {
+		return newBadRequestError(errors.New("session cannot apply attendance by form submissions"))
 	}
 
 	formSubmissions, err := s.attendanceFormHandler.GetSubmissions(dbSession.GoogleFormId)
@@ -126,7 +126,7 @@ func (s *Server) CloseSession(sessionId string, calledBy string) error {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendance: %w", err))
 	}
 
-	if err := s.openSessionRepo.CloseOpenSession(sessionId); err != nil {
+	if err := s.openSessionRepo.MarkAsAttendanceApplied(sessionId); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to close open session: %w", err))
 	}
 

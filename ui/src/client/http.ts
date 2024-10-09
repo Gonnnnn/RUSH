@@ -192,10 +192,6 @@ export const createSessionForm = async (sessionId: string): Promise<string> => {
   return response.data.form_url;
 };
 
-export const closeSession = async (sessionId: string): Promise<void> => {
-  await client.post(`/sessions/${sessionId}/attendance`);
-};
-
 export const getUserAttendances = async (userId: string): Promise<Attendance[]> => {
   const response = await client.get(`/users/${userId}/attendances`);
   return GetUserAttendancesResponseSchema.parse(response.data).attendances;
@@ -207,7 +203,7 @@ export const getSessionAttendances = async (sessionId: string): Promise<Attendan
 };
 
 export const markUsersAsPresent = async (sessionId: string, userIds: string[]): Promise<void> => {
-  await client.post(`/sessions/${sessionId}/present`, { user_ids: userIds });
+  await client.post(`/sessions/${sessionId}/attendance/manual`, { user_ids: userIds });
 };
 
 const GetHalfYearAttendancesResponseSchema = z
