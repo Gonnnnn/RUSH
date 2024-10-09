@@ -16,41 +16,41 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MocksessionCloser is a mock of sessionCloser interface.
-type MocksessionCloser struct {
+// MocksessionAttendanceApplier is a mock of sessionAttendanceApplier interface.
+type MocksessionAttendanceApplier struct {
 	ctrl     *gomock.Controller
-	recorder *MocksessionCloserMockRecorder
+	recorder *MocksessionAttendanceApplierMockRecorder
 }
 
-// MocksessionCloserMockRecorder is the mock recorder for MocksessionCloser.
-type MocksessionCloserMockRecorder struct {
-	mock *MocksessionCloser
+// MocksessionAttendanceApplierMockRecorder is the mock recorder for MocksessionAttendanceApplier.
+type MocksessionAttendanceApplierMockRecorder struct {
+	mock *MocksessionAttendanceApplier
 }
 
-// NewMocksessionCloser creates a new mock instance.
-func NewMocksessionCloser(ctrl *gomock.Controller) *MocksessionCloser {
-	mock := &MocksessionCloser{ctrl: ctrl}
-	mock.recorder = &MocksessionCloserMockRecorder{mock}
+// NewMocksessionAttendanceApplier creates a new mock instance.
+func NewMocksessionAttendanceApplier(ctrl *gomock.Controller) *MocksessionAttendanceApplier {
+	mock := &MocksessionAttendanceApplier{ctrl: ctrl}
+	mock.recorder = &MocksessionAttendanceApplierMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MocksessionCloser) EXPECT() *MocksessionCloserMockRecorder {
+func (m *MocksessionAttendanceApplier) EXPECT() *MocksessionAttendanceApplierMockRecorder {
 	return m.recorder
 }
 
-// CloseSession mocks base method.
-func (m *MocksessionCloser) CloseSession(sessionId, callerId string) error {
+// ApplyAttendanceByFormSubmissions mocks base method.
+func (m *MocksessionAttendanceApplier) ApplyAttendanceByFormSubmissions(sessionId, callerId string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CloseSession", sessionId, callerId)
+	ret := m.ctrl.Call(m, "ApplyAttendanceByFormSubmissions", sessionId, callerId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CloseSession indicates an expected call of CloseSession.
-func (mr *MocksessionCloserMockRecorder) CloseSession(sessionId, callerId any) *gomock.Call {
+// ApplyAttendanceByFormSubmissions indicates an expected call of ApplyAttendanceByFormSubmissions.
+func (mr *MocksessionAttendanceApplierMockRecorder) ApplyAttendanceByFormSubmissions(sessionId, callerId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSession", reflect.TypeOf((*MocksessionCloser)(nil).CloseSession), sessionId, callerId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyAttendanceByFormSubmissions", reflect.TypeOf((*MocksessionAttendanceApplier)(nil).ApplyAttendanceByFormSubmissions), sessionId, callerId)
 }
 
 // MocksessionGetter is a mock of sessionGetter interface.

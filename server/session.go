@@ -56,7 +56,7 @@ func (s *Server) DeleteSession(id string) error {
 }
 
 // TODO(#177): Fix the name to be `applyFormSubmissions` as we have more than one way to close the session now.
-func (s *Server) CloseSession(sessionId string, calledBy string) error {
+func (s *Server) ApplyAttendanceByFormSubmissions(sessionId string, calledBy string) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))

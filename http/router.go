@@ -40,8 +40,8 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 				adminProtected.DELETE("/sessions/:id", handleDeleteSession(server))
 				adminProtected.POST("/sessions/:id/attendance-form", handleCreateAttendanceForm(server))
 				adminProtected.POST("/attendances/aggregate", handleAggregateAttendance(server))
-				adminProtected.POST("/sessions/:id/close", handleApplyAttendance(server))
-				adminProtected.POST("/sessions/:id/present", handleMarkUsersAsPresent(server))
+				adminProtected.POST("/sessions/:id/attendance/form", handleApplyAttendanceByFormSubmissions(server))
+				adminProtected.POST("/sessions/:id/attendance/manual", handleMarkUsersAsPresent(server))
 			}
 		}
 	}
