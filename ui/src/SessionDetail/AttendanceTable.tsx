@@ -31,7 +31,7 @@ type TabTypes = 'attendance' | 'addAttendance';
  * It fetches the attendance and updates it by itself, not by the parent component on purpose
  * to avoid unnecessary props passing, and also to not affect the parent component render when it fails.
  */
-const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
+const SessionAttendanceTable = ({ sessionId, reloadSession }: { sessionId: string; reloadSession: () => void }) => {
   const { authenticated } = useAuth();
   const { handleError } = useHandleError();
 
@@ -59,7 +59,6 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
           messageAuth: 'Requires login.',
           messageInternal: 'Failed to load attendance list. Contact the dev.',
         });
-        console.error(error);
       } finally {
         setIsLoading(false);
       }
@@ -71,6 +70,7 @@ const SessionAttendanceTable = ({ sessionId }: { sessionId: string }) => {
   const applyAttendances = async (userIds: string[]) => {
     await markUsersAsPresent(sessionId, userIds);
     const newAttendances = await getSessionAttendances(sessionId);
+    reloadSession();
     setAttendances(newAttendances);
   };
 

@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Paper, Box, Button, CircularProgress, Grid } from '@mui/material';
-import { AxiosError } from 'axios';
-import { QRCodeCanvas } from 'qrcode.react';
+import { Container, Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
 import { useHeader } from '../Layout';
-import { useSnackbar } from '../SnackbarContext';
-import { Session, createSessionForm, deleteSession, getSession } from '../client/http';
-import { formatDateToMonthDate } from '../common/date';
+import { Session, SessionAttendanceAppliedBy, createSessionForm, deleteSession, getSession } from '../client/http';
+import useHandleError from '../common/error';
+import AttendanceQrPanel from './AttendanceQrPanel';
 import SessionAttendanceTable from './AttendanceTable';
 import SessionInfo from './SessionInfo';
 
@@ -14,7 +12,7 @@ const SessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { showWarning, showError } = useSnackbar();
+  const { handleError } = useHandleError();
   const { id } = useParams();
 
   const [session, setSession] = useState<Session | null>(null);
@@ -25,27 +23,34 @@ const SessionDetail = () => {
   const qrSizePx = 128;
   const qrDownloadSizePx = 512;
 
+  const fetchSession = useCallback(
+    async (sessionId: string) => {
+      try {
+        setIsLoading(true);
+        const fetchedSession = await getSession(sessionId);
+        setSession(fetchedSession);
+      } catch (error) {
+        handleError({
+          error,
+          messageAuth: 'Session retrieval is restricted to authenticated users',
+          messageInternal: 'Failed to retrieve the session. Contact the dev.',
+        });
+        navigate('/sessions');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [navigate, setSession, setIsLoading, handleError],
+  );
+
   useEffect(() => {
     if (!id) {
       navigate('/sessions');
       return;
     }
 
-    const fetchSession = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedSession = await getSession(id);
-        setSession(fetchedSession);
-      } catch (error) {
-        console.error(error);
-        navigate('/sessions');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSession();
-  }, [navigate, id]);
+    fetchSession(id);
+  }, [navigate, id, fetchSession]);
 
   if (!id) {
     navigate('/sessions');
@@ -79,34 +84,6 @@ const SessionDetail = () => {
       });
     } finally {
       setIsCreatingForm(false);
-    }
-  };
-
-  const handleError = ({
-    error,
-    messageAuth,
-    messageInternal,
-  }: {
-    error: unknown;
-    messageAuth: string;
-    messageInternal: string;
-  }) => {
-    if (!(error instanceof AxiosError)) {
-      showError(messageInternal);
-      return;
-    }
-
-    const status = error.response?.status;
-    switch (status) {
-      case 401:
-        showWarning(messageAuth);
-        break;
-      case 403:
-        showWarning(messageAuth);
-        break;
-      default:
-        showError(messageInternal);
-        break;
     }
   };
 
@@ -147,119 +124,30 @@ const SessionDetail = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <SessionInfo session={session} />
-        <SessionAttendanceTable sessionId={id} />
-        <AttendanceQrPanel
-          session={session}
-          qrRef={qrRef}
-          qrSizePx={qrSizePx}
-          qrDownloadSizePx={qrDownloadSizePx}
-          isCreatingForm={isCreatingForm}
-          onCreateQRCode={handleQrCodeCreateClick}
-        />
+        <SessionAttendanceTable sessionId={id} reloadSession={() => fetchSession(id)} />
+        {session.attendanceAppliedBy === SessionAttendanceAppliedBy.Enum.unspecified ||
+        session.attendanceAppliedBy === SessionAttendanceAppliedBy.Enum.form ? (
+          <AttendanceQrPanel
+            session={session}
+            qrRef={qrRef}
+            qrSizePx={qrSizePx}
+            qrDownloadSizePx={qrDownloadSizePx}
+            isCreatingForm={isCreatingForm}
+            onCreateQRCode={handleQrCodeCreateClick}
+          />
+        ) : (
+          <Paper sx={{ p: 2 }} elevation={4}>
+            <Typography variant="h6" gutterBottom>
+              출석 QR
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              해당 세션은 Google form을 통해 출석처리 되지 않았습니다.
+            </Typography>
+          </Paper>
+        )}
       </Box>
     </Container>
   );
-};
-
-const AttendanceQrPanel = ({
-  session,
-  qrRef,
-  qrSizePx,
-  qrDownloadSizePx,
-  isCreatingForm,
-  onCreateQRCode,
-}: {
-  session: Session;
-  qrRef: React.RefObject<HTMLDivElement>;
-  qrSizePx: number;
-  qrDownloadSizePx: number;
-  isCreatingForm: boolean;
-  onCreateQRCode: () => void;
-}) => (
-  <Paper sx={{ p: 2 }} elevation={4}>
-    {session.googleFormUri ? (
-      <>
-        <Typography variant="h6" gutterBottom>
-          출석 QR
-        </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
-          <QRCodeCanvas value={session.googleFormUri} size={qrSizePx} />
-          {/* Make a hidden QR for download. The QR for display is too small that it breaks when resizing for downloading. */}
-          <div ref={qrRef} style={{ display: 'None' }}>
-            <QRCodeCanvas value={session.googleFormUri} size={qrDownloadSizePx} />
-          </div>
-          <Grid container spacing={2} justifyContent="center">
-            <Grid item xs={12} sm={6}>
-              <Button
-                variant="outlined"
-                fullWidth
-                // to Month Day format
-                onClick={() => onQrDownload(qrRef, qrDownloadSizePx, formatDateToMonthDate(new Date(session.startsAt)))}
-              >
-                QR 다운로드
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button variant="outlined" fullWidth onClick={() => window.open(session.googleFormUri, '_blank')}>
-                Google form 열기 (제출용)
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => window.open(`https://docs.google.com/forms/d/${session.googleFormId}/edit`, '_blank')}
-              >
-                Google form 열기 (편집용)
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </>
-    ) : (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
-        <Typography variant="h6">No google form attached yet!</Typography>
-        <Button variant="contained" onClick={onCreateQRCode} disabled={isCreatingForm}>
-          {isCreatingForm ? <CircularProgress size={24} /> : 'Create QR code'}
-        </Button>
-      </Box>
-    )}
-  </Paper>
-);
-
-const onQrDownload = (qrRef: React.RefObject<HTMLDivElement>, qrSize: number, text: string) => {
-  if (!qrRef.current) return;
-
-  const canvas = qrRef.current.querySelector('canvas');
-  if (!canvas) return;
-
-  const newCanvas = document.createElement('canvas');
-  const ctx = newCanvas.getContext('2d');
-  if (!ctx) return;
-
-  const paddingPx = 64;
-  const textSpacePx = 128;
-  const newCanvasWidth = qrSize + paddingPx * 2;
-  const newCanvasHeight = qrSize + paddingPx * 2 + textSpacePx;
-
-  newCanvas.width = newCanvasWidth;
-  newCanvas.height = newCanvasHeight;
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
-
-  const qrYoffset = (newCanvasHeight - qrSize) / 2;
-  const qrXoffset = (newCanvasWidth - qrSize) / 2;
-  ctx.drawImage(canvas, qrXoffset, qrYoffset, qrSize, qrSize);
-
-  ctx.font = '32px Helvetica';
-  ctx.fillStyle = 'black';
-  ctx.textAlign = 'center';
-  ctx.fillText(text, newCanvasWidth / 2, Math.min(qrYoffset + qrSize + textSpacePx / 2, newCanvasHeight - 16));
-
-  const a = document.createElement('a');
-  a.href = newCanvas.toDataURL('image/png');
-  a.download = `${text.replace(/ /g, '_')}.png`;
-  a.click();
 };
 
 export default SessionDetail;
