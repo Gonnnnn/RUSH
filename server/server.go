@@ -53,7 +53,23 @@ type Session struct {
 	// The status of the session's attendance.
 	// It indicates if it is applied, ignored, etc.
 	AttendanceStatus session.AttendanceStatus `json:"attendance_status"`
+	// The flag to indicate how the attendance is applied. E.g., "manual" or "form".
+	AttendanceAppliedBy SessionAttendanceAppliedBy `json:"attendance_applied_by"`
 }
+
+type SessionAttendanceAppliedBy string
+
+const (
+	// Literally unknown. It's something but that is not known yet. Maybe DB has been updated but
+	// the code is not updated.
+	SessionAttendanceAppliedByUnknown SessionAttendanceAppliedBy = "unknown"
+	// Not specified yet. It's used for the initial state where the attendance is not applied yet.
+	SessionAttendanceAppliedByUnspecified SessionAttendanceAppliedBy = "unspecified"
+	// The attendance is applied manually.
+	SessionAttendanceAppliedByManual SessionAttendanceAppliedBy = "manual"
+	// The attendance is applied by the form submissions.
+	SessionAttendanceAppliedByForm SessionAttendanceAppliedBy = "form"
+)
 
 type Attendance struct {
 	// The ID of the attendance. E.g., "abc123"

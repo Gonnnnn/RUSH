@@ -43,6 +43,14 @@ const (
 	AttendanceStatusIgnored AttendanceStatus = "ignored"
 )
 
+type AttendanceAppliedBy string
+
+const (
+	AttendanceAppliedByUnspecified AttendanceAppliedBy = "unspecified"
+	AttendanceAppliedByManual      AttendanceAppliedBy = "manual"
+	AttendanceAppliedByForm        AttendanceAppliedBy = "form"
+)
+
 // If the session attendance is applied, the session data is immutable. It checks if the data can be updated.
 func (s *Session) CanUpdateMetadata() bool {
 	return s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored
@@ -72,4 +80,16 @@ func (s *Session) CanApplyAttendanceManually() bool {
 	}
 
 	return true
+}
+
+func (s *Session) AttendanceAppliedBy() AttendanceAppliedBy {
+	if s.AttendanceStatus != AttendanceStatusApplied {
+		return AttendanceAppliedByUnspecified
+	}
+
+	if s.GoogleFormId == "" && s.GoogleFormUri == "" {
+		return AttendanceAppliedByManual
+	}
+
+	return AttendanceAppliedByForm
 }
