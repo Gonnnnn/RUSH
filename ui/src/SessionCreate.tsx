@@ -18,9 +18,8 @@ const SessionCreate = () => {
 
   useEffect(() => {
     const isNameValid = name.trim().length > 0;
-    const isStartsAtValid = startsAt.isAfter(dayjs());
-    setIsFormValid(isNameValid && isStartsAtValid);
-  }, [name, startsAt]);
+    setIsFormValid(isNameValid);
+  }, [name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,17 +83,10 @@ const SessionCreate = () => {
           value={startsAt}
           onChange={handleDateTimeChange}
           minutesStep={10}
-          shouldDisableDate={(date) => date.isBefore(dayjs(), 'day')}
           views={['year', 'month', 'day', 'hours', 'minutes']}
           format="YYYY/MM/DD HH:mm"
           skipDisabled
           sx={{ mb: 2, width: '100%' }}
-          slotProps={{
-            textField: {
-              helperText: startsAt.isBefore(dayjs()) ? 'Start time must be in the future' : '',
-              error: startsAt.isBefore(dayjs()),
-            },
-          }}
         />
         <TextField
           type="number"
