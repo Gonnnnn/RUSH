@@ -68,7 +68,7 @@ func (r *mongodbRepo) Get(id string) (Session, error) {
 }
 
 func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
-	cursor, err := r.collection.Find(context.Background(), bson.M{"is_closed": false, "is_deleted": false})
+	cursor, err := r.collection.Find(context.Background(), bson.M{"attendance_status": "not_applied_yet", "is_deleted": false})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sessions: %w", err)
 	}
@@ -88,7 +88,7 @@ func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
 }
 
 func (r *mongodbRepo) GetOpenSessionsWithForm() ([]Session, error) {
-	cursor, err := r.collection.Find(context.Background(), bson.M{"is_closed": false, "is_deleted": false, "google_form_id": bson.M{"$ne": ""}})
+	cursor, err := r.collection.Find(context.Background(), bson.M{"attendance_status": "not_applied_yet", "is_deleted": false, "google_form_id": bson.M{"$ne": ""}})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sessions: %w", err)
 	}
