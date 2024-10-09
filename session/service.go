@@ -81,7 +81,7 @@ func (s *service) MarkAttendanceIsIgnored(id string) error {
 	return nil
 }
 
-func (s *service) CloseOpenSession(id string) error {
+func (s *service) MarkAsAttendanceApplied(id string) error {
 	attendanceStatus := AttendanceStatusApplied
 	_, err := s.sessionRepo.Update(id, UpdateForm{AttendanceStatus: &attendanceStatus})
 	if err != nil {

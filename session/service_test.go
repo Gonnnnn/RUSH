@@ -179,7 +179,7 @@ func TestCloseOpenSession(t *testing.T) {
 		sessionRepo.EXPECT().Update("session-id", UpdateForm{
 			AttendanceStatus: &attendanceStatus,
 		}).Return(Session{}, errors.New("failed to update session"))
-		err := service.CloseOpenSession("session-id")
+		err := service.MarkAsAttendanceApplied("session-id")
 
 		assert.Equal(t, fmt.Errorf("repo failed to update session: %w", errors.New("failed to update session")), err)
 	})
@@ -194,7 +194,7 @@ func TestCloseOpenSession(t *testing.T) {
 			AttendanceStatus: &attendanceStatus,
 		}).Return(Session{}, nil)
 
-		err := service.CloseOpenSession("session-id")
+		err := service.MarkAsAttendanceApplied("session-id")
 
 		assert.NoError(t, err)
 	})
