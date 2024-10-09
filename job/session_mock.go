@@ -76,19 +76,19 @@ func (m *MocksessionGetter) EXPECT() *MocksessionGetterMockRecorder {
 	return m.recorder
 }
 
-// GetOpenSessions mocks base method.
-func (m *MocksessionGetter) GetOpenSessions() ([]session.Session, error) {
+// GetOpenSessionsWithForm mocks base method.
+func (m *MocksessionGetter) GetOpenSessionsWithForm() ([]session.Session, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOpenSessions")
+	ret := m.ctrl.Call(m, "GetOpenSessionsWithForm")
 	ret0, _ := ret[0].([]session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetOpenSessions indicates an expected call of GetOpenSessions.
-func (mr *MocksessionGetterMockRecorder) GetOpenSessions() *gomock.Call {
+// GetOpenSessionsWithForm indicates an expected call of GetOpenSessionsWithForm.
+func (mr *MocksessionGetterMockRecorder) GetOpenSessionsWithForm() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOpenSessions", reflect.TypeOf((*MocksessionGetter)(nil).GetOpenSessions))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOpenSessionsWithForm", reflect.TypeOf((*MocksessionGetter)(nil).GetOpenSessionsWithForm))
 }
 
 // MockLogger is a mock of Logger interface.

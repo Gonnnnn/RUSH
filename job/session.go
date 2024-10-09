@@ -26,9 +26,9 @@ func NewExecutor(sessionGetter sessionGetter, sessionCloser sessionCloser, logge
 
 // Closes the open sessions that are past the start time.
 func (e *executor) CloseExpiredSessions() {
-	openSessions, err := e.sessionGetter.GetOpenSessions()
+	openSessions, err := e.sessionGetter.GetOpenSessionsWithForm()
 	if err != nil {
-		e.logger.Errorw("Failed to get open sessions", "error", err.Error())
+		e.logger.Errorw("Failed to get open sessions with form", "error", err.Error())
 		return
 	}
 
@@ -63,7 +63,7 @@ type sessionCloser interface {
 }
 
 type sessionGetter interface {
-	GetOpenSessions() ([]session.Session, error)
+	GetOpenSessionsWithForm() ([]session.Session, error)
 }
 
 type Logger interface {

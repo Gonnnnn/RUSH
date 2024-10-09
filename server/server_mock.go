@@ -501,6 +501,21 @@ func (mr *MockattendanceRepoMockRecorder) BulkInsert(requests any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkInsert", reflect.TypeOf((*MockattendanceRepo)(nil).BulkInsert), requests)
 }
 
+// FindBySessionId mocks base method.
+func (m *MockattendanceRepo) FindBySessionId(sessionId string) ([]attendance.Attendance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindBySessionId", sessionId)
+	ret0, _ := ret[0].([]attendance.Attendance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindBySessionId indicates an expected call of FindBySessionId.
+func (mr *MockattendanceRepoMockRecorder) FindBySessionId(sessionId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBySessionId", reflect.TypeOf((*MockattendanceRepo)(nil).FindBySessionId), sessionId)
+}
+
 // FindByUserId mocks base method.
 func (m *MockattendanceRepo) FindByUserId(userId string) ([]attendance.Attendance, error) {
 	m.ctrl.T.Helper()

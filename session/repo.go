@@ -87,6 +87,26 @@ func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
 	return sessions, nil
 }
 
+func (r *mongodbRepo) GetOpenSessionsWithForm() ([]Session, error) {
+	cursor, err := r.collection.Find(context.Background(), bson.M{"is_closed": false, "is_deleted": false, "google_form_id": bson.M{"$ne": ""}})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sessions: %w", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var mongoSessions []mongodbSession
+	if err = cursor.All(context.Background(), &mongoSessions); err != nil {
+		return nil, fmt.Errorf("failed to decode sessions: %w", err)
+	}
+
+	sessions := []Session{}
+	for _, mongoSession := range mongoSessions {
+		sessions = append(sessions, *fromMongodbSession(&mongoSession))
+	}
+
+	return sessions, nil
+}
+
 func (r *mongodbRepo) GetAll() ([]Session, error) {
 	cursor, err := r.collection.Find(context.Background(), bson.M{"is_deleted": false})
 	if err != nil {
