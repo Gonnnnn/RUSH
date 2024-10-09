@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { CalendarTodayOutlined, StarBorderRounded } from '@mui/icons-material';
-import { Container, Typography, Paper, Box, Button, CircularProgress, Stack, Grid } from '@mui/material';
-import { TimeIcon } from '@mui/x-date-pickers';
+import { Container, Typography, Paper, Box, Button, CircularProgress, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useHeader } from '../Layout';
 import { useSnackbar } from '../SnackbarContext';
 import { Session, createSessionForm, deleteSession, getSession } from '../client/http';
-import { formatDateToMonthDate, toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from '../common/date';
+import { formatDateToMonthDate } from '../common/date';
 import SessionAttendanceTable from './AttendanceTable';
+import SessionInfo from './SessionInfo';
 
 const SessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
@@ -161,39 +160,6 @@ const SessionDetail = () => {
     </Container>
   );
 };
-
-const SessionInfo = ({ session }: { session: Session }) => (
-  <Paper sx={{ p: 2 }} elevation={4}>
-    <Stack spacing={2}>
-      <Typography variant="h6">{session.name}</Typography>
-      <Paper sx={{ p: 1 }} variant="outlined">
-        <Typography variant="body2" color={session.description ? 'initial' : 'text.secondary'}>
-          {session.description ? session.description : 'No description'}
-        </Typography>
-      </Paper>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <Box display="flex" alignItems="center">
-            <CalendarTodayOutlined sx={{ mr: 1 }} color="primary" />
-            <Typography variant="body2">시작 시간: {toYYYY년MM월DD일HH시MM분(session.startsAt)}</Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Box display="flex" alignItems="center">
-            <StarBorderRounded sx={{ mr: 1 }} color="primary" />
-            <Typography variant="body2">출석 점수: {session.score}점</Typography>
-          </Box>
-        </Grid>
-      </Grid>
-      <Box display="flex" gap={1} alignItems="center" justifyContent="flex-end">
-        <TimeIcon color="action" style={{ width: 16, height: 16 }} />
-        <Typography variant="body2" color="text.secondary">
-          Created at: {toYYslashMMslashDDspaceHHcolonMM(session.createdAt)}
-        </Typography>
-      </Box>
-    </Stack>
-  </Paper>
-);
 
 const AttendanceQrPanel = ({
   session,
