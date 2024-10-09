@@ -48,7 +48,7 @@ func handleSignIn(server *server.Server) gin.HandlerFunc {
 
 func handleAuth(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId := c.GetString("userId")
+		userId := c.GetString(userIdKey)
 		if userId == "" {
 			log.Printf("Error getting user ID from context, it is supposed to be set by the middleware")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
@@ -261,7 +261,8 @@ func handleCreateAttendanceForm(server *server.Server) gin.HandlerFunc {
 func handleApplyAttendance(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionId := c.Param("id")
-		if err := server.CloseSession(sessionId); err != nil {
+		userId := c.GetString("userId")
+		if err := server.CloseSession(sessionId, userId); err != nil {
 			if isBadRequest(err) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Session already closed"})
 				return
@@ -353,7 +354,8 @@ func handleMarkUsersAsPresent(server *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		if err := server.MarkUsersAsPresent(sessionId, req.UserIds); err != nil {
+		callerId := c.GetString(userIdKey)
+		if err := server.MarkUsersAsPresent(sessionId, req.UserIds, callerId); err != nil {
 			if isBadRequest(err) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return

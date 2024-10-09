@@ -38,9 +38,9 @@ func TestCloseExpiredSessions(t *testing.T) {
 			{Id: "sessionId2", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId3", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 		}, nil)
-		sessionCloser.EXPECT().CloseSession("sessionId1").Return(errors.New("error1"))
-		sessionCloser.EXPECT().CloseSession("sessionId2").Return(nil)
-		sessionCloser.EXPECT().CloseSession("sessionId3").Return(errors.New("error2"))
+		sessionCloser.EXPECT().CloseSession("sessionId1", "session-attendance-syncer").Return(errors.New("error1"))
+		sessionCloser.EXPECT().CloseSession("sessionId2", "session-attendance-syncer").Return(nil)
+		sessionCloser.EXPECT().CloseSession("sessionId3", "session-attendance-syncer").Return(errors.New("error2"))
 		mockLogger.EXPECT().Infow("Closed sessions", "session_ids", "sessionId2")
 		mockLogger.EXPECT().Errorw("Failed to close sessions", "session_ids", "sessionId1, sessionId3", "errors", "error1, error2")
 		executor.CloseExpiredSessions()
@@ -60,8 +60,8 @@ func TestCloseExpiredSessions(t *testing.T) {
 			{Id: "sessionId2", StartsAt: time.Date(2024, 1, 2, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId3", StartsAt: time.Date(2024, 1, 3, 12, 30, 0, 0, time.UTC)},
 		}, nil)
-		sessionCloser.EXPECT().CloseSession("sessionId1").Return(nil)
-		sessionCloser.EXPECT().CloseSession("sessionId2").Return(nil)
+		sessionCloser.EXPECT().CloseSession("sessionId1", "session-attendance-syncer").Return(nil)
+		sessionCloser.EXPECT().CloseSession("sessionId2", "session-attendance-syncer").Return(nil)
 		// sessionId3 is not expired yet.
 		mockLogger.EXPECT().Infow("Closed sessions", "session_ids", "sessionId1, sessionId2")
 		executor.CloseExpiredSessions()

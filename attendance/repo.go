@@ -3,6 +3,7 @@ package attendance
 import (
 	"context"
 	"fmt"
+	"rush/golang/array"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -23,6 +24,7 @@ type mongodbAttendance struct {
 	UserJoinedAt     time.Time          `bson:"user_joined_at"`
 	UserGeneration   float64            `bson:"user_generation"`
 	CreatedAt        time.Time          `bson:"created_at"`
+	CreatedBy        string             `bson:"created_by"`
 }
 
 type mongodbRepo struct {
@@ -51,23 +53,7 @@ func (m *mongodbRepo) GetAll() ([]Attendance, error) {
 		return nil, fmt.Errorf("failed to decode attendances: %w", err)
 	}
 
-	var converted []Attendance
-	for _, attendance := range attendances {
-		converted = append(converted, Attendance{
-			Id:               attendance.Id.Hex(),
-			SessionId:        attendance.SessionId,
-			SessionName:      attendance.SessionName,
-			SessionScore:     attendance.SessionScore,
-			SessionStartedAt: attendance.SessionStartedAt,
-			UserId:           attendance.UserId,
-			UserExternalName: attendance.UserExternalName,
-			UserGeneration:   attendance.UserGeneration,
-			UserJoinedAt:     attendance.UserJoinedAt,
-			CreatedAt:        attendance.CreatedAt,
-		})
-	}
-
-	return converted, nil
+	return array.Map(attendances, toAttendance), nil
 }
 
 func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
@@ -87,23 +73,7 @@ func (m *mongodbRepo) FindBySessionId(sessionId string) ([]Attendance, error) {
 		return nil, fmt.Errorf("failed to decode attendances: %w", err)
 	}
 
-	var converted []Attendance
-	for _, attendance := range attendances {
-		converted = append(converted, Attendance{
-			Id:               attendance.Id.Hex(),
-			SessionId:        attendance.SessionId,
-			SessionName:      attendance.SessionName,
-			SessionScore:     attendance.SessionScore,
-			SessionStartedAt: attendance.SessionStartedAt,
-			UserId:           attendance.UserId,
-			UserExternalName: attendance.UserExternalName,
-			UserGeneration:   attendance.UserGeneration,
-			UserJoinedAt:     attendance.UserJoinedAt,
-			CreatedAt:        attendance.CreatedAt,
-		})
-	}
-
-	return converted, nil
+	return array.Map(attendances, toAttendance), nil
 }
 
 func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
@@ -123,23 +93,7 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 		return nil, fmt.Errorf("failed to decode attendances: %w", err)
 	}
 
-	var converted []Attendance
-	for _, attendance := range attendances {
-		converted = append(converted, Attendance{
-			Id:               attendance.Id.Hex(),
-			SessionId:        attendance.SessionId,
-			SessionName:      attendance.SessionName,
-			SessionScore:     attendance.SessionScore,
-			SessionStartedAt: attendance.SessionStartedAt,
-			UserId:           attendance.UserId,
-			UserExternalName: attendance.UserExternalName,
-			UserGeneration:   attendance.UserGeneration,
-			UserJoinedAt:     attendance.UserJoinedAt,
-			CreatedAt:        attendance.CreatedAt,
-		})
-	}
-
-	return converted, nil
+	return array.Map(attendances, toAttendance), nil
 }
 
 type AddAttendanceReq struct {
@@ -151,6 +105,7 @@ type AddAttendanceReq struct {
 	UserExternalName string
 	UserGeneration   float64
 	UserJoinedAt     time.Time
+	CreatedBy        string
 }
 
 func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
@@ -172,9 +127,26 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 			UserGeneration:   request.UserGeneration,
 			UserJoinedAt:     request.UserJoinedAt,
 			CreatedAt:        now,
+			CreatedBy:        request.CreatedBy,
 		})
 	}
 
 	_, err := m.collection.InsertMany(context.Background(), attendances)
 	return err
+}
+
+func toAttendance(attendance mongodbAttendance) Attendance {
+	return Attendance{
+		Id:               attendance.Id.Hex(),
+		SessionId:        attendance.SessionId,
+		SessionName:      attendance.SessionName,
+		SessionScore:     attendance.SessionScore,
+		SessionStartedAt: attendance.SessionStartedAt,
+		UserId:           attendance.UserId,
+		UserExternalName: attendance.UserExternalName,
+		UserGeneration:   attendance.UserGeneration,
+		UserJoinedAt:     attendance.UserJoinedAt,
+		CreatedAt:        attendance.CreatedAt,
+		CreatedBy:        attendance.CreatedBy,
+	}
 }

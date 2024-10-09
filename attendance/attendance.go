@@ -23,4 +23,7 @@ type Attendance struct {
 	UserJoinedAt time.Time `json:"user_joined_at"`
 	// The time when the attendance record was created.
 	CreatedAt time.Time `json:"created_at"`
+	// The user or service that created the attendance record.
+	// E.g. "auto-syncer", "user-id-123"
+	CreatedBy string `json:"created_by"`
 }
