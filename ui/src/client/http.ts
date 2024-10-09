@@ -38,7 +38,8 @@ const UserSchema = z
     externalName: data.external_name,
   }));
 
-const AttendanceStatusSchema = z.enum(['not_applied_yet', 'applied', 'ignored']);
+const AttendanceStatus = z.enum(['not_applied_yet', 'applied', 'ignored']);
+export const SessionAttendanceAppliedBy = z.enum(['unknown', 'unspecified', 'manual', 'form']);
 
 const SessionSchema = z
   .object({
@@ -51,7 +52,8 @@ const SessionSchema = z
     created_at: z.string().transform((str) => new Date(str)),
     starts_at: z.string().transform((str) => new Date(str)),
     score: z.number(),
-    attendance_status: AttendanceStatusSchema,
+    attendance_status: AttendanceStatus,
+    attendance_applied_by: SessionAttendanceAppliedBy,
   })
   .transform((data) => ({
     ...data,
@@ -61,6 +63,7 @@ const SessionSchema = z
     createdAt: data.created_at,
     startsAt: data.starts_at,
     attendanceStatus: data.attendance_status,
+    attendanceAppliedBy: data.attendance_applied_by,
   }));
 
 const AttendanceSchema = z

@@ -17,18 +17,30 @@ func fromUser(user *user.User) *User {
 	}
 }
 
-func fromSession(session session.Session) Session {
+func fromSession(sessionData session.Session) Session {
 	return Session{
-		Id:               session.Id,
-		Name:             session.Name,
-		Description:      session.Description,
-		CreatedBy:        session.CreatedBy,
-		GoogleFormUri:    session.GoogleFormUri,
-		GoogleFormId:     session.GoogleFormId,
-		CreatedAt:        session.CreatedAt,
-		StartsAt:         session.StartsAt,
-		Score:            session.Score,
-		AttendanceStatus: session.AttendanceStatus,
+		Id:               sessionData.Id,
+		Name:             sessionData.Name,
+		Description:      sessionData.Description,
+		CreatedBy:        sessionData.CreatedBy,
+		GoogleFormUri:    sessionData.GoogleFormUri,
+		GoogleFormId:     sessionData.GoogleFormId,
+		CreatedAt:        sessionData.CreatedAt,
+		StartsAt:         sessionData.StartsAt,
+		Score:            sessionData.Score,
+		AttendanceStatus: sessionData.AttendanceStatus,
+		AttendanceAppliedBy: func() SessionAttendanceAppliedBy {
+			if sessionData.AttendanceAppliedBy() == session.AttendanceAppliedByUnspecified {
+				return SessionAttendanceAppliedByUnspecified
+			}
+			if sessionData.AttendanceAppliedBy() == session.AttendanceAppliedByManual {
+				return SessionAttendanceAppliedByManual
+			}
+			if sessionData.AttendanceAppliedBy() == session.AttendanceAppliedByForm {
+				return SessionAttendanceAppliedByForm
+			}
+			return SessionAttendanceAppliedByUnknown
+		}(),
 	}
 }
 
