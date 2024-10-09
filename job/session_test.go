@@ -19,8 +19,8 @@ func TestCloseExpiredSessions(t *testing.T) {
 		mockLogger := NewMockLogger(controller)
 		executor := NewExecutor(sessionGetter, sessionCloser, mockLogger, clock.NewMock())
 
-		sessionGetter.EXPECT().GetOpenSessions().Return([]session.Session{}, assert.AnError)
-		mockLogger.EXPECT().Errorw("Failed to get open sessions", "error", assert.AnError.Error())
+		sessionGetter.EXPECT().GetOpenSessionsWithForm().Return([]session.Session{}, assert.AnError)
+		mockLogger.EXPECT().Errorw("Failed to get open sessions with form", "error", assert.AnError.Error())
 		executor.CloseExpiredSessions()
 	})
 
@@ -33,7 +33,7 @@ func TestCloseExpiredSessions(t *testing.T) {
 		executor := NewExecutor(sessionGetter, sessionCloser, mockLogger, clock)
 
 		clock.Set(time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC))
-		sessionGetter.EXPECT().GetOpenSessions().Return([]session.Session{
+		sessionGetter.EXPECT().GetOpenSessionsWithForm().Return([]session.Session{
 			{Id: "sessionId1", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId2", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId3", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
@@ -55,7 +55,7 @@ func TestCloseExpiredSessions(t *testing.T) {
 		executor := NewExecutor(sessionGetter, sessionCloser, mockLogger, clock)
 
 		clock.Set(time.Date(2024, 1, 2, 12, 30, 0, 0, time.UTC))
-		sessionGetter.EXPECT().GetOpenSessions().Return([]session.Session{
+		sessionGetter.EXPECT().GetOpenSessionsWithForm().Return([]session.Session{
 			{Id: "sessionId1", StartsAt: time.Date(2024, 1, 1, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId2", StartsAt: time.Date(2024, 1, 2, 12, 30, 0, 0, time.UTC)},
 			{Id: "sessionId3", StartsAt: time.Date(2024, 1, 3, 12, 30, 0, 0, time.UTC)},

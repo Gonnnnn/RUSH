@@ -257,7 +257,7 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
 		usersToMark = append(usersToMark, user)
 	}
 	if len(usersToMark) != len(userIdsNotAttendedYet) {
-		return newBadRequestError(fmt.Errorf("it received %d user IDs (%s) where %d users are not attended yet but only %d users (%s) are active among them",
+		return newBadRequestError(fmt.Errorf("it received %d user IDs (%s) where %d users (%s) are not attended yet but only %d users (%s) are active among them",
 			len(userIds), strings.Join(userIds, ","),
 			len(userIdsNotAttendedYet), strings.Join(userIdsNotAttendedYet, ","),
 			len(usersToMark), strings.Join(array.Map(usersToMark, func(user user.User) string { return user.Id }), ",")))
