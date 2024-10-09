@@ -40,17 +40,17 @@ func (m *MocksessionCloser) EXPECT() *MocksessionCloserMockRecorder {
 }
 
 // CloseSession mocks base method.
-func (m *MocksessionCloser) CloseSession(sessionId string) error {
+func (m *MocksessionCloser) CloseSession(sessionId, callerId string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CloseSession", sessionId)
+	ret := m.ctrl.Call(m, "CloseSession", sessionId, callerId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CloseSession indicates an expected call of CloseSession.
-func (mr *MocksessionCloserMockRecorder) CloseSession(sessionId any) *gomock.Call {
+func (mr *MocksessionCloserMockRecorder) CloseSession(sessionId, callerId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSession", reflect.TypeOf((*MocksessionCloser)(nil).CloseSession), sessionId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSession", reflect.TypeOf((*MocksessionCloser)(nil).CloseSession), sessionId, callerId)
 }
 
 // MocksessionGetter is a mock of sessionGetter interface.

@@ -216,7 +216,7 @@ func (s *Server) AggregateAttendance() error {
 	return nil
 }
 
-func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
+func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy string) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
@@ -273,6 +273,7 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string) error {
 			UserExternalName: user.ExternalName,
 			UserGeneration:   user.Generation,
 			UserJoinedAt:     s.clock.Now(),
+			CreatedBy:        calledBy,
 		}
 	})); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendances: %w", err))

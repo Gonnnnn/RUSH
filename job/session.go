@@ -15,6 +15,8 @@ type executor struct {
 	clock         clock.Clock
 }
 
+var jobId = "session-attendance-syncer"
+
 func NewExecutor(sessionGetter sessionGetter, sessionCloser sessionCloser, logger Logger, clock clock.Clock) *executor {
 	return &executor{
 		sessionGetter: sessionGetter,
@@ -41,7 +43,7 @@ func (e *executor) CloseExpiredSessions() {
 	succeededSessionIds := []string{}
 	closeErr := []error{}
 	for _, session := range sessionsToClose {
-		if err := e.sessionCloser.CloseSession(session.Id); err != nil {
+		if err := e.sessionCloser.CloseSession(session.Id, jobId); err != nil {
 			failedSessionIds = append(failedSessionIds, session.Id)
 			closeErr = append(closeErr, err)
 			continue
@@ -59,7 +61,7 @@ func (e *executor) CloseExpiredSessions() {
 
 //go:generate mockgen -source=session.go -destination=session_mock.go -package=job
 type sessionCloser interface {
-	CloseSession(sessionId string) error
+	CloseSession(sessionId string, callerId string) error
 }
 
 type sessionGetter interface {
