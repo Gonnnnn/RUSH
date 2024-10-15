@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	// assert
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
