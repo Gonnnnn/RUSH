@@ -12,17 +12,18 @@ import (
 )
 
 type mongodbSession struct {
-	Id               primitive.ObjectID `bson:"_id,omitempty"`
-	Name             string             `bson:"name"`
-	Description      string             `bson:"description"`
-	CreatedBy        string             `bson:"created_by"`
-	GoogleFormId     string             `bson:"google_form_id"`
-	GoogleFormUri    string             `bson:"google_form_uri"`
-	CreatedAt        time.Time          `bson:"created_at"`
-	StartsAt         time.Time          `bson:"starts_at"`
-	Score            int                `bson:"score"`
-	AttendanceStatus AttendanceStatus   `bson:"attendance_status"`
-	IsDeleted        bool               `bson:"is_deleted"`
+	Id                      primitive.ObjectID `bson:"_id,omitempty"`
+	Name                    string             `bson:"name"`
+	Description             string             `bson:"description"`
+	CreatedBy               string             `bson:"created_by"`
+	GoogleFormId            string             `bson:"google_form_id"`
+	GoogleFormUri           string             `bson:"google_form_uri"`
+	CreatedAt               time.Time          `bson:"created_at"`
+	StartsAt                time.Time          `bson:"starts_at"`
+	Score                   int                `bson:"score"`
+	AttendanceStatus        AttendanceStatus   `bson:"attendance_status"`
+	AttendanceIgnoredReason string             `bson:"attendance_ignored_reason"`
+	IsDeleted               bool               `bson:"is_deleted"`
 }
 
 type mongodbRepo struct {
@@ -35,9 +36,10 @@ type UpdateForm struct {
 	GoogleFormId  *string
 	GoogleFormUri *string
 	// It should be updated with the form's description.
-	StartsAt         *time.Time
-	Score            *int
-	AttendanceStatus *AttendanceStatus
+	StartsAt                *time.Time
+	Score                   *int
+	AttendanceStatus        *AttendanceStatus
+	AttendanceIgnoredReason *string
 
 	// Indicator to return the updated session.
 	ReturnUpdatedSession bool
@@ -228,6 +230,9 @@ func (r *mongodbRepo) Update(id string, updateForm UpdateForm) (Session, error) 
 	}
 	if updateForm.AttendanceStatus != nil {
 		update["attendance_status"] = *updateForm.AttendanceStatus
+	}
+	if updateForm.AttendanceIgnoredReason != nil {
+		update["attendance_ignored_reason"] = *updateForm.AttendanceIgnoredReason
 	}
 
 	if _, err = r.collection.UpdateOne(context.Background(), bson.M{"_id": objectID}, bson.M{"$set": update}); err != nil {

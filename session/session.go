@@ -53,7 +53,15 @@ const (
 
 // If the session attendance is applied, the session data is immutable. It checks if the data can be updated.
 func (s *Session) CanUpdateMetadata() bool {
-	return s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored
+	if s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored {
+		return true
+	}
+
+	if s.AttendanceStatus == AttendanceStatusApplied {
+		return false
+	}
+
+	return false
 }
 
 // Checks the session data and returns true if the attendance can be applied by Google form submissions.

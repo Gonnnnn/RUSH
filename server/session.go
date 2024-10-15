@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"rush/attendance"
-	"sort"
+	"rush/golang/array"
+	"rush/user"
+	"strings"
 	"time"
 )
 
@@ -76,40 +78,37 @@ func (s *Server) ApplyAttendanceByFormSubmissions(sessionId string, calledBy str
 	}
 
 	if len(formSubmissions) == 0 {
-		if err := s.openSessionRepo.MarkAttendanceIsIgnored(sessionId); err != nil {
+		if err := s.openSessionRepo.MarkAttendanceIsIgnored(sessionId, "no form submissions"); err != nil {
 			return newInternalServerError(fmt.Errorf("failed to mark the session's attendance as ignored: %w", err))
 		}
 		return nil
 	}
 
-	submissionsOnTime := []attendance.FormSubmission{}
-	for _, submission := range formSubmissions {
-		if submission.SubmissionTime.Before(dbSession.StartsAt) {
-			submissionsOnTime = append(submissionsOnTime, submission)
-		}
-	}
+	submissionsOnTime := array.Filter(formSubmissions, func(submission attendance.FormSubmission) bool {
+		return submission.SubmissionTime.Before(dbSession.StartsAt)
+	})
 
-	externalNames := []string{}
-	for _, submissionOnTime := range submissionsOnTime {
-		externalNames = append(externalNames, submissionOnTime.UserExternalName)
-	}
+	externalNames := array.Map(submissionsOnTime, func(submission attendance.FormSubmission) string {
+		return submission.UserExternalName
+	})
 
 	users, err := s.userRepo.GetAllByExternalNames(externalNames)
 	if err != nil {
 		return newInternalServerError(fmt.Errorf("failed to get users by external names: %w", err))
 	}
 
-	sort.Slice(users, func(i, j int) bool {
-		return users[i].ExternalName < users[j].ExternalName
-	})
-	sort.Slice(submissionsOnTime, func(i, j int) bool {
-		return submissionsOnTime[i].UserExternalName < submissionsOnTime[j].UserExternalName
-	})
+	externalNameToUserMap := make(map[string]user.User)
+	for _, user := range users {
+		externalNameToUserMap[user.ExternalName] = user
+	}
 
-	addAttendanceReqs := []attendance.AddAttendanceReq{}
-	for index, submissionOnTime := range submissionsOnTime {
-		user := users[index]
-		addAttendanceReqs = append(addAttendanceReqs, attendance.AddAttendanceReq{
+	notFoundExternalNames := []string{}
+	addAttendanceReqs := array.Map(submissionsOnTime, func(submission attendance.FormSubmission) attendance.AddAttendanceReq {
+		user, exists := externalNameToUserMap[submission.UserExternalName]
+		if !exists {
+			notFoundExternalNames = append(notFoundExternalNames, submission.UserExternalName)
+		}
+		return attendance.AddAttendanceReq{
 			SessionId:        sessionId,
 			SessionName:      dbSession.Name,
 			SessionScore:     dbSession.Score,
@@ -117,9 +116,20 @@ func (s *Server) ApplyAttendanceByFormSubmissions(sessionId string, calledBy str
 			UserId:           user.Id,
 			UserExternalName: user.ExternalName,
 			UserGeneration:   user.Generation,
-			UserJoinedAt:     submissionOnTime.SubmissionTime,
+			UserJoinedAt:     submission.SubmissionTime,
 			CreatedBy:        calledBy,
-		})
+		}
+	})
+
+	if len(notFoundExternalNames) > 0 {
+		if err := s.openSessionRepo.MarkAttendanceIsIgnored(sessionId, fmt.Sprintf("some users (%s) were not found although there are form submissions",
+			strings.Join(notFoundExternalNames, ", "))); err != nil {
+			return newInternalServerError(fmt.Errorf(
+				"some users (%s) were not found although there are form submissions and it has failed to mark the session's attendance as ignored: %w",
+				strings.Join(notFoundExternalNames, ", "), err))
+		}
+		return newInternalServerError(fmt.Errorf("some users (%s) were not found although there are form submissions",
+			strings.Join(notFoundExternalNames, ", ")))
 	}
 
 	if err := s.attendanceRepo.BulkInsert(addAttendanceReqs); err != nil {

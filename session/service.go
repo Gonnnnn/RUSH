@@ -72,9 +72,9 @@ func (s *service) UpdateOpenSession(id string, updateForm OpenSessionUpdateForm)
 	return updatedSession, nil
 }
 
-func (s *service) MarkAttendanceIsIgnored(id string) error {
+func (s *service) MarkAttendanceIsIgnored(id string, reason string) error {
 	attendanceStatus := AttendanceStatusIgnored
-	_, err := s.sessionRepo.Update(id, UpdateForm{AttendanceStatus: &attendanceStatus})
+	_, err := s.sessionRepo.Update(id, UpdateForm{AttendanceStatus: &attendanceStatus, AttendanceIgnoredReason: &reason})
 	if err != nil {
 		return fmt.Errorf("repo failed to update session: %w", err)
 	}

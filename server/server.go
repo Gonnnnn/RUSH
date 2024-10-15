@@ -12,7 +12,7 @@ import (
 	"github.com/benbjohnson/clock"
 )
 
-//go:generate mockgen -source=server.go -destination=server_mock.go -package=server
+//go:generate mockgen -source=server.go -destination=mock/server_mock.go -package=mock
 
 type User struct {
 	// The ID of the user. E.g., "abc123"
@@ -149,7 +149,7 @@ type openSessionRepo interface {
 	// Marks the attendance status of the open session to be ignored.
 	// Use it when the session's attendance or anything about session is not correct,
 	// or suspicious, so that the server decides to not apply the attendance.
-	MarkAttendanceIsIgnored(id string) error
+	MarkAttendanceIsIgnored(id string, reason string) error
 }
 
 type attendanceFormHandler interface {
