@@ -10,21 +10,24 @@ import AppRoutes from './Routes';
 import { SnackbarProvider } from './SnackbarContext';
 import Logo from './assets/logo.svg';
 import { AuthProvider, useAuth } from './auth';
+import { AdminModeProvider } from './mode';
 
 dayjs.locale('ko');
 
 const App = () => (
   <SnackbarProvider>
     <AuthProvider>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <HeaderProvider>
-          <DataLoader>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </DataLoader>
-        </HeaderProvider>
-      </LocalizationProvider>
+      <AdminModeProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <HeaderProvider>
+            <DataLoader>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </DataLoader>
+          </HeaderProvider>
+        </LocalizationProvider>
+      </AdminModeProvider>
     </AuthProvider>
   </SnackbarProvider>
 );
