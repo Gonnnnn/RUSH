@@ -142,17 +142,17 @@ func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 		convertedAttendances = append(convertedAttendances, *fromAttendance(&attendance))
 	}
 
-	uniqueSessionMap := map[string]sessionForAttendance{}
+	idSessionMap := map[string]sessionForAttendance{}
 	for _, attendance := range convertedAttendances {
-		uniqueSessionMap[attendance.SessionName] = sessionForAttendance{
+		idSessionMap[attendance.SessionId] = sessionForAttendance{
 			Id:        attendance.SessionId,
 			Name:      attendance.SessionName,
 			StartedAt: attendance.SessionStartedAt,
 		}
 	}
 	uniqueSessions := []sessionForAttendance{}
-	for name := range uniqueSessionMap {
-		uniqueSessions = append(uniqueSessions, uniqueSessionMap[name])
+	for id := range idSessionMap {
+		uniqueSessions = append(uniqueSessions, idSessionMap[id])
 	}
 	slices.SortStableFunc(uniqueSessions, func(session1, session2 sessionForAttendance) int {
 		if session1.StartedAt.After(session2.StartedAt) {
@@ -181,9 +181,9 @@ func (s *Server) AggregateAttendance() error {
 		return newInternalServerError(fmt.Errorf("failed to get all attendances: %w", err))
 	}
 
-	userScoreMap := map[string]int{}
+	userIdScoreMap := map[string]int{}
 	for _, attendance := range attendances {
-		userScoreMap[attendance.UserId] += attendance.SessionScore
+		userIdScoreMap[attendance.UserId] += attendance.SessionScore
 	}
 
 	sessionIdSet := map[string]bool{}
@@ -196,7 +196,7 @@ func (s *Server) AggregateAttendance() error {
 	}
 
 	userInfosForAggregation := array.Map(attendances, func(attendance attendance.Attendance) attendanceAggregation.UserInfo {
-		userScore, ok := userScoreMap[attendance.UserId]
+		userScore, ok := userIdScoreMap[attendance.UserId]
 		if !ok {
 			userScore = 0
 		}
