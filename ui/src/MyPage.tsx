@@ -40,7 +40,6 @@ const MyPage = () => {
     const init = async () => {
       try {
         setIsLoading(true);
-        // TODO(#42): Fetch user data directly.
         const { user_id: userId } = await getUserAuth();
         setUser(await getUser(userId));
         setAttendances(await getUserAttendances(userId));

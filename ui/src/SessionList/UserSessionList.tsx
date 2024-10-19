@@ -47,7 +47,6 @@ const UserSessionList = () => {
       try {
         setIsLoading(true);
         const offset = page * pageSize;
-        // TODO(#200): Fetch sessions that don't have admin-specific fields. Split clients.
         const listSessionsResponse = await listSessions(offset, pageSize);
         setSessions(listSessionsResponse.sessions);
         setIsEnd(listSessionsResponse.isEnd);
@@ -85,7 +84,6 @@ const UserSessionList = () => {
     <Container>
       <Box display="flex" flexDirection="column" gap={2}>
         <TableContainer component={Paper}>
-          {/* TODO(#31): Implements the common table UI with a loader. */}
           <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
           <Table>
             <TableHead>
