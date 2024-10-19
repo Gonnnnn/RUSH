@@ -87,11 +87,29 @@ const AdminSessionList = () => {
           </Button>
         </Box>
         <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="body2">출석 상태</Typography>
+          <Typography variant="body2">출석 sync 상태</Typography>
           <Box display="flex" alignItems="center">
             <CheckCircleOutlineRounded color="primary" data-tooltip-id="attendance-status-applied-tooltip" />
             <CheckCircleOutlineRounded color="warning" data-tooltip-id="attendance-status-ignored-tooltip" />
             <CheckCircleOutlineRounded color="disabled" data-tooltip-id="attendance-status-not-applied-tooltip" />
+            <Tooltip
+              id="attendance-status-applied-tooltip"
+              place="top"
+              content="출석 반영 완료"
+              openEvents={{ click: true, mouseover: true }}
+            />
+            <Tooltip
+              id="attendance-status-ignored-tooltip"
+              place="top"
+              content="출석 반영이 시도됐으나 무시된 상태"
+              openEvents={{ click: true, mouseover: true }}
+            />
+            <Tooltip
+              id="attendance-status-not-applied-tooltip"
+              place="top"
+              content="세션 출석이 마감되지 않아, 아직 반영되지 않은 상태"
+              openEvents={{ click: true, mouseover: true }}
+            />
           </Box>
         </Box>
         <TableContainer component={Paper}>
@@ -100,33 +118,15 @@ const AdminSessionList = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="center" sx={{ width: '25%' }}>
+                <TableCell align="center" sx={{ width: '35%' }}>
                   시작 시간
                 </TableCell>
-                <TableCell align="center" sx={{ width: '25%' }}>
+                <TableCell align="center" sx={{ width: '45%' }}>
                   이름
                 </TableCell>
-                <TableCell align="center" sx={{ width: '50%' }}>
-                  출석 반영
+                <TableCell align="center" sx={{ width: '20%' }}>
+                  Sync
                 </TableCell>
-                <Tooltip
-                  id="attendance-status-applied-tooltip"
-                  place="top"
-                  content="출석 반영 완료"
-                  openEvents={{ click: true, mouseover: true }}
-                />
-                <Tooltip
-                  id="attendance-status-ignored-tooltip"
-                  place="top"
-                  content="출석 반영이 시도됐으나 무시된 상태"
-                  openEvents={{ click: true, mouseover: true }}
-                />
-                <Tooltip
-                  id="attendance-status-not-applied-tooltip"
-                  place="top"
-                  content="세션 출석이 마감되지 않아, 아직 반영되지 않은 상태"
-                  openEvents={{ click: true, mouseover: true }}
-                />
               </TableRow>
             </TableHead>
             <TableBody>

@@ -7,12 +7,15 @@ import Logo from './assets/logo.svg';
 import { useAuth } from './auth';
 import GoogleSignInButton from './common/GoogleSignInButton';
 import GoogleSignOutButton from './common/GoogleSignOutButton';
+import { useAdminMode } from './mode';
 
 export const SIDEBAR_WIDTH = 280;
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { authenticated } = useAuth();
+  const { adminMode } = useAdminMode();
+
   return (
     <Stack
       spacing={3}
@@ -41,7 +44,11 @@ const Sidebar = () => {
 
       <Stack>
         <NavigationButton title="Me" path="/me" icon={<PersonOutlined />} />
-        <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
+        <NavigationButton
+          title={adminMode ? 'Ad-Sessions' : 'Sessions'}
+          path={adminMode ? '/admin/sessions' : '/sessions'}
+          icon={<RunCircleOutlined />}
+        />
         <NavigationButton title="Attendance" path="/attendances" icon={<CheckCircleOutline />} />
       </Stack>
       {authenticated ? <GoogleSignOutButton /> : <GoogleSignInButton />}
