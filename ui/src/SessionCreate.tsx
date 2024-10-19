@@ -5,7 +5,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { useSnackbar } from './SnackbarContext';
-import { createSession } from './client/http';
+import { adminCreateSession } from './client/http/admin';
 
 const SessionCreate = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const SessionCreate = () => {
     e.preventDefault();
     if (!startsAt || !isFormValid) return;
     try {
-      const id = await createSession(name, description, new Date(startsAt.toISOString()), score);
+      const id = await adminCreateSession(name, description, new Date(startsAt.toISOString()), score);
       navigate(`/sessions/${id}`);
     } catch (error: unknown) {
       if (!(error instanceof AxiosError)) {

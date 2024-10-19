@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
 import { removeAuthToken, setAuthToken } from '../client/auth';
-import { getUserAuth, signIn } from '../client/http';
+import { getUserAuth, signIn } from '../client/http/default';
 import { convertGetUserAuthRole, Role } from './role';
 
 interface AuthContextType {

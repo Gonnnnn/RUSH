@@ -1,6 +1,6 @@
 import { Box, Button, CircularProgress, Grid, Paper, Typography } from '@mui/material';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Session } from '../../client/http';
+import { AdminSession } from '../../client/http/data';
 import { formatDateToMonthDate } from '../../common/date';
 
 const AttendanceQrPanel = ({
@@ -11,7 +11,7 @@ const AttendanceQrPanel = ({
   isCreatingForm,
   onCreateQRCode,
 }: {
-  session: Session;
+  session: AdminSession;
   qrRef: React.RefObject<HTMLDivElement>;
   qrSizePx: number;
   qrDownloadSizePx: number;

@@ -16,7 +16,8 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { useHeader } from '../Layout';
-import { Session, listSessions } from '../client/http';
+import { Session } from '../client/http/data';
+import { listSessions } from '../client/http/default';
 import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
 import useHandleError from '../common/error';
 

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Container, Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
 import { useHeader } from '../../Layout';
-import { Session, SessionAttendanceAppliedBy, createSessionForm, deleteSession, getSession } from '../../client/http';
+import { adminCreateSessionForm, adminDeleteSession, adminGetSession } from '../../client/http/admin';
+import { AdminSession, SessionAttendanceAppliedBy } from '../../client/http/data';
 import useHandleError from '../../common/error';
 import SessionInfo from '../common/SessionInfo';
 import AttendanceQrPanel from './AttendanceQrPanel';
@@ -15,7 +16,7 @@ const AdminSessionDetail = () => {
   const { handleError } = useHandleError();
   const { id } = useParams();
 
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<AdminSession | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isCreatingForm, setIsCreatingForm] = useState(false);
@@ -27,7 +28,7 @@ const AdminSessionDetail = () => {
     async (sessionId: string) => {
       try {
         setIsLoading(true);
-        const fetchedSession = await getSession(sessionId);
+        const fetchedSession = await adminGetSession(sessionId);
         setSession(fetchedSession);
       } catch (error) {
         handleError({
@@ -59,7 +60,7 @@ const AdminSessionDetail = () => {
 
   const handleDeleteBtnClick = async () => {
     try {
-      await deleteSession(id);
+      await adminDeleteSession(id);
       navigate('/sessions');
     } catch (error) {
       handleError({
@@ -73,8 +74,8 @@ const AdminSessionDetail = () => {
   const handleQrCodeCreateClick = async () => {
     try {
       setIsCreatingForm(true);
-      await createSessionForm(id);
-      const updatedSession = await getSession(id);
+      await adminCreateSessionForm(id);
+      const updatedSession = await adminGetSession(id);
       setSession(updatedSession);
     } catch (error) {
       handleError({

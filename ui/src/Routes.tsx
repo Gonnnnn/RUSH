@@ -5,7 +5,6 @@ import MyPage from './MyPage';
 import { AdminSessionDetail, UserSessionDetail } from './SessionDetail';
 import { AdminSessionList, UserSessionList } from './SessionList';
 import SignIn from './SignIn';
-import UserList from './UserList';
 import { useAuth } from './auth';
 import { Role } from './auth/role';
 
@@ -15,7 +14,6 @@ const AppRoutes = () => (
       <Route index element={<UserSessionList />} />
       <Route path="/sessions" element={<UserSessionList />} />
       <Route path="/sessions/:id" element={<UserSessionDetail />} />
-      <Route path="/users" element={<UserList />} />
       <Route element={<AuthRoute />}>
         <Route path="/me" element={<MyPage />} />
         <Route path="/attendances" element={<HalfYearAttendances />} />

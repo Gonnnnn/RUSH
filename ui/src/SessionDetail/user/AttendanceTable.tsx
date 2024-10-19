@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Typography, Paper, Box, CircularProgress } from '@mui/material';
 import { useAuth } from '../../auth';
-import { Attendance, getSessionAttendances } from '../../client/http';
+import { Attendance } from '../../client/http/data';
+import { getSessionAttendances } from '../../client/http/default';
 import useHandleError from '../../common/error';
 import UserAttendance from '../common/UserAttendance';
 

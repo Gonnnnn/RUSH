@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Typography, Paper, Box, CircularProgress, Tabs, Tab } from '@mui/material';
 import { useAuth } from '../../auth';
-import { Attendance, getSessionAttendances, markUsersAsPresent } from '../../client/http';
+import { adminMarkUsersAsPresent } from '../../client/http/admin';
+import { Attendance } from '../../client/http/data';
+import { getSessionAttendances } from '../../client/http/default';
 import useHandleError from '../../common/error';
 import UserAttendance from '../common/UserAttendance';
 import AddAttendance from './AddAttendance';
@@ -46,7 +48,7 @@ const SessionAttendanceTable = ({ sessionId, reloadSession }: { sessionId: strin
   }, [sessionId, authenticated, handleError]);
 
   const applyAttendances = async (userIds: string[]) => {
-    await markUsersAsPresent(sessionId, userIds);
+    await adminMarkUsersAsPresent(sessionId, userIds);
     const newAttendances = await getSessionAttendances(sessionId);
     reloadSession();
     setAttendances(newAttendances);
