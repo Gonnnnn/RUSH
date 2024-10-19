@@ -1,10 +1,12 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { removeAuthToken, setAuthToken } from './client/auth';
-import { checkAuth, signIn } from './client/http';
+import { removeAuthToken, setAuthToken } from '../client/auth';
+import { getUserAuth, signIn } from '../client/http';
+import { convertGetUserAuthRole, Role } from './role';
 
 interface AuthContextType {
   authenticated: boolean;
+  role: Role;
   isLoading: boolean;
   login: (token: string) => Promise<void>;
   logout: () => void;
@@ -14,6 +16,8 @@ const AuthContext = createContext<AuthContextType>({
   // The indicator of whether the user is authenticated. It is refreshed when the page is loaded, users open the tab again.
   // It is also updated when the user logs in or out.
   authenticated: false,
+  // The role of the user.
+  role: Role.UNKNOWN,
   // The indicator of whether the authentication is being checked. It is provided outside so that the app can show a loading indicator
   // to initialize the authentication state before the page is loaded.
   isLoading: true,
@@ -25,12 +29,14 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
+  const [role, setRole] = useState(Role.UNKNOWN);
   const [isLoading, setIsLoading] = useState(true);
 
   const verifyAuth = useCallback(async () => {
     try {
-      const isAuthenticated = await checkAuth();
-      setAuthenticated(isAuthenticated);
+      const { user_id: userId, user_role: userRole } = await getUserAuth();
+      setAuthenticated(!!userId);
+      setRole(convertGetUserAuthRole(userRole));
     } catch (error) {
       // TODO(#65): Handle this error globally.
       // eslint-disable-next-line no-console
@@ -74,7 +80,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async (token: string) => {
       if (token) {
         setAuthToken(await signIn(token));
-        setAuthenticated(true);
+        const { user_id: userId, user_role: userRole } = await getUserAuth();
+        setAuthenticated(!!userId);
+        setRole(convertGetUserAuthRole(userRole));
       }
     },
     [setAuthenticated],
@@ -83,9 +91,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     removeAuthToken();
     setAuthenticated(false);
+    setRole(Role.UNKNOWN);
   };
 
-  const value = useMemo(() => ({ authenticated, isLoading, login, logout }), [authenticated, isLoading, login]);
+  const value = useMemo(
+    () => ({ authenticated, role, isLoading, login, logout }),
+    [authenticated, role, isLoading, login],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

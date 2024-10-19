@@ -16,7 +16,7 @@ import {
   TableBody,
 } from '@mui/material';
 import { useHeader } from './Layout';
-import { Attendance, User, getUser, getUserAttendances, getUserId } from './client/http';
+import { Attendance, User, getUser, getUserAttendances, getUserAuth } from './client/http';
 import { toYYslashMMslashDDspaceHHcolonMM } from './common/date';
 
 const MyPage = () => {
@@ -33,7 +33,7 @@ const MyPage = () => {
       try {
         setIsLoading(true);
         // TODO(#42): Fetch user data directly.
-        const userId = await getUserId();
+        const { user_id: userId } = await getUserAuth();
         setUser(await getUser(userId));
         setAttendances(await getUserAttendances(userId));
       } catch (error) {

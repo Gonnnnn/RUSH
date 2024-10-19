@@ -252,12 +252,14 @@ export const signIn = async (token: string): Promise<string> => {
   throw new Error('Failed to sign in');
 };
 
-export const checkAuth = async (): Promise<boolean> => {
-  const response = await client.get('/auth');
-  return response.status === 200;
-};
+const GetUserAuthResponseSchema = z.object({
+  user_id: z.string(),
+  user_role: z.enum(['', 'unknown', 'super_admin', 'admin', 'member']),
+});
 
-export const getUserId = async (): Promise<string> => {
+export type GetUserAuthResponse = z.infer<typeof GetUserAuthResponseSchema>;
+
+export const getUserAuth = async (): Promise<GetUserAuthResponse> => {
   const response = await client.get('/auth');
-  return response.data.user_id;
+  return GetUserAuthResponseSchema.parse(response.data);
 };

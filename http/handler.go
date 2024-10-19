@@ -54,7 +54,14 @@ func handleAuth(server *server.Server) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"user_id": userId})
+		role, ok := c.Get(userRoleKey)
+		if !ok {
+			log.Printf("Error getting user role from context, it is supposed to be set by the middleware")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"user_id": userId, "user_role": role})
 	}
 }
 
