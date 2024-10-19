@@ -15,7 +15,15 @@ type TabTypes = 'attendance' | 'addAttendance';
  * It fetches the attendance and updates it by itself, not by the parent component on purpose
  * to avoid unnecessary props passing, and also to not affect the parent component render when it fails.
  */
-const SessionAttendanceTable = ({ sessionId, reloadSession }: { sessionId: string; reloadSession: () => void }) => {
+const SessionAttendanceTable = ({
+  sessionId,
+  reloadSession,
+  qrActivated,
+}: {
+  sessionId: string;
+  reloadSession: () => void;
+  qrActivated: boolean;
+}) => {
   const { authenticated } = useAuth();
   const { handleError } = useHandleError();
 
@@ -94,12 +102,16 @@ const SessionAttendanceTable = ({ sessionId, reloadSession }: { sessionId: strin
 
         {tab === 'addAttendance' && (
           <Box>
-            <AddAttendance
-              applyAttendances={async (userIds) => {
-                await applyAttendances(userIds);
-                setTab('attendance');
-              }}
-            />
+            {qrActivated ? (
+              <Typography sx={{ pt: 2 }}>이미 QR이 생성된 세션입니다.</Typography>
+            ) : (
+              <AddAttendance
+                applyAttendances={async (userIds) => {
+                  await applyAttendances(userIds);
+                  setTab('attendance');
+                }}
+              />
+            )}
           </Box>
         )}
       </Box>
