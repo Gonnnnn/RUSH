@@ -35,13 +35,9 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			adminProtected := protected.Group("/")
 			adminProtected.Use(RequireRole(permission.RoleAdmin, permission.RoleSuperAdmin))
 			{
-				adminProtected.GET("/sessions", handleAdminListSessions(server))
-				adminProtected.GET("/sessions/:id", handleAdminGetSession(server))
+				adminProtected.POST("/users", handleAddUser(server))
 				adminProtected.POST("/sessions", handleAddSession(server))
 				adminProtected.DELETE("/sessions/:id", handleDeleteSession(server))
-
-				adminProtected.POST("/users", handleAddUser(server))
-
 				adminProtected.POST("/sessions/:id/attendance-form", handleCreateAttendanceForm(server))
 				adminProtected.POST("/attendances/aggregate", handleAggregateAttendance(server))
 				adminProtected.POST("/sessions/:id/attendance/form", handleApplyAttendanceByFormSubmissions(server))
