@@ -68,6 +68,39 @@ func handleAuth(server *server.Server) gin.HandlerFunc {
 
 func handleListUsers(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		onlyActiveQuery := c.Query("onlyActive")
+		onlyActive := false
+		if onlyActiveQuery != "" && onlyActiveQuery != "0" && onlyActiveQuery != "1" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid onlyActive"})
+			return
+		}
+		if onlyActiveQuery == "1" {
+			onlyActive = true
+		} else if onlyActiveQuery == "0" {
+			onlyActive = false
+		}
+
+		allQuery := c.Query("all")
+		if allQuery != "" && allQuery != "1" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid all"})
+			return
+		}
+		if allQuery == "1" {
+			result, err := server.ListUsers(0, 0, onlyActive, true /* =all */)
+			if err != nil {
+				log.Printf("Error getting users: %+v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"users":       result.Users,
+				"is_end":      result.IsEnd,
+				"total_count": result.TotalCount,
+			})
+			return
+		}
+
 		offset, err := strconv.Atoi(c.Query("offset"))
 		if err != nil || offset < 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offset"})
@@ -79,7 +112,7 @@ func handleListUsers(server *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		result, err := server.ListUsers(offset, pageSize)
+		result, err := server.ListUsers(offset, pageSize, onlyActive, false /* =all */)
 		if err != nil {
 			log.Printf("Error getting users: %+v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})

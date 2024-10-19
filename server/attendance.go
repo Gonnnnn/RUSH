@@ -23,13 +23,10 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 		return "", newBadRequestError(errors.New("session is already closed"))
 	}
 
-	// TODO(#134): Fetch active users only.
-	users, err := s.userRepo.GetAll()
+	activeUsers, err := s.userRepo.GetAllActive()
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}
-
-	activeUsers := array.Filter(users, func(user user.User) bool { return user.IsActive })
 
 	sort.Slice(activeUsers, func(i, j int) bool {
 		if activeUsers[i].Generation != activeUsers[j].Generation {
@@ -111,7 +108,7 @@ type sessionForAttendance struct {
 func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 	// TODO(#113): Save the data of each generation, startsAt, finishesAt, name, etc.
 	// And then replace it to a method to get attendance within certain period.
-	users, err := s.userRepo.GetAll()
+	users, err := s.userRepo.GetAllActive()
 	if err != nil {
 		return HalfYearAttendace{}, newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}
@@ -237,7 +234,7 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy
 		return !attendedUserIdSet[userId]
 	})
 
-	allUsers, err := s.userRepo.GetAll()
+	allUsers, err := s.userRepo.GetAllActive()
 	if err != nil {
 		return newInternalServerError(fmt.Errorf("failed to get users: %w", err))
 	}

@@ -130,7 +130,10 @@ type authHandler interface {
 
 type userRepo interface {
 	Get(id string) (*user.User, error)
+	// Returns all the users.
 	GetAll() ([]user.User, error)
+	// Returns all the active users.
+	GetAllActive() ([]user.User, error)
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
 	List(offset int, pageSize int) (*user.ListResult, error)
 	// Returns the user that has the email. Typically used to get the user by the email from the OAuth2.0 token.

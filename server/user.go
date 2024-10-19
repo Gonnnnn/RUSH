@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"rush/golang/array"
 )
 
 func (s *Server) GetAllUsers() ([]*User, error) {
@@ -23,7 +24,40 @@ type ListUsersResult struct {
 	TotalCount int    `json:"total_count"`
 }
 
-func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
+func (s *Server) ListUsers(offset int, pageSize int, onlyActive bool, all bool) (*ListUsersResult, error) {
+	if all {
+		if onlyActive {
+			users, err := s.userRepo.GetAllActive()
+			if err != nil {
+				return nil, err
+			}
+
+			converted := []User{}
+			for _, user := range users {
+				converted = append(converted, *fromUser(&user))
+			}
+			return &ListUsersResult{
+				Users:      converted,
+				IsEnd:      true,
+				TotalCount: len(users),
+			}, nil
+		}
+		users, err := s.userRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+
+		converted := []User{}
+		for _, user := range users {
+			converted = append(converted, *fromUser(&user))
+		}
+		return &ListUsersResult{
+			Users:      converted,
+			IsEnd:      true,
+			TotalCount: len(users),
+		}, nil
+	}
+
 	listResult, err := s.userRepo.List(offset, pageSize)
 	if err != nil {
 		return nil, newInternalServerError(fmt.Errorf("failed to list users: %w", err))
@@ -32,6 +66,16 @@ func (s *Server) ListUsers(offset int, pageSize int) (*ListUsersResult, error) {
 	converted := []User{}
 	for _, user := range listResult.Users {
 		converted = append(converted, *fromUser(&user))
+	}
+
+	if onlyActive {
+		return &ListUsersResult{
+			Users: array.Filter(converted, func(user User) bool {
+				return user.IsActive
+			}),
+			IsEnd:      listResult.IsEnd,
+			TotalCount: listResult.TotalCount,
+		}, nil
 	}
 
 	return &ListUsersResult{
