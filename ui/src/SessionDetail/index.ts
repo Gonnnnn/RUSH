@@ -1,3 +1,4 @@
-import SessionDetail from './SessionDetail';
+import AdminSessionDetail from './admin';
+import UserSessionDetail from './user';
 
-export default SessionDetail;
+export { AdminSessionDetail, UserSessionDetail };
