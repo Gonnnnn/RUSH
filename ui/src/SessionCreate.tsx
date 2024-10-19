@@ -26,7 +26,7 @@ const SessionCreate = () => {
     if (!startsAt || !isFormValid) return;
     try {
       const id = await adminCreateSession(name, description, new Date(startsAt.toISOString()), score);
-      navigate(`/sessions/${id}`);
+      navigate(`/admin/sessions/${id}`);
     } catch (error: unknown) {
       if (!(error instanceof AxiosError)) {
         showError('An unexpected error occurred. Please contact the administrator.');

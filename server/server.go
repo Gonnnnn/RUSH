@@ -31,7 +31,7 @@ type User struct {
 	ExternalName string `json:"external_name"`
 }
 
-type Session struct {
+type SessionForAdmin struct {
 	// The ID of the session. E.g., "abc123"
 	Id string `json:"id"`
 	// The name of the session. E.g., "456회 정기 세션"
@@ -57,8 +57,8 @@ type Session struct {
 	AttendanceAppliedBy SessionAttendanceAppliedBy `json:"attendance_applied_by"`
 }
 
-// SessionForUser is a session for a user. It includes fields that are safe for a user to know.
-type SessionForUser struct {
+// Session for a user. It includes fields that are safe for a user to know.
+type Session struct {
 	Id          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`

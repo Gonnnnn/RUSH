@@ -10,26 +10,26 @@ import (
 	"time"
 )
 
-func (s *Server) AdminGetSession(id string) (Session, error) {
+func (s *Server) AdminGetSession(id string) (SessionForAdmin, error) {
+	session, err := s.sessionRepo.Get(id)
+	if err != nil {
+		return SessionForAdmin{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+	}
+	return fromSessionToSessionForAdmin(session), nil
+}
+
+func (s *Server) GetSession(id string) (Session, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
 		return Session{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
-	}
-	return fromSession(session), nil
-}
-
-func (s *Server) GetSession(id string) (SessionForUser, error) {
-	session, err := s.sessionRepo.Get(id)
-	if err != nil {
-		return SessionForUser{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
 	return fromSessionToSessionForUser(session), nil
 }
 
 type AdminListSessionsResult struct {
-	Sessions   []Session `json:"sessions"`
-	IsEnd      bool      `json:"is_end"`
-	TotalCount int       `json:"total_count"`
+	Sessions   []SessionForAdmin `json:"sessions"`
+	IsEnd      bool              `json:"is_end"`
+	TotalCount int               `json:"total_count"`
 }
 
 func (s *Server) AdminListSessions(offset int, pageSize int) (*AdminListSessionsResult, error) {
@@ -38,9 +38,9 @@ func (s *Server) AdminListSessions(offset int, pageSize int) (*AdminListSessions
 		return nil, newInternalServerError(fmt.Errorf("failed to list sessions: %w", err))
 	}
 
-	converted := []Session{}
+	converted := []SessionForAdmin{}
 	for _, session := range listResult.Sessions {
-		converted = append(converted, fromSession(session))
+		converted = append(converted, fromSessionToSessionForAdmin(session))
 	}
 
 	return &AdminListSessionsResult{
@@ -51,9 +51,9 @@ func (s *Server) AdminListSessions(offset int, pageSize int) (*AdminListSessions
 }
 
 type ListSessionsResult struct {
-	Sessions   []SessionForUser `json:"sessions"`
-	IsEnd      bool             `json:"is_end"`
-	TotalCount int              `json:"total_count"`
+	Sessions   []Session `json:"sessions"`
+	IsEnd      bool      `json:"is_end"`
+	TotalCount int       `json:"total_count"`
 }
 
 func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, error) {
@@ -62,7 +62,7 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 		return nil, newInternalServerError(fmt.Errorf("failed to list sessions: %w", err))
 	}
 
-	converted := []SessionForUser{}
+	converted := []Session{}
 	for _, session := range listResult.Sessions {
 		converted = append(converted, fromSessionToSessionForUser(session))
 	}
