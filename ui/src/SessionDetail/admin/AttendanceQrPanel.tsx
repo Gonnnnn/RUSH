@@ -1,7 +1,7 @@
 import { Box, Button, CircularProgress, Grid, Paper, Typography } from '@mui/material';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Session } from '../client/http';
-import { formatDateToMonthDate } from '../common/date';
+import { Session } from '../../client/http';
+import { formatDateToMonthDate } from '../../common/date';
 
 const AttendanceQrPanel = ({
   session,

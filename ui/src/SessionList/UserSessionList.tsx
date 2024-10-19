@@ -39,6 +39,7 @@ const UserSessionList = () => {
       try {
         setIsLoading(true);
         const offset = page * pageSize;
+        // TODO(#200): Fetch sessions that don't have admin-specific fields. Split clients.
         const listSessionsResponse = await listSessions(offset, pageSize);
         setSessions(listSessionsResponse.sessions);
         setIsEnd(listSessionsResponse.isEnd);

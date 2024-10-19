@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { CalendarTodayOutlined, StarBorderRounded } from '@mui/icons-material';
 import { TextField, Typography, Paper, Stack, Box, Grid } from '@mui/material';
 import { TimeIcon } from '@mui/x-date-pickers';
-import { Session } from '../client/http';
-import { toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from '../common/date';
+import { Session } from '../../client/http';
+import { toYYslashMMslashDDspaceHHcolonMM, toYYYY년MM월DD일HH시MM분 } from '../../common/date';
 
 type EditableSessionData = {
   name: string;

@@ -70,7 +70,7 @@ const AdminSessionList = () => {
   };
 
   const handleRowClick = (session: Session) => {
-    navigate(`/sessions/${session.id}`);
+    navigate(`/admin/sessions/${session.id}`);
   };
 
   return (

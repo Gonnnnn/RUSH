@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Container, Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
-import { useHeader } from '../Layout';
-import { Session, SessionAttendanceAppliedBy, createSessionForm, deleteSession, getSession } from '../client/http';
-import useHandleError from '../common/error';
+import { useHeader } from '../../Layout';
+import { Session, SessionAttendanceAppliedBy, createSessionForm, deleteSession, getSession } from '../../client/http';
+import useHandleError from '../../common/error';
+import SessionInfo from '../common/SessionInfo';
 import AttendanceQrPanel from './AttendanceQrPanel';
 import SessionAttendanceTable from './AttendanceTable';
-import SessionInfo from './SessionInfo';
 
-const SessionDetail = () => {
+const AdminSessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -150,4 +150,4 @@ const SessionDetail = () => {
   );
 };
 
-export default SessionDetail;
+export default AdminSessionDetail;
