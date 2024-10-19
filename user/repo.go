@@ -59,6 +59,31 @@ func (r *mongodbRepo) GetAll() ([]User, error) {
 	return converted, nil
 }
 
+func (r *mongodbRepo) GetAllActive() ([]User, error) {
+	ctx := context.Background()
+	cursor, err := r.collection.Find(ctx, bson.M{"is_active": true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var users []mongodbUser
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, fmt.Errorf("failed to decode users: %w", err)
+	}
+
+	converted := make([]User, len(users))
+	for index, user := range users {
+		convertedUser, err := convertToUser(user)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert user: %w", err)
+		}
+		converted[index] = convertedUser
+	}
+
+	return converted, nil
+}
+
 func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 	ctx := context.Background()
 

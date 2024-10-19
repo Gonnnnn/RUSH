@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DataGrid, GridRowSelectionModel, GridToolbarContainer, GridToolbarQuickFilter } from '@mui/x-data-grid';
-import { adminListUsers } from '../../client/http/admin';
+import { adminAllActiveUsers } from '../../client/http/admin';
 import { User } from '../../client/http/data';
 import useHandleError from '../../common/error';
 
@@ -35,9 +35,8 @@ const AddAttendance = ({ applyAttendances }: { applyAttendances: (userIds: strin
     const fetchUsers = async () => {
       try {
         setIsLoadingUsers(true);
-        // TODO(#177): Implement getAllUsers.
-        const res = await adminListUsers(1, 9999999);
-        setUsers(res.users);
+        const res = await adminAllActiveUsers();
+        setUsers(res);
       } catch (error) {
         handleError({
           error,

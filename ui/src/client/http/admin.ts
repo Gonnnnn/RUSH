@@ -15,23 +15,19 @@ const client: AxiosInstance = axios.create({
 
 client.interceptors.response.use(setToken);
 
-const AdminListUsersResponseSchema = z
-  .object({
-    is_end: z.boolean(),
-    users: z.array(UserSchema),
-    total_count: z.number(),
-  })
-  .transform((data) => ({
-    isEnd: data.is_end,
-    users: data.users,
-    totalCount: data.total_count,
-  }));
+const AdminAllActiveUsersResponseSchema = z.object({
+  users: z.array(UserSchema),
+  is_end: z.boolean(),
+  total_count: z.number(),
+});
 
-export type AdminListUsersResponse = z.infer<typeof AdminListUsersResponseSchema>;
+const Users = z.array(UserSchema);
 
-export const adminListUsers = async (offset: number, pageSize: number): Promise<AdminListUsersResponse> => {
-  const response = await client.get('/users', { params: { offset, pageSize } });
-  return AdminListUsersResponseSchema.parse(response.data);
+export type AdminAllActiveUsersResponse = z.infer<typeof Users>;
+
+export const adminAllActiveUsers = async (): Promise<AdminAllActiveUsersResponse> => {
+  const response = await client.get('/users', { params: { offset: 0, pageSize: 0, onlyActive: 1, all: 1 } });
+  return AdminAllActiveUsersResponseSchema.parse(response.data).users;
 };
 
 const AdminGetSessionResponseSchema = AdminSessionSchema;
