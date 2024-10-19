@@ -14,7 +14,7 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../auth';
 import { Attendance, getSessionAttendances, markUsersAsPresent } from '../client/http';
 import { toYYslashMMslashDDspaceHHcolonMMcolonSS } from '../common/date';
 import useHandleError from '../common/error';

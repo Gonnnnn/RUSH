@@ -1,12 +1,12 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import HalfYearAttendances from './Attendance';
-import { useAuth } from './AuthContext';
 import { Layout } from './Layout';
 import MyPage from './MyPage';
 import SessionDetail from './SessionDetail';
 import SessionList from './SessionList';
 import SignIn from './SignIn';
 import UserList from './UserList';
+import { useAuth } from './auth';
 
 const AppRoutes = () => (
   <Routes>

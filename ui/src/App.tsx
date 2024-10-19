@@ -5,11 +5,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { AuthProvider, useAuth } from './AuthContext';
 import { HeaderProvider } from './Layout';
 import AppRoutes from './Routes';
 import { SnackbarProvider } from './SnackbarContext';
 import Logo from './assets/logo.svg';
+import { AuthProvider, useAuth } from './auth';
 
 dayjs.locale('ko');
 
