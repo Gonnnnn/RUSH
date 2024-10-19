@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"rush/permission"
 	"rush/server"
 )
 
@@ -65,7 +66,6 @@ func handleAuth(server *server.Server) gin.HandlerFunc {
 	}
 }
 
-// TODO(#86): Fix it so that only certain users can see the list of users.
 func handleListUsers(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		offset, err := strconv.Atoi(c.Query("offset"))
@@ -94,10 +94,29 @@ func handleListUsers(server *server.Server) gin.HandlerFunc {
 	}
 }
 
-// TODO(#86): Fix it so that only the admin or the user itself can see the user's information.
 func handleGetUser(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
+		if id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+			return
+		}
+
+		role, ok := c.Get(userRoleKey)
+		if !ok {
+			log.Printf("Error getting user role from context, it is supposed to be set by the middleware")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		if role != permission.RoleAdmin && role != permission.RoleSuperAdmin {
+			callerId := c.GetString(userIdKey)
+			if callerId != id {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+				return
+			}
+		}
+
 		user, err := server.GetUser(id)
 		if err != nil {
 			if isNotFound(err) {
