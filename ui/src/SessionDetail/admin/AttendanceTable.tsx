@@ -69,7 +69,6 @@ const SessionAttendanceTable = ({
           <Typography variant="h6">출석</Typography>
           <Tabs value={tab} onChange={(_, newTab) => setTab(newTab)} sx={{ mb: 2 }}>
             <Tab label="출석 현황" value="attendance" disabled />
-            {/* TODO(#177): Hide it if the user is not admin. */}
             <Tab label="출석 추가" value="addAttendance" disabled />
           </Tabs>
           <Typography variant="body1">로그인이 필요한 서비스입니다.</Typography>
@@ -94,7 +93,6 @@ const SessionAttendanceTable = ({
         <Typography variant="h6">출석</Typography>
         <Tabs value={tab} onChange={(_, newTab) => setTab(newTab)}>
           <Tab label="출석 현황" value="attendance" />
-          {/* TODO(#177): Hide it if the user is not admin. */}
           <Tab label="출석 추가" value="addAttendance" />
         </Tabs>
 

@@ -89,7 +89,6 @@ func (s *Server) DeleteSession(id string) error {
 	return nil
 }
 
-// TODO(#177): Fix the name to be `applyFormSubmissions` as we have more than one way to close the session now.
 func (s *Server) ApplyAttendanceByFormSubmissions(sessionId string, calledBy string) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
