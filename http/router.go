@@ -14,7 +14,6 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 	api := router.Group("/api")
 	{
 		api.POST("/sign-in", handleSignIn(server))
-		api.GET("/users", handleListUsers(server))
 		api.GET("/sessions", handleListSessions(server))
 		api.GET("/sessions/:id", handleGetSession(server))
 
@@ -36,6 +35,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			adminProtected.Use(RequireRole(permission.RoleAdmin, permission.RoleSuperAdmin))
 			{
 				adminProtected.POST("/users", handleAddUser(server))
+				adminProtected.GET("/users", handleListUsers(server))
 
 				adminProtected.POST("/sessions", handleAddSession(server))
 				adminProtected.GET("/sessions", handleAdminListSessions(server))

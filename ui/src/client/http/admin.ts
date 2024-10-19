@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { z } from 'zod';
-import { AdminSession, AdminSessionSchema, Session } from './data';
+import { AdminSession, AdminSessionSchema, Session, UserSchema } from './data';
 import setToken from './interceptor';
 
 const BASE_URL = import.meta.env.VITE_SERVER_ENDPOINT;
@@ -14,6 +14,25 @@ const client: AxiosInstance = axios.create({
 });
 
 client.interceptors.response.use(setToken);
+
+const AdminListUsersResponseSchema = z
+  .object({
+    is_end: z.boolean(),
+    users: z.array(UserSchema),
+    total_count: z.number(),
+  })
+  .transform((data) => ({
+    isEnd: data.is_end,
+    users: data.users,
+    totalCount: data.total_count,
+  }));
+
+export type AdminListUsersResponse = z.infer<typeof AdminListUsersResponseSchema>;
+
+export const adminListUsers = async (offset: number, pageSize: number): Promise<AdminListUsersResponse> => {
+  const response = await client.get('/users', { params: { offset, pageSize } });
+  return AdminListUsersResponseSchema.parse(response.data);
+};
 
 const AdminGetSessionResponseSchema = AdminSessionSchema;
 
