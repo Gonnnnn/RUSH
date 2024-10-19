@@ -10,7 +10,7 @@ import {
 } from '@mui/x-data-grid';
 import * as XLSX from 'xlsx';
 import { useHeader } from './Layout';
-import { getHalfYearAttendances } from './client/http';
+import { getHalfYearAttendances } from './client/http/default';
 import { toYYslashMMslashDDspaceHHcolonMM } from './common/date';
 
 type Attendance = {

@@ -11,7 +11,8 @@ import {
   Typography,
 } from '@mui/material';
 import { DataGrid, GridRowSelectionModel, GridToolbarContainer, GridToolbarQuickFilter } from '@mui/x-data-grid';
-import { listUsers, User } from '../../client/http';
+import { User } from '../../client/http/data';
+import { listUsers } from '../../client/http/default';
 import useHandleError from '../../common/error';
 
 /**

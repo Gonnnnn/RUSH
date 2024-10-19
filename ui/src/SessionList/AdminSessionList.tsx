@@ -22,7 +22,8 @@ import {
 } from '@mui/material';
 import { useHeader } from '../Layout';
 import SessionCreate from '../SessionCreate';
-import { Session, listSessions } from '../client/http';
+import { adminListSessions } from '../client/http/admin';
+import { AdminSession } from '../client/http/data';
 import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
 
 const AdminSessionList = () => {
@@ -32,7 +33,7 @@ const AdminSessionList = () => {
   useHeader({ newTitle: 'Sessions' });
 
   const pageSize = isMobile ? 8 : 10;
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<AdminSession[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [isEnd, setIsEnd] = useState(false);
@@ -44,7 +45,7 @@ const AdminSessionList = () => {
       try {
         setIsLoading(true);
         const offset = page * pageSize;
-        const listSessionsResponse = await listSessions(offset, pageSize);
+        const listSessionsResponse = await adminListSessions(offset, pageSize);
         setSessions(listSessionsResponse.sessions);
         setIsEnd(listSessionsResponse.isEnd);
         setTotalCount(listSessionsResponse.totalCount);
@@ -69,7 +70,7 @@ const AdminSessionList = () => {
     fetchSessions(newPage);
   };
 
-  const handleRowClick = (session: Session) => {
+  const handleRowClick = (session: AdminSession) => {
     navigate(`/admin/sessions/${session.id}`);
   };
 

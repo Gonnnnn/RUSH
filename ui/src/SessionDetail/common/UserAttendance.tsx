@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 import { CircularProgress, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Box } from '@mui/material';
-import { Attendance } from '../../client/http';
+import { Attendance } from '../../client/http/data';
 import { toYYslashMMslashDDspaceHHcolonMMcolonSS } from '../../common/date';
 
 type OrderBy = 'asc' | 'desc';
