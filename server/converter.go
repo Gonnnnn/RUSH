@@ -44,6 +44,18 @@ func fromSession(sessionData session.Session) Session {
 	}
 }
 
+func fromSessionToSessionForUser(sessionData session.Session) SessionForUser {
+	return SessionForUser{
+		Id:          sessionData.Id,
+		Name:        sessionData.Name,
+		Description: sessionData.Description,
+		CreatedBy:   sessionData.CreatedBy,
+		CreatedAt:   sessionData.CreatedAt,
+		StartsAt:    sessionData.StartsAt,
+		Score:       sessionData.Score,
+	}
+}
+
 func fromAttendance(attendance *attendance.Attendance) *Attendance {
 	return &Attendance{
 		Id:               attendance.Id,

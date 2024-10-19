@@ -143,6 +143,52 @@ func handleAddUser(server *server.Server) gin.HandlerFunc {
 	}
 }
 
+func handleAdminListSessions(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		offset, err := strconv.Atoi(c.Query("offset"))
+		if err != nil || offset < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offset"})
+			return
+		}
+		pageSize, err := strconv.Atoi(c.Query("pageSize"))
+		if err != nil || pageSize < 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pageSize"})
+			return
+		}
+
+		result, err := server.AdminListSessions(offset, pageSize)
+		if err != nil {
+			log.Printf("Error getting sessions: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"sessions":    result.Sessions,
+			"is_end":      result.IsEnd,
+			"total_count": result.TotalCount,
+		})
+	}
+}
+
+func handleAdminGetSession(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		session, err := server.AdminGetSession(id)
+		if err != nil {
+			if isNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+				return
+			}
+
+			log.Printf("Error getting session: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, session)
+	}
+}
+
 func handleListSessions(server *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		offset, err := strconv.Atoi(c.Query("offset"))
