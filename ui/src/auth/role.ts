@@ -1,4 +1,4 @@
-import { GetUserAuthResponse } from '../client/http';
+import { GetUserAuthResponse } from '../client/http/default';
 
 export enum Role {
   UNKNOWN = 'unknown',
