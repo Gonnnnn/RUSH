@@ -17,8 +17,8 @@ func fromUser(user *user.User) *User {
 	}
 }
 
-func fromSession(sessionData session.Session) Session {
-	return Session{
+func fromSessionToSessionForAdmin(sessionData session.Session) SessionForAdmin {
+	return SessionForAdmin{
 		Id:               sessionData.Id,
 		Name:             sessionData.Name,
 		Description:      sessionData.Description,
@@ -44,8 +44,8 @@ func fromSession(sessionData session.Session) Session {
 	}
 }
 
-func fromSessionToSessionForUser(sessionData session.Session) SessionForUser {
-	return SessionForUser{
+func fromSessionToSessionForUser(sessionData session.Session) Session {
+	return Session{
 		Id:          sessionData.Id,
 		Name:        sessionData.Name,
 		Description: sessionData.Description,
