@@ -20,12 +20,12 @@ import {
   useMediaQuery,
   Typography,
 } from '@mui/material';
-import { useHeader } from './Layout';
-import SessionCreate from './SessionCreate';
-import { Session, listSessions } from './client/http';
-import { toYYslashMMslashDDspaceHHcolonMMwithDay } from './common/date';
+import { useHeader } from '../Layout';
+import SessionCreate from '../SessionCreate';
+import { Session, listSessions } from '../client/http';
+import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
 
-const SessionList = () => {
+const AdminSessionList = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -193,4 +193,4 @@ const ModalStyle = {
   p: 4,
 };
 
-export default SessionList;
+export default AdminSessionList;
