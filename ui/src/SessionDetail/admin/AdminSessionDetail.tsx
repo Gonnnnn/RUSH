@@ -125,7 +125,11 @@ const AdminSessionDetail = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <SessionInfo session={session} />
-        <SessionAttendanceTable sessionId={id} reloadSession={() => fetchSession(id)} />
+        <SessionAttendanceTable
+          sessionId={id}
+          reloadSession={() => fetchSession(id)}
+          qrActivated={session.googleFormId !== '' || session.googleFormUri !== ''}
+        />
         {session.attendanceAppliedBy === SessionAttendanceAppliedBy.Enum.unspecified ||
         session.attendanceAppliedBy === SessionAttendanceAppliedBy.Enum.form ? (
           <AttendanceQrPanel
