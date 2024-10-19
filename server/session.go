@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (s *Server) GetSession(id string) (Session, error) {
+func (s *Server) AdminGetSession(id string) (Session, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
 		return Session{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
@@ -18,13 +18,21 @@ func (s *Server) GetSession(id string) (Session, error) {
 	return fromSession(session), nil
 }
 
-type ListSessionsResult struct {
+func (s *Server) GetSession(id string) (SessionForUser, error) {
+	session, err := s.sessionRepo.Get(id)
+	if err != nil {
+		return SessionForUser{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+	}
+	return fromSessionToSessionForUser(session), nil
+}
+
+type AdminListSessionsResult struct {
 	Sessions   []Session `json:"sessions"`
 	IsEnd      bool      `json:"is_end"`
 	TotalCount int       `json:"total_count"`
 }
 
-func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, error) {
+func (s *Server) AdminListSessions(offset int, pageSize int) (*AdminListSessionsResult, error) {
 	listResult, err := s.sessionRepo.List(offset, pageSize)
 	if err != nil {
 		return nil, newInternalServerError(fmt.Errorf("failed to list sessions: %w", err))
@@ -33,6 +41,30 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 	converted := []Session{}
 	for _, session := range listResult.Sessions {
 		converted = append(converted, fromSession(session))
+	}
+
+	return &AdminListSessionsResult{
+		Sessions:   converted,
+		IsEnd:      listResult.IsEnd,
+		TotalCount: listResult.TotalCount,
+	}, nil
+}
+
+type ListSessionsResult struct {
+	Sessions   []SessionForUser `json:"sessions"`
+	IsEnd      bool             `json:"is_end"`
+	TotalCount int              `json:"total_count"`
+}
+
+func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, error) {
+	listResult, err := s.sessionRepo.List(offset, pageSize)
+	if err != nil {
+		return nil, newInternalServerError(fmt.Errorf("failed to list sessions: %w", err))
+	}
+
+	converted := []SessionForUser{}
+	for _, session := range listResult.Sessions {
+		converted = append(converted, fromSessionToSessionForUser(session))
 	}
 
 	return &ListSessionsResult{

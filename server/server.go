@@ -57,6 +57,17 @@ type Session struct {
 	AttendanceAppliedBy SessionAttendanceAppliedBy `json:"attendance_applied_by"`
 }
 
+// SessionForUser is a session for a user. It includes fields that are safe for a user to know.
+type SessionForUser struct {
+	Id          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedBy   string    `json:"created_by"`
+	CreatedAt   time.Time `json:"created_at"`
+	StartsAt    time.Time `json:"starts_at"`
+	Score       int       `json:"score"`
+}
+
 type SessionAttendanceAppliedBy string
 
 const (
