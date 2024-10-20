@@ -167,8 +167,8 @@ type openSessionRepo interface {
 }
 
 type attendanceFormHandler interface {
-	// Generates a form with the title, description, and users for attendance.
-	GenerateForm(title string, description string, users []user.User) (attendance.Form, error)
+	// Generates a form with the title, description, and user external names/generations for attendance.
+	GenerateForm(title string, description string, userOptions []attendance.UserOption) (attendance.Form, error)
 	// Extracts the submissions submitted to the form by the users.
 	GetSubmissions(formId string) ([]attendance.FormSubmission, error)
 }

@@ -45,7 +45,13 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 	formDescription := fmt.Sprintf(`%s을(를) 위한 출석용 구글폼입니다.
 폼 마감 시간은 %s입니다. %s 이후 요청은 무시됩니다.`, dbSession.Name, expiresAt.Format("2006-01-02 15:04:05"), startsAt.Format("2006-01-02 15:04:05"))
 
-	attendanceForm, err := s.attendanceFormHandler.GenerateForm(formTitle, formDescription, activeUsers)
+	attendanceForm, err := s.attendanceFormHandler.GenerateForm(formTitle, formDescription,
+		array.Map(activeUsers, func(user user.User) attendance.UserOption {
+			return attendance.UserOption{
+				Generation:   user.Generation,
+				ExternalName: user.ExternalName,
+			}
+		}))
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to generate form: %w", err))
 	}
