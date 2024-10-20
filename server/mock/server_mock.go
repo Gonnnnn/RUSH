@@ -263,6 +263,43 @@ func (mr *MockuserAdderMockRecorder) Add(name, generation, isActive, email any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockuserAdder)(nil).Add), name, generation, isActive, email)
 }
 
+// MockuserUpdater is a mock of userUpdater interface.
+type MockuserUpdater struct {
+	ctrl     *gomock.Controller
+	recorder *MockuserUpdaterMockRecorder
+}
+
+// MockuserUpdaterMockRecorder is the mock recorder for MockuserUpdater.
+type MockuserUpdaterMockRecorder struct {
+	mock *MockuserUpdater
+}
+
+// NewMockuserUpdater creates a new mock instance.
+func NewMockuserUpdater(ctrl *gomock.Controller) *MockuserUpdater {
+	mock := &MockuserUpdater{ctrl: ctrl}
+	mock.recorder = &MockuserUpdaterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockuserUpdater) EXPECT() *MockuserUpdaterMockRecorder {
+	return m.recorder
+}
+
+// Update mocks base method.
+func (m *MockuserUpdater) Update(id string, updateForm user.UpdateForm) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", id, updateForm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockuserUpdaterMockRecorder) Update(id, updateForm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockuserUpdater)(nil).Update), id, updateForm)
+}
+
 // MocksessionRepo is a mock of sessionRepo interface.
 type MocksessionRepo struct {
 	ctrl     *gomock.Controller

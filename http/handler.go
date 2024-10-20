@@ -1,6 +1,7 @@
 package http
 
 import (
+	"editor/golang/array"
 	"log"
 	"net/http"
 	"strconv"
@@ -192,6 +193,48 @@ func handleAddUser(server *server.Server) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "User added successfully"})
+	}
+}
+
+type updateUserRequest struct {
+	Generation   float64 `json:"generation"`
+	ExternalName string  `json:"external_name"`
+
+	FieldMask []string `json:"field_mask"`
+}
+
+func handleUpdateUser(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req updateUserRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if len(req.FieldMask) <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Field mask is required"})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+			return
+		}
+
+		externalName := (*string)(nil)
+		if array.Contains(req.FieldMask, "external_name") {
+			externalName = &req.ExternalName
+		}
+		generation := (*float64)(nil)
+		if array.Contains(req.FieldMask, "generation") {
+			generation = &req.Generation
+		}
+		if err := server.UpdateUser(id, externalName, generation); err != nil {
+			log.Printf("Error updating user: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
 	}
 }
 

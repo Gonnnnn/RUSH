@@ -146,6 +146,12 @@ type userAdder interface {
 	Add(name string, generation float64, isActive bool, email string) error
 }
 
+type userUpdater interface {
+	// Updates the user with the given ID. It should include the logics to
+	// be executed when updating a user so that all other data can be updated.
+	Update(id string, updateForm user.UpdateForm) error
+}
+
 type sessionRepo interface {
 	Get(id string) (session.Session, error)
 	GetAll() ([]session.Session, error)
@@ -196,7 +202,9 @@ type Server struct {
 	authHandler authHandler
 	userRepo    userRepo
 	// Used to add a user.
-	userAdder   userAdder
+	userAdder userAdder
+	// Used to update a user. It has logics that should be handled when updating a user.
+	userUpdater userUpdater
 	sessionRepo sessionRepo
 	// Used to handle open sessions.
 	openSessionRepo openSessionRepo
@@ -211,13 +219,14 @@ type Server struct {
 	clock clock.Clock
 }
 
-func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, sessionRepo sessionRepo, openSessionRepo openSessionRepo,
+func New(oauthClient oauthClient, authHandler authHandler, userRepo userRepo, userAdder userAdder, userUpdater userUpdater, sessionRepo sessionRepo, openSessionRepo openSessionRepo,
 	attendanceFormHandler attendanceFormHandler, attendanceRepo attendanceRepo, attendanceAggregationRepo attendanceAggregationRepo, formTimeLocation *time.Location, clock clock.Clock) *Server {
 	return &Server{
 		oauthClient:               oauthClient,
 		authHandler:               authHandler,
 		userRepo:                  userRepo,
 		userAdder:                 userAdder,
+		userUpdater:               userUpdater,
 		sessionRepo:               sessionRepo,
 		openSessionRepo:           openSessionRepo,
 		attendanceFormHandler:     attendanceFormHandler,

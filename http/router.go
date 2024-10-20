@@ -36,6 +36,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 			{
 				adminProtected.POST("/users", handleAddUser(server))
 				adminProtected.GET("/users", handleListUsers(server))
+				adminProtected.PATCH("/users/:id", handleUpdateUser(server))
 
 				adminProtected.POST("/sessions", handleAddSession(server))
 				adminProtected.GET("/sessions", handleAdminListSessions(server))
