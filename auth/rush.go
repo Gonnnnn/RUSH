@@ -12,6 +12,8 @@ import (
 )
 
 type rushAuth struct {
+	// The admin token that passes everything. It's used for developers.
+	adminToken string
 	// The secret key to sign and verify the JWT.
 	secretKey []byte
 	// The clock to get the current time. It's used to mock the time in tests.
@@ -23,8 +25,8 @@ type rushClaims struct {
 	Role permission.Role `json:"role"`
 }
 
-func NewRushAuth(secretKey string, clock clock.Clock) *rushAuth {
-	return &rushAuth{secretKey: []byte(secretKey), clock: clock}
+func NewRushAuth(adminToken string, secretKey string, clock clock.Clock) *rushAuth {
+	return &rushAuth{adminToken: adminToken, secretKey: []byte(secretKey), clock: clock}
 }
 
 func (r *rushAuth) SignIn(userId string, role permission.Role) (string, error) {
@@ -48,6 +50,14 @@ func (r *rushAuth) SignIn(userId string, role permission.Role) (string, error) {
 }
 
 func (r *rushAuth) GetSession(token string) (Session, error) {
+	if token == r.adminToken {
+		return Session{
+			Id:        "admin-token",
+			Role:      permission.RoleSuperAdmin,
+			ExpiresAt: r.clock.Now().Add(100000 * time.Hour),
+		}, nil
+	}
+
 	parsedToken, err := jwt.ParseWithClaims(token, &rushClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return r.secretKey, nil
 	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithTimeFunc(func() time.Time {

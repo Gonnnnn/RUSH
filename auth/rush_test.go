@@ -12,15 +12,15 @@ import (
 func TestNewRushAuth(t *testing.T) {
 	t.Run("Returns a new rushAuth instance", func(t *testing.T) {
 		mockClock := clock.NewMock()
-		auth := NewRushAuth("secret", mockClock)
+		auth := NewRushAuth("admin-token", "secret", mockClock)
 
-		assert.Equal(t, &rushAuth{secretKey: []byte("secret"), clock: mockClock}, auth)
+		assert.Equal(t, &rushAuth{adminToken: "admin-token", secretKey: []byte("secret"), clock: mockClock}, auth)
 	})
 }
 
 func TestSignInAndVerifyIdentifier(t *testing.T) {
 	t.Run("Fails if user ID is empty", func(t *testing.T) {
-		rushAuth := NewRushAuth("secret", clock.NewMock())
+		rushAuth := NewRushAuth("admin-token", "secret", clock.NewMock())
 		token, err := rushAuth.SignIn("", permission.RoleAdmin)
 
 		assert.EqualError(t, err, "user ID is empty")
@@ -31,7 +31,7 @@ func TestSignInAndVerifyIdentifier(t *testing.T) {
 		mockClock := clock.NewMock()
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
-		rushAuth := NewRushAuth("secret", mockClock)
+		rushAuth := NewRushAuth("admin-token", "secret", mockClock)
 		token, err := rushAuth.SignIn("John Doe", permission.RoleAdmin)
 
 		assert.Nil(t, err)
@@ -48,7 +48,7 @@ func TestGetSession(t *testing.T) {
 		mockClock := clock.NewMock()
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
-		rushAuth := NewRushAuth("secret", mockClock)
+		rushAuth := NewRushAuth("admin-token", "secret", mockClock)
 		token, err := rushAuth.SignIn("John Doe", permission.RoleAdmin)
 		assert.Nil(t, err)
 
@@ -65,7 +65,7 @@ func TestGetSession(t *testing.T) {
 		mockClock := clock.NewMock()
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
-		rushAuth := NewRushAuth("secret", mockClock)
+		rushAuth := NewRushAuth("admin-token", "secret", mockClock)
 		session, err := rushAuth.GetSession("invalid token")
 
 		invalidTokenErr, ok := err.(*InvalidTokenError)
@@ -78,7 +78,7 @@ func TestGetSession(t *testing.T) {
 		mockClock := clock.NewMock()
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
-		rushAuth := NewRushAuth("secret", mockClock)
+		rushAuth := NewRushAuth("admin-token", "secret", mockClock)
 		token, err := rushAuth.SignIn("John Doe", permission.RoleAdmin)
 		assert.Nil(t, err)
 
@@ -87,5 +87,16 @@ func TestGetSession(t *testing.T) {
 		assert.Equal(t, "John Doe", session.Id)
 		assert.Equal(t, permission.RoleAdmin, session.Role)
 		assert.Equal(t, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).Add(7*24*time.Hour).UnixNano(), session.ExpiresAt.UnixNano())
+	})
+
+	t.Run("Returns the admin session if the token is the admin token", func(t *testing.T) {
+		mockClock := clock.NewMock()
+		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
+
+		rushAuth := NewRushAuth("admin-token", "secret", mockClock)
+		session, err := rushAuth.GetSession("admin-token")
+		assert.Nil(t, err)
+		assert.Equal(t, "admin-token", session.Id)
+		assert.Equal(t, permission.RoleSuperAdmin, session.Role)
 	})
 }
