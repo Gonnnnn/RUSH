@@ -25,9 +25,7 @@ func UseAuthMiddleware(userSessionFetcher userSessionFetcher) gin.HandlerFunc {
 		// https://pkg.go.dev/github.com/gin-gonic/gin#Context.Cookie
 		// It only returns ErrNoCookie for errors.
 		if err == http.ErrNoCookie {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Cookie not found"})
-			c.Abort()
-			return
+			token = c.GetHeader("Authorization")
 		}
 
 		if token == "" {

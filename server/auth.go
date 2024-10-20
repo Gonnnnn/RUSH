@@ -26,13 +26,6 @@ func (s *Server) SignIn(token string) (string, error) {
 	return rushToken, nil
 }
 
-func (s *Server) IsTokenValid(token string) bool {
-	if _, err := s.authHandler.GetSession(token); err != nil {
-		return false
-	}
-	return true
-}
-
 // Returns the user session and the new token if it was refreshed.
 func (s *Server) GetUserSession(token string) (UserSession, string, error) {
 	session, err := s.authHandler.GetSession(token)
