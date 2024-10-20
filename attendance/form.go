@@ -9,9 +9,12 @@ import (
 
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/forms/v1"
-
-	"rush/user"
 )
+
+type UserOption struct {
+	Generation   float64
+	ExternalName string
+}
 
 type Form struct {
 	// The Google form ID.
@@ -50,7 +53,7 @@ func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.
 	}
 }
 
-func (f *formHandler) GenerateForm(title string, description string, users []user.User) (Form, error) {
+func (f *formHandler) GenerateForm(title string, description string, userOptions []UserOption) (Form, error) {
 	newForm := &forms.Form{Info: &forms.Info{Title: title, DocumentTitle: title}}
 
 	form, err := f.googleFormService.Forms.Create(newForm).Do()
@@ -62,12 +65,12 @@ func (f *formHandler) GenerateForm(title string, description string, users []use
 		Required: true,
 		ChoiceQuestion: &forms.ChoiceQuestion{
 			Type:    "DROP_DOWN",
-			Options: make([]*forms.Option, len(users)),
+			Options: make([]*forms.Option, len(userOptions)),
 		},
 	}
 
-	for index, user := range users {
-		question.ChoiceQuestion.Options[index] = &forms.Option{Value: newFormOption(user.Generation, user.ExternalName, f.delimiter).string()}
+	for index, userOption := range userOptions {
+		question.ChoiceQuestion.Options[index] = &forms.Option{Value: newFormOption(userOption.Generation, userOption.ExternalName, f.delimiter).string()}
 	}
 
 	updateRequest := &forms.BatchUpdateFormRequest{

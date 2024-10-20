@@ -135,6 +135,28 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 	return err
 }
 
+type UpdateUserAttendanceForm struct {
+	UserExternalName *string
+	UserGeneration   *float64
+}
+
+func (m *mongodbRepo) UpdateUserAttendance(userId string, updateForm UpdateUserAttendanceForm) error {
+	update := bson.M{}
+	if updateForm.UserExternalName != nil {
+		update["user_external_name"] = *updateForm.UserExternalName
+	}
+	if updateForm.UserGeneration != nil {
+		update["user_generation"] = *updateForm.UserGeneration
+	}
+
+	_, err := m.collection.UpdateMany(context.Background(), bson.M{"user_id": userId}, bson.M{"$set": update})
+	if err != nil {
+		return fmt.Errorf("failed to update attendances: %w", err)
+	}
+
+	return nil
+}
+
 func toAttendance(attendance mongodbAttendance) Attendance {
 	return Attendance{
 		Id:               attendance.Id.Hex(),

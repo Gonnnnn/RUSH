@@ -166,6 +166,21 @@ func (mr *MockuserRepoMockRecorder) GetAll() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockuserRepo)(nil).GetAll))
 }
 
+// GetAllActive mocks base method.
+func (m *MockuserRepo) GetAllActive() ([]user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllActive")
+	ret0, _ := ret[0].([]user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllActive indicates an expected call of GetAllActive.
+func (mr *MockuserRepoMockRecorder) GetAllActive() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllActive", reflect.TypeOf((*MockuserRepo)(nil).GetAllActive))
+}
+
 // GetAllByExternalNames mocks base method.
 func (m *MockuserRepo) GetAllByExternalNames(externalNames []string) ([]user.User, error) {
 	m.ctrl.T.Helper()
@@ -435,18 +450,18 @@ func (m *MockattendanceFormHandler) EXPECT() *MockattendanceFormHandlerMockRecor
 }
 
 // GenerateForm mocks base method.
-func (m *MockattendanceFormHandler) GenerateForm(title, description string, users []user.User) (attendance.Form, error) {
+func (m *MockattendanceFormHandler) GenerateForm(title, description string, userOptions []attendance.UserOption) (attendance.Form, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateForm", title, description, users)
+	ret := m.ctrl.Call(m, "GenerateForm", title, description, userOptions)
 	ret0, _ := ret[0].(attendance.Form)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenerateForm indicates an expected call of GenerateForm.
-func (mr *MockattendanceFormHandlerMockRecorder) GenerateForm(title, description, users any) *gomock.Call {
+func (mr *MockattendanceFormHandlerMockRecorder) GenerateForm(title, description, userOptions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateForm", reflect.TypeOf((*MockattendanceFormHandler)(nil).GenerateForm), title, description, users)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateForm", reflect.TypeOf((*MockattendanceFormHandler)(nil).GenerateForm), title, description, userOptions)
 }
 
 // GetSubmissions mocks base method.

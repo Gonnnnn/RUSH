@@ -12,6 +12,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type UpdateForm struct {
+	Name         *string
+	Role         *string
+	Generation   *float64
+	IsActive     *bool
+	Email        *string
+	ExternalName *string
+}
+
 type mongodbUser struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty"`
 	Name         string             `bson:"name"`
@@ -224,6 +233,45 @@ func (r *mongodbRepo) Add(user User) error {
 	})
 	if err != nil {
 		return fmt.Errorf("failed to insert user: %w", err)
+	}
+
+	return nil
+}
+
+func (r *mongodbRepo) Update(id string, updateForm UpdateForm) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("invalid id: %w", err)
+	}
+
+	update := bson.M{}
+
+	if updateForm.Name != nil {
+		update["name"] = *updateForm.Name
+	}
+
+	if updateForm.Role != nil {
+		update["role"] = *updateForm.Role
+	}
+
+	if updateForm.Generation != nil {
+		update["generation"] = *updateForm.Generation
+	}
+
+	if updateForm.IsActive != nil {
+		update["is_active"] = *updateForm.IsActive
+	}
+
+	if updateForm.Email != nil {
+		update["email"] = *updateForm.Email
+	}
+
+	if updateForm.ExternalName != nil {
+		update["external_name"] = *updateForm.ExternalName
+	}
+
+	if _, err = r.collection.UpdateOne(context.Background(), bson.M{"_id": objectID}, bson.M{"$set": update}); err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
 	}
 
 	return nil
