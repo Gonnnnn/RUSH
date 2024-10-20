@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"rush/golang/array"
+	"rush/user"
 )
 
 func (s *Server) GetAllUsers() ([]*User, error) {
@@ -96,6 +97,23 @@ func (s *Server) GetUser(id string) (*User, error) {
 func (s *Server) AddUser(name string, generation float64, isActive bool, email string) error {
 	if err := s.userAdder.Add(name, generation, isActive, email); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to add user: %w", err))
+	}
+	return nil
+}
+
+func (s *Server) UpdateUser(id string, externalName *string, generation *float64) error {
+	if externalName != nil && *externalName == "" {
+		return newBadRequestError(fmt.Errorf("external name is required"))
+	}
+	if generation != nil && *generation == 0 {
+		return newBadRequestError(fmt.Errorf("generation is required"))
+	}
+
+	if err := s.userUpdater.Update(id, user.UpdateForm{
+		ExternalName: externalName,
+		Generation:   generation,
+	}); err != nil {
+		return newInternalServerError(fmt.Errorf("failed to update user: %w", err))
 	}
 	return nil
 }
