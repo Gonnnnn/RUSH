@@ -48,6 +48,12 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 				adminProtected.POST("/sessions/:id/attendance/form", handleApplyAttendanceByFormSubmissions(server))
 				adminProtected.POST("/sessions/:id/attendance/manual", handleMarkUsersAsPresent(server))
 			}
+
+			superAdminProtected := protected.Group("/super-admin")
+			superAdminProtected.Use(RequireRole(permission.RoleSuperAdmin))
+			{
+				superAdminProtected.POST("/attendances", handleForceAddAttendances(server))
+			}
 		}
 	}
 

@@ -65,8 +65,8 @@ func TestGetUserSession(t *testing.T) {
 			Id:        "user_id",
 			Role:      permission.RoleMember,
 			ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-		}, nil, nil)
-		mockAuthHandler.EXPECT().SignIn("user_id", permission.RoleMember).Return("new_token", nil, nil)
+		}, nil)
+		mockAuthHandler.EXPECT().SignIn("user_id", permission.RoleMember).Return("new_token", nil)
 		userSession, newToken, err := server.GetUserSession("token")
 
 		assert.Equal(t, UserSession{
@@ -89,7 +89,7 @@ func TestGetUserSession(t *testing.T) {
 			Id:        "user_id",
 			Role:      permission.RoleMember,
 			ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-		}, nil, nil)
+		}, nil)
 		mockAuthHandler.EXPECT().SignIn("user_id", permission.RoleMember).Return("", errors.New("unknown error"))
 		userSession, newToken, err := server.GetUserSession("token")
 
@@ -109,7 +109,7 @@ func TestGetUserSession(t *testing.T) {
 			Id:        "user_id",
 			Role:      permission.RoleMember,
 			ExpiresAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-		}, nil, nil)
+		}, nil)
 		userSession, newToken, err := server.GetUserSession("token")
 
 		assert.Equal(t, UserSession{

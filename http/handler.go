@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"rush/auth"
 	"rush/golang/array"
 	"rush/permission"
 	"rush/server"
@@ -503,7 +504,7 @@ func handleMarkUsersAsPresent(server *server.Server) gin.HandlerFunc {
 		}
 
 		callerId := c.GetString(userIdKey)
-		if err := server.MarkUsersAsPresent(sessionId, req.UserIds, callerId); err != nil {
+		if err := server.MarkUsersAsPresent(sessionId, req.UserIds, callerId, false /* =force */); err != nil {
 			if isBadRequest(err) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
@@ -520,5 +521,28 @@ func handleMarkUsersAsPresent(server *server.Server) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Users marked as present successfully"})
+	}
+}
+
+type forceAddAttendancesRequest struct {
+	SessionId string   `json:"session_id"`
+	UserIds   []string `json:"user_ids"`
+}
+
+func handleForceAddAttendances(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req forceAddAttendancesRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := server.MarkUsersAsPresent(req.SessionId, req.UserIds, auth.SuperAdminId, true /* =force */); err != nil {
+			log.Printf("Error adding attendances: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Attendances added successfully"})
 	}
 }

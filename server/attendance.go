@@ -219,12 +219,12 @@ func (s *Server) AggregateAttendance() error {
 	return nil
 }
 
-func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy string) error {
+func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy string, force bool) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
-	if !dbSession.CanApplyAttendanceManually() {
+	if !force && !dbSession.CanApplyAttendanceManually() {
 		return newBadRequestError(errors.New("session is already closed"))
 	}
 

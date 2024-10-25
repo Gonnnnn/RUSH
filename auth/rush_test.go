@@ -12,9 +12,9 @@ import (
 func TestNewRushAuth(t *testing.T) {
 	t.Run("Returns a new rushAuth instance", func(t *testing.T) {
 		mockClock := clock.NewMock()
-		auth := NewRushAuth("admin-token", "secret", mockClock)
+		auth := NewRushAuth("super-admin-token", "secret", mockClock)
 
-		assert.Equal(t, &rushAuth{adminToken: "admin-token", secretKey: []byte("secret"), clock: mockClock}, auth)
+		assert.Equal(t, &rushAuth{superAdminToken: "super-admin-token", secretKey: []byte("secret"), clock: mockClock}, auth)
 	})
 }
 
@@ -93,10 +93,10 @@ func TestGetSession(t *testing.T) {
 		mockClock := clock.NewMock()
 		mockClock.Set(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
 
-		rushAuth := NewRushAuth("admin-token", "secret", mockClock)
-		session, err := rushAuth.GetSession("admin-token")
+		rushAuth := NewRushAuth("super-admin-token", "secret", mockClock)
+		session, err := rushAuth.GetSession("super-admin-token")
 		assert.Nil(t, err)
-		assert.Equal(t, "admin-token", session.Id)
+		assert.Equal(t, "super-admin-token", session.Id)
 		assert.Equal(t, permission.RoleSuperAdmin, session.Role)
 	})
 }
