@@ -1,24 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowForwardIos, CalendarTodayOutlined } from '@mui/icons-material';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Container,
-  TablePagination,
   Box,
   LinearProgress,
   useTheme,
   useMediaQuery,
+  Stack,
+  Typography,
+  Grid,
+  Paper,
+  TablePagination,
 } from '@mui/material';
+import dayjs from 'dayjs';
 import { useHeader } from '../Layout';
 import { Session } from '../client/http/data';
 import { listSessions } from '../client/http/default';
-import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
+import { toYYYY년MM월DD일HH시MM분 } from '../common/date';
 import useHandleError from '../common/error';
 import { useAdminMode } from '../mode';
 
@@ -30,7 +29,7 @@ const UserSessionList = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   useHeader({ newTitle: 'Sessions' });
 
-  const pageSize = isMobile ? 8 : 10;
+  const pageSize = isMobile ? 6 : 18;
   const [sessions, setSessions] = useState<Session[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
@@ -73,7 +72,7 @@ const UserSessionList = () => {
     if (isEnd && newPage > currentPage) {
       return;
     }
-    fetchSessions(newPage);
+    await fetchSessions(newPage);
   };
 
   const handleRowClick = (session: Session) => {
@@ -82,29 +81,15 @@ const UserSessionList = () => {
 
   return (
     <Container>
-      <Box display="flex" flexDirection="column" gap={2}>
-        <TableContainer component={Paper}>
-          <Box sx={{ width: '100%', height: '4px', mb: 2 }}>{isLoading ? <LinearProgress /> : null}</Box>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell align="center" sx={{ width: '50%' }}>
-                  시작 시간
-                </TableCell>
-                <TableCell align="center" sx={{ width: '50%' }}>
-                  이름
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sessions.map((session) => (
-                <TableRow key={session.id} onClick={() => handleRowClick(session)} style={{ cursor: 'pointer' }}>
-                  <TableCell align="center">{toYYslashMMslashDDspaceHHcolonMMwithDay(session.startsAt)}</TableCell>
-                  <TableCell align="center">{session.name}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      <Box display="flex" flexDirection="column" gap={1}>
+        <Box
+          sx={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            backgroundColor: theme.palette.background.paper,
+          }}
+        >
           <TablePagination
             rowsPerPageOptions={[]}
             component="div"
@@ -119,9 +104,51 @@ const UserSessionList = () => {
               },
             }}
           />
-        </TableContainer>
+        </Box>
+
+        <Box sx={{ width: '100%' }}>
+          {isLoading ? (
+            <LinearProgress sx={{ height: 4, padding: 0, margin: 0 }} />
+          ) : (
+            <Box sx={{ height: 4, padding: 0, margin: 0 }} />
+          )}
+        </Box>
+
+        <Grid container spacing={1} sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+          {sessions.map((session) => (
+            <Grid item key={session.id} xs={12} sm={6} md={4} sx={{ padding: 1 }}>
+              <SessionCard session={session} onClick={() => handleRowClick(session)} />
+            </Grid>
+          ))}
+        </Grid>
       </Box>
     </Container>
+  );
+};
+
+const SessionCard = ({ session, onClick }: { session: Session; onClick: () => void }) => {
+  const now = dayjs();
+  const startsAt = dayjs(session.startsAt);
+  const isPast = startsAt < now;
+
+  return (
+    <Paper sx={{ p: 1.5, width: '100%', maxWidth: 400, boxSizing: 'border-box' }} elevation={4} onClick={onClick}>
+      <Stack spacing={1}>
+        <Stack direction="row" justifyContent="space-between">
+          <Typography variant="body1" sx={{ fontSize: '0.9rem' }}>
+            {session.name}
+          </Typography>
+          <ArrowForwardIos color="action" sx={{ width: 18, height: 18 }} />
+        </Stack>
+
+        <Box display="flex" alignItems="center">
+          <CalendarTodayOutlined sx={{ mr: 1 }} color={isPast ? 'primary' : 'action'} />
+          <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+            {toYYYY년MM월DD일HH시MM분(session.startsAt)}
+          </Typography>
+        </Box>
+      </Stack>
+    </Paper>
   );
 };
 

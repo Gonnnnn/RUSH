@@ -16,8 +16,6 @@ import {
   Box,
   Modal,
   LinearProgress,
-  useTheme,
-  useMediaQuery,
   Typography,
 } from '@mui/material';
 import { useHeader } from '../Layout';
@@ -28,11 +26,9 @@ import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
 
 const AdminSessionList = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   useHeader({ newTitle: 'Sessions' });
 
-  const pageSize = isMobile ? 8 : 10;
+  const pageSize = 20;
   const [sessions, setSessions] = useState<AdminSession[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
