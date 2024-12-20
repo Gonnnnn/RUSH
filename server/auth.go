@@ -9,24 +9,27 @@ import (
 )
 
 func (s *Server) SignIn(token string) (string, error) {
+	log.Printf("token: %s", token)
 	email, err := s.oauthClient.GetEmail(token)
 	if err != nil {
-		log.Printf("err: %+v", err)
+		log.Printf("GetEmail err: %+v", err)
 		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
 	}
-
 	log.Printf("email: %s", email)
 
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
+		log.Printf("GetByEmail err: %+v", err)
 		return "", newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
 	}
+	log.Printf("user: %+v", user)
 
 	rushToken, err := s.authHandler.SignIn(user.Id, user.Role)
 	if err != nil {
+		log.Printf("SignIn err: %+v", err)
 		return "", newInternalServerError(fmt.Errorf("failed to sign in: %w", err))
 	}
-
+	log.Printf("rushToken: %s", rushToken)
 	return rushToken, nil
 }
 
