@@ -28,11 +28,10 @@ func NewFbClient(client firebaseAuthClient) *firebaseOauth {
 
 func (f *firebaseOauth) GetEmail(token string) (string, error) {
 	decodedToken, err := f.client.VerifyIDToken(context.Background(), token)
+	log.Printf("decodedToken: %+v", decodedToken)
 	if err != nil {
 		return "", fmt.Errorf("failed to verify the token: %w", err)
 	}
-
-	log.Printf("decodedToken: %+v", decodedToken)
 
 	email := decodedToken.Claims["email"]
 	if email == nil {
