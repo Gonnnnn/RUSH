@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"log"
 	"rush/auth"
 	"time"
 )
@@ -12,6 +13,8 @@ func (s *Server) SignIn(token string) (string, error) {
 	if err != nil {
 		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
 	}
+
+	log.Printf("email: %s", email)
 
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {

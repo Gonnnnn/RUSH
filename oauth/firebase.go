@@ -3,6 +3,7 @@ package oauth
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/mail"
 
 	fbAuth "firebase.google.com/go/auth"
@@ -30,6 +31,8 @@ func (f *firebaseOauth) GetEmail(token string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to verify the token: %w", err)
 	}
+
+	log.Printf("decodedToken: %+v", decodedToken)
 
 	email := decodedToken.Claims["email"]
 	if email == nil {
