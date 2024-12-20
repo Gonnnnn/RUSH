@@ -11,6 +11,7 @@ import (
 func (s *Server) SignIn(token string) (string, error) {
 	email, err := s.oauthClient.GetEmail(token)
 	if err != nil {
+		log.Printf("err: %+v", err)
 		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
 	}
 
