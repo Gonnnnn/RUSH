@@ -476,19 +476,6 @@ func handleHalfYearAttendance(server *server.Server) gin.HandlerFunc {
 	}
 }
 
-func handleAggregateAttendance(server *server.Server) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		err := server.AggregateAttendance()
-		if err != nil {
-			log.Printf("Error aggregating attendance: %+v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "Attendance aggregated successfully"})
-	}
-}
-
 type markUsersAsPresentRequest struct {
 	UserIds []string `json:"user_ids"`
 }

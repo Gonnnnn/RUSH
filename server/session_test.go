@@ -19,7 +19,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil, nil)
+			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{}, errors.New("session not found"))
@@ -35,7 +35,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil, nil)
+			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -54,7 +54,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil, nil)
+			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -76,7 +76,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			defer ctrl.Finish()
 			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
 			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, mockAttendanceFormHandler, nil, nil, nil, nil)
+			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -101,7 +101,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
 			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, nil, nil, nil, nil)
+				mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -124,7 +124,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
 			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, nil, nil, nil, nil)
+				mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -151,7 +151,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, nil, nil, nil, nil)
+				mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -189,7 +189,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, nil, nil, nil, nil)
+				mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -235,7 +235,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, nil, nil, nil, nil)
+				mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -281,7 +281,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil, nil)
+				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -322,7 +322,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil, nil)
+				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -366,7 +366,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil, nil)
+				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -395,7 +395,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil, nil)
+				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -450,7 +450,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil, nil)
+				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
@@ -545,7 +545,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 			mockUserRepo := mock.NewMockuserRepo(ctrl)
 			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
-				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil, nil)
+				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
 			// Do.
 			mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
