@@ -97,7 +97,7 @@ Trunk based development. 절대 기능 단위로 브랜치를 생성해 유지�
 E.g.,
 
 - Wrong: "Fix the session list page design"
-- Correct: "Users don't click session items somehow"
+- Correct: "Users are not engaging with session items"
 
 Issue의 body에서는 해당 문제에 대한 설명을 간결하지만 명료하게 작성합니다. 주로 배경, 실제 문제, 추측되는 원인, 가능한 해결 방안을 제시합니다. 필요한 경우 스크린샷등을 첨부해 이해를 돕습니다. 요점은, 누구라도 해당 issue를 읽고 어떤 문제가 있는지 이해할 수 있어야합니다.
 
