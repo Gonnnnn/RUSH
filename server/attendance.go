@@ -143,7 +143,7 @@ func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 
 	attendances, err := s.attendanceRepo.GetAll()
 	if err != nil {
-		return HalfYearAttendace{}, newInternalServerError(fmt.Errorf("failed to find half year attendance: %w", err))
+		return HalfYearAttendace{}, newInternalServerError(fmt.Errorf("failed to get all attendances: %w", err))
 	}
 	convertedAttendances := []Attendance{}
 	for _, attendance := range attendances {
