@@ -16,7 +16,7 @@ func TestCloseExpiredSessions(t *testing.T) {
 		controller := gomock.NewController(t)
 		sessionGetter := NewMocksessionGetter(controller)
 		sessionAttendanceApplier := NewMocksessionAttendanceApplier(controller)
-		mockLogger := NewMockLogger(controller)
+		mockLogger := NewMocklogger(controller)
 		executor := NewExecutor(sessionGetter, sessionAttendanceApplier, mockLogger, clock.NewMock())
 
 		sessionGetter.EXPECT().GetOpenSessionsWithForm().Return([]session.Session{}, assert.AnError)
@@ -28,7 +28,7 @@ func TestCloseExpiredSessions(t *testing.T) {
 		controller := gomock.NewController(t)
 		sessionGetter := NewMocksessionGetter(controller)
 		sessionAttendanceApplier := NewMocksessionAttendanceApplier(controller)
-		mockLogger := NewMockLogger(controller)
+		mockLogger := NewMocklogger(controller)
 		clock := clock.NewMock()
 		executor := NewExecutor(sessionGetter, sessionAttendanceApplier, mockLogger, clock)
 
@@ -50,7 +50,7 @@ func TestCloseExpiredSessions(t *testing.T) {
 		controller := gomock.NewController(t)
 		sessionGetter := NewMocksessionGetter(controller)
 		sessionAttendanceApplier := NewMocksessionAttendanceApplier(controller)
-		mockLogger := NewMockLogger(controller)
+		mockLogger := NewMocklogger(controller)
 		clock := clock.NewMock()
 		executor := NewExecutor(sessionGetter, sessionAttendanceApplier, mockLogger, clock)
 
