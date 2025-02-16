@@ -1,3 +1,4 @@
+// Global package for user permission on the attendance system.
 package permission
 
 type Role string

@@ -1,3 +1,4 @@
+// It has logics about jobs that should run periodically.
 package job
 
 import (
@@ -8,16 +9,40 @@ import (
 	"github.com/benbjohnson/clock"
 )
 
+//go:generate mockgen -source=session.go -destination=session_mock.go -package=job
+
+type sessionGetter interface {
+	// Get open sessions with the form. Open means the session has not closed, as in the attendance
+	// is not applied yet.
+	GetOpenSessionsWithForm() ([]session.Session, error)
+}
+
+type sessionAttendanceApplier interface {
+	// Apply the attendances of the users who submitted the form.
+	ApplyAttendanceByFormSubmissions(sessionId string, callerId string) error
+}
+
+type logger interface {
+	// Logs the given info with the info level.
+	// Info level indicates any information that should be logged.
+	Infow(msg string, keysAndValues ...any)
+	// Logs the given info with the error level.
+	// Error level indicates any issue that should be resolved as soon as possible.
+	Errorw(msg string, keysAndValues ...any)
+}
+
 type executor struct {
 	sessionGetter            sessionGetter
 	sessionAttendanceApplier sessionAttendanceApplier
-	logger                   Logger
+	logger                   logger
 	clock                    clock.Clock
 }
 
+// The job ID of the session attendance syncer.
+// It is used to identify the attendances applied by the syncer.
 var jobId = "session-attendance-syncer"
 
-func NewExecutor(sessionGetter sessionGetter, sessionAttendanceApplier sessionAttendanceApplier, logger Logger, clock clock.Clock) *executor {
+func NewExecutor(sessionGetter sessionGetter, sessionAttendanceApplier sessionAttendanceApplier, logger logger, clock clock.Clock) *executor {
 	return &executor{
 		sessionGetter:            sessionGetter,
 		sessionAttendanceApplier: sessionAttendanceApplier,
@@ -57,22 +82,4 @@ func (e *executor) CloseExpiredSessions() {
 			"errors", strings.Join(array.Map(closeErr, func(err error) string { return err.Error() }), ", "))
 		return
 	}
-}
-
-//go:generate mockgen -source=session.go -destination=session_mock.go -package=job
-type sessionAttendanceApplier interface {
-	ApplyAttendanceByFormSubmissions(sessionId string, callerId string) error
-}
-
-type sessionGetter interface {
-	GetOpenSessionsWithForm() ([]session.Session, error)
-}
-
-type Logger interface {
-	// Logs the given info with the info level.
-	// Info level indicates any information that should be logged.
-	Infow(msg string, keysAndValues ...any)
-	// Logs the given info with the error level.
-	// Error level indicates any issue that should be resolved as soon as possible.
-	Errorw(msg string, keysAndValues ...any)
 }
