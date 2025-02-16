@@ -24,7 +24,6 @@ type internalServer interface {
 }
 
 func getHttpStatus(err error) int {
-	// Check auth first. and then argument validation. and then not found. and then internal server problem.
 	if isUnAuthorized(err) {
 		return http.StatusUnauthorized
 	}

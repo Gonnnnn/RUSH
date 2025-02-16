@@ -51,6 +51,7 @@ const (
 	AttendanceAppliedByForm        AttendanceAppliedBy = "form"
 )
 
+// TODO(#223): Fix method names to be more clear, as in, `IsOpen`.
 // If the session attendance is applied, the session data is immutable. It checks if the data can be updated.
 func (s *Session) CanUpdateMetadata() bool {
 	if s.AttendanceStatus == AttendanceStatusNotAppliedYet || s.AttendanceStatus == AttendanceStatusIgnored {

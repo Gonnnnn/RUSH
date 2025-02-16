@@ -11,38 +11,37 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// The session record in MongoDB.
 type mongodbSession struct {
-	Id                      primitive.ObjectID `bson:"_id,omitempty"`
-	Name                    string             `bson:"name"`
-	Description             string             `bson:"description"`
-	CreatedBy               string             `bson:"created_by"`
-	GoogleFormId            string             `bson:"google_form_id"`
-	GoogleFormUri           string             `bson:"google_form_uri"`
-	CreatedAt               time.Time          `bson:"created_at"`
-	StartsAt                time.Time          `bson:"starts_at"`
-	Score                   int                `bson:"score"`
-	AttendanceStatus        AttendanceStatus   `bson:"attendance_status"`
-	AttendanceIgnoredReason string             `bson:"attendance_ignored_reason"`
-	IsDeleted               bool               `bson:"is_deleted"`
+	// The unique identifier for the session. E.g. "1"
+	Id primitive.ObjectID `bson:"_id,omitempty"`
+	// The name of the session. E.g. "여의도 공원 정규런"
+	Name string `bson:"name"`
+	// The description of the session. E.g. "여의도 공원에서 정규런을 진행합니다."
+	Description string `bson:"description"`
+	// The unique identifier for the user who created the session. E.g. "1"
+	CreatedBy string `bson:"created_by"`
+	// The unique identifier for the Google Form that the session is associated with. E.g. "1"
+	GoogleFormId string `bson:"google_form_id"`
+	// The URI of the Google Form that the session is associated with. E.g. "https://docs.google.com/forms/d/e/1FAIpQLSf9dFVMN-7HgPXl8jUMyL4ynq-e3fKUZXIQaQ/viewform?usp=sf_link"
+	GoogleFormUri string `bson:"google_form_uri"`
+	// The time when the session was created. E.g. "2021-01-01T00:00:00Z"
+	CreatedAt time.Time `bson:"created_at"`
+	// The time when the session starts. E.g. "2021-01-01T00:00:00Z"
+	StartsAt time.Time `bson:"starts_at"`
+	// The score of the session. E.g. 2
+	Score int `bson:"score"`
+	// The status of the session's attendance.
+	// It indicates if it is applied, ignored, etc.
+	AttendanceStatus AttendanceStatus `bson:"attendance_status"`
+	// The reason why the attendance is ignored. E.g. "The user is not a member."
+	AttendanceIgnoredReason string `bson:"attendance_ignored_reason"`
+	// Whether the session is deleted. E.g. false
+	IsDeleted bool `bson:"is_deleted"`
 }
 
 type mongodbRepo struct {
 	collection *mongo.Collection
-}
-
-type UpdateForm struct {
-	Title         *string
-	Description   *string
-	GoogleFormId  *string
-	GoogleFormUri *string
-	// It should be updated with the form's description.
-	StartsAt                *time.Time
-	Score                   *int
-	AttendanceStatus        *AttendanceStatus
-	AttendanceIgnoredReason *string
-
-	// Indicator to return the updated session.
-	ReturnUpdatedSession bool
 }
 
 func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
@@ -69,26 +68,8 @@ func (r *mongodbRepo) Get(id string) (Session, error) {
 	return *fromMongodbSession(session), nil
 }
 
-func (r *mongodbRepo) GetOpenSessions() ([]Session, error) {
-	cursor, err := r.collection.Find(context.Background(), bson.M{"attendance_status": "not_applied_yet", "is_deleted": false})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get sessions: %w", err)
-	}
-	defer cursor.Close(context.Background())
-
-	var mongoSessions []mongodbSession
-	if err = cursor.All(context.Background(), &mongoSessions); err != nil {
-		return nil, fmt.Errorf("failed to decode sessions: %w", err)
-	}
-
-	sessions := []Session{}
-	for _, mongoSession := range mongoSessions {
-		sessions = append(sessions, *fromMongodbSession(&mongoSession))
-	}
-
-	return sessions, nil
-}
-
+// Get open sessions that has its attendance form. Open means the session has not closed, as in the attendance
+// is not applied yet.
 func (r *mongodbRepo) GetOpenSessionsWithForm() ([]Session, error) {
 	cursor, err := r.collection.Find(context.Background(), bson.M{"attendance_status": "not_applied_yet", "is_deleted": false, "google_form_id": bson.M{"$ne": ""}})
 	if err != nil {
@@ -134,6 +115,7 @@ type ListResult struct {
 	TotalCount int
 }
 
+// List sessions with pagination.
 func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	ctx := context.Background()
 
@@ -201,6 +183,21 @@ func (r *mongodbRepo) Add(name string, description string, createdBy string, sta
 	}
 
 	return id.Hex(), nil
+}
+
+// The form to update the session. It only includes fields that can be updated.
+type UpdateForm struct {
+	Title                   *string
+	Description             *string
+	GoogleFormId            *string
+	GoogleFormUri           *string
+	StartsAt                *time.Time
+	Score                   *int
+	AttendanceStatus        *AttendanceStatus
+	AttendanceIgnoredReason *string
+
+	// Indicator to return the updated session. If false, the session is not returned.
+	ReturnUpdatedSession bool
 }
 
 func (r *mongodbRepo) Update(id string, updateForm UpdateForm) (Session, error) {
