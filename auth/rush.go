@@ -29,7 +29,6 @@ func NewRushAuth(adminToken string, secretKey string, clock clock.Clock) *rushAu
 	return &rushAuth{adminToken: adminToken, secretKey: []byte(secretKey), clock: clock}
 }
 
-// Signs in the user embedding the given args into the token, and returns the token.
 func (r *rushAuth) SignIn(userId string, role permission.Role) (string, error) {
 	if userId == "" {
 		return "", errors.New("user ID is empty")
@@ -90,7 +89,12 @@ func (r *rushAuth) GetSession(token string) (Session, error) {
 
 	return Session{
 		Id:        subject,
-		Role:      rushClaims.Role,
+		Role:      rushClaims.GetRole(),
 		ExpiresAt: rushClaims.ExpiresAt.Time,
 	}, nil
+}
+
+// TODO(#223): Check if jwt package requires it.
+func (r *rushClaims) GetRole() permission.Role {
+	return r.Role
 }
