@@ -3,6 +3,7 @@ package attendance
 import (
 	"fmt"
 	"math"
+	"rush/golang/array"
 	"strconv"
 	"strings"
 	"time"
@@ -11,21 +12,27 @@ import (
 	"google.golang.org/api/forms/v1"
 )
 
+// The option that will be shown in the form.
+// Users select one of them to indicate that they joined the session.
 type UserOption struct {
-	Generation   float64
+	// The generation of the user. E.g. 9.5
+	Generation float64
+	// The external name of the user. E.g. "김건3"
+	// There could be multiple users with the same name.
+	// External name is used to distinguish them by adding a number as suffix.
 	ExternalName string
 }
 
 type Form struct {
 	// The Google form ID.
 	Id string
-	// The Google form URI. It's what users access to fill out the form.
+	// The Google form URI. It's the public URL that users access to fill out the form.
 	Uri string
 }
 
 type FormSubmission struct {
 	// The external name of the user that is exposed to the form.
-	// Use it to match the submission with the user. E.g., "abc123"
+	// Use it to match the submission with the user. E.g., "김건3"
 	UserExternalName string
 	// The time when the form was submitted.
 	SubmissionTime time.Time
@@ -40,22 +47,26 @@ type formHandler struct {
 	formOptionParser *formOptionParser
 	// The delimiter to separate the generation and the external name in the form option.
 	delimiter string
+	// The emails of the admins who will be able to manage the form.
+	adminEmails []string
 }
-
-// 김건, 양현우
-var adminEmails = []string{"geonkim23@gmail.com", "hyeonyi30754@gmail.com"}
 
 func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.Service) *formHandler {
 	delimiter := " - "
+	// 김건, 양현우
+	adminEmails := []string{"geonkim23@gmail.com", "hyeonyi30754@gmail.com"}
 	return &formHandler{
-		googleFormService: googleFormService, googleDriveService: googleDriveService,
-		formOptionParser: newFormOptionParser(delimiter), delimiter: delimiter,
+		googleFormService:  googleFormService,
+		googleDriveService: googleDriveService,
+		formOptionParser:   newFormOptionParser(delimiter),
+		delimiter:          delimiter,
+		adminEmails:        adminEmails,
 	}
 }
 
+// Generates a new Google form with the given arguments. It returns a Form object after uploading it to the Google Drive.
 func (f *formHandler) GenerateForm(title string, description string, userOptions []UserOption) (Form, error) {
 	newForm := &forms.Form{Info: &forms.Info{Title: title, DocumentTitle: title}}
-
 	form, err := f.googleFormService.Forms.Create(newForm).Do()
 	if err != nil {
 		return Form{}, fmt.Errorf("failed to create form: %w", err)
@@ -64,13 +75,11 @@ func (f *formHandler) GenerateForm(title string, description string, userOptions
 	question := &forms.Question{
 		Required: true,
 		ChoiceQuestion: &forms.ChoiceQuestion{
-			Type:    "DROP_DOWN",
-			Options: make([]*forms.Option, len(userOptions)),
+			Type: "DROP_DOWN",
+			Options: array.Map(userOptions, func(userOption UserOption) *forms.Option {
+				return &forms.Option{Value: newFormOption(userOption.Generation, userOption.ExternalName, f.delimiter).string()}
+			}),
 		},
-	}
-
-	for index, userOption := range userOptions {
-		question.ChoiceQuestion.Options[index] = &forms.Option{Value: newFormOption(userOption.Generation, userOption.ExternalName, f.delimiter).string()}
 	}
 
 	updateRequest := &forms.BatchUpdateFormRequest{
@@ -94,7 +103,8 @@ func (f *formHandler) GenerateForm(title string, description string, userOptions
 					},
 					Location: &forms.Location{
 						Index: 0,
-						// 0 is the default value that it is ignored (omitempty). `Index` should be specified as `ForceSendFields`.
+						// 0 is the default value in golang that it is ignored (omitempty).
+						// Thus, `Index` should be specified as `ForceSendFields`.
 						ForceSendFields: []string{"Index"},
 					},
 				},
@@ -104,10 +114,10 @@ func (f *formHandler) GenerateForm(title string, description string, userOptions
 
 	_, err = f.googleFormService.Forms.BatchUpdate(form.FormId, updateRequest).Do()
 	if err != nil {
-		return Form{}, fmt.Errorf("failed to update form: %w", err)
+		return Form{}, fmt.Errorf("failed to add the question to the form: %w", err)
 	}
 
-	for _, adminEmail := range adminEmails {
+	for _, adminEmail := range f.adminEmails {
 		permission := &drive.Permission{
 			Type:         "user",
 			Role:         "writer",
@@ -116,13 +126,14 @@ func (f *formHandler) GenerateForm(title string, description string, userOptions
 
 		_, err = f.googleDriveService.Permissions.Create(form.FormId, permission).Do()
 		if err != nil {
-			return Form{}, fmt.Errorf("failed to create permission: %w", err)
+			return Form{}, fmt.Errorf("failed to create writer permission for admin: %w", err)
 		}
 	}
 
 	return Form{Id: form.FormId, Uri: form.ResponderUri}, nil
 }
 
+// Fetches all the submissions of the form.
 func (f *formHandler) GetSubmissions(formId string) ([]FormSubmission, error) {
 	responses, err := f.googleFormService.Forms.Responses.List(formId).Do()
 	if err != nil {
@@ -143,7 +154,8 @@ func (f *formHandler) GetSubmissions(formId string) ([]FormSubmission, error) {
 
 		timeFoundBefore, ok := userExternalNameSubmissionTimeMap[externalName]
 		if ok && submissionTime.After(timeFoundBefore) {
-			// The user might have submitted the form multiple times. We only keep the first submission.
+			// The user might have submitted the form multiple times.
+			// Only keep the first submission.
 			continue
 		}
 

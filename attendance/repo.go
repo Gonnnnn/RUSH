@@ -13,21 +13,35 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// The attendance record in MongoDB.
 type mongodbAttendance struct {
-	Id               primitive.ObjectID `bson:"_id,omitempty"`
-	SessionId        string             `bson:"session_id"`
-	SessionName      string             `bson:"session_name"`
-	SessionScore     int                `bson:"session_score"`
-	SessionStartedAt time.Time          `bson:"session_started_at"`
-	UserId           string             `bson:"user_id"`
-	UserExternalName string             `bson:"user_external_name"`
-	UserJoinedAt     time.Time          `bson:"user_joined_at"`
-	UserGeneration   float64            `bson:"user_generation"`
-	CreatedAt        time.Time          `bson:"created_at"`
-	CreatedBy        string             `bson:"created_by"`
+	// The unique identifier for the attendance record. E.g. "1"
+	Id primitive.ObjectID `bson:"_id,omitempty"`
+	// The unique identifier for the session that the user joined. E.g. "1"
+	SessionId string `bson:"session_id"`
+	// The name of the session that the user joined. E.g. "여의도 공원 정규런"
+	SessionName string `bson:"session_name"`
+	// The score of the session. E.g. 2
+	SessionScore int `bson:"session_score"`
+	// The time when the session started.
+	SessionStartedAt time.Time `bson:"session_started_at"`
+	// The unique identifier for the user. E.g. "1"
+	UserId string `bson:"user_id"`
+	// The external name of the user. E.g. "김건3"
+	UserExternalName string `bson:"user_external_name"`
+	// The generation of the user. E.g. 9.5
+	UserGeneration float64 `bson:"user_generation"`
+	// The time when the user joined the session.
+	UserJoinedAt time.Time `bson:"user_joined_at"`
+	// The time when the attendance record was created.
+	CreatedAt time.Time `bson:"created_at"`
+	// The user or service that created the attendance record.
+	// E.g. "auto-syncer", "user-id-123"
+	CreatedBy string `bson:"created_by"`
 }
 
 type mongodbRepo struct {
+	// The actual client that executes the queries.
 	collection *mongo.Collection
 	// The clock to get the current time. It's used to mock the time in tests.
 	clock clock.Clock
@@ -96,6 +110,7 @@ func (m *mongodbRepo) FindByUserId(userId string) ([]Attendance, error) {
 	return array.Map(attendances, toAttendance), nil
 }
 
+// The request to add an attendance record.
 type AddAttendanceReq struct {
 	SessionId        string
 	SessionName      string
@@ -113,9 +128,9 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 		return nil
 	}
 
+	// interface type because InsertMany requires []interface{}.
 	attendances := make([]interface{}, 0, len(requests))
 	now := m.clock.Now()
-
 	for _, request := range requests {
 		attendances = append(attendances, &mongodbAttendance{
 			SessionId:        request.SessionId,
@@ -135,11 +150,15 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 	return err
 }
 
+// The form to update the attendance record of a user.
 type UpdateUserAttendanceForm struct {
+	// New external name of the user. Leave it nil to not update.
 	UserExternalName *string
-	UserGeneration   *float64
+	// New generation of the user. Leave it nil to not update.
+	UserGeneration *float64
 }
 
+// Update the information about the user through all of the attendance records of the user.
 func (m *mongodbRepo) UpdateUserAttendance(userId string, updateForm UpdateUserAttendanceForm) error {
 	update := bson.M{}
 	if updateForm.UserExternalName != nil {

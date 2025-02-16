@@ -49,6 +49,9 @@ func (r *rushAuth) SignIn(userId string, role permission.Role) (string, error) {
 	return signedToken, nil
 }
 
+// Get the session information from the token.
+// It returns TokenExpiredError if the token has expired.
+// It returns InvalidTokenError if the token is invalid.
 func (r *rushAuth) GetSession(token string) (Session, error) {
 	if token == r.adminToken {
 		return Session{
@@ -74,14 +77,14 @@ func (r *rushAuth) GetSession(token string) (Session, error) {
 	claims := parsedToken.Claims
 	rushClaims, ok := claims.(*rushClaims)
 	if !ok {
-		return Session{}, errors.New("Failed to parse the token")
+		return Session{}, errors.New("failed to parse the token")
 	}
 	subject, err := rushClaims.GetSubject()
 	if err != nil {
-		return Session{}, fmt.Errorf("Failed to get information from the token: %w", err)
+		return Session{}, fmt.Errorf("failed to get information from the token: %w", err)
 	}
 	if subject == "" {
-		return Session{}, errors.New("The token does not have a subject")
+		return Session{}, errors.New("the token does not have a subject")
 	}
 
 	return Session{
@@ -91,6 +94,7 @@ func (r *rushAuth) GetSession(token string) (Session, error) {
 	}, nil
 }
 
+// TODO(#223): Check if jwt package requires it.
 func (r *rushClaims) GetRole() permission.Role {
 	return r.Role
 }

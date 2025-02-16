@@ -1,3 +1,4 @@
+// Helper package to handle arrays.
 package array
 
 func Map[T1, T2 any](array []T1, mapper func(T1) T2) []T2 {
