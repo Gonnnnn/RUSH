@@ -1,3 +1,4 @@
+// It handles the logics about OAuth, for user authsentication.
 package oauth
 
 import (
@@ -25,6 +26,7 @@ func NewFbClient(client firebaseAuthClient) *firebaseOauth {
 	}
 }
 
+// Get the OAuth provider's email from the token.
 func (f *firebaseOauth) GetEmail(token string) (string, error) {
 	decodedToken, err := f.client.VerifyIDToken(context.Background(), token)
 	if err != nil {
