@@ -16,43 +16,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MocksessionAttendanceApplier is a mock of sessionAttendanceApplier interface.
-type MocksessionAttendanceApplier struct {
-	ctrl     *gomock.Controller
-	recorder *MocksessionAttendanceApplierMockRecorder
-}
-
-// MocksessionAttendanceApplierMockRecorder is the mock recorder for MocksessionAttendanceApplier.
-type MocksessionAttendanceApplierMockRecorder struct {
-	mock *MocksessionAttendanceApplier
-}
-
-// NewMocksessionAttendanceApplier creates a new mock instance.
-func NewMocksessionAttendanceApplier(ctrl *gomock.Controller) *MocksessionAttendanceApplier {
-	mock := &MocksessionAttendanceApplier{ctrl: ctrl}
-	mock.recorder = &MocksessionAttendanceApplierMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MocksessionAttendanceApplier) EXPECT() *MocksessionAttendanceApplierMockRecorder {
-	return m.recorder
-}
-
-// ApplyAttendanceByFormSubmissions mocks base method.
-func (m *MocksessionAttendanceApplier) ApplyAttendanceByFormSubmissions(sessionId, callerId string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyAttendanceByFormSubmissions", sessionId, callerId)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplyAttendanceByFormSubmissions indicates an expected call of ApplyAttendanceByFormSubmissions.
-func (mr *MocksessionAttendanceApplierMockRecorder) ApplyAttendanceByFormSubmissions(sessionId, callerId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyAttendanceByFormSubmissions", reflect.TypeOf((*MocksessionAttendanceApplier)(nil).ApplyAttendanceByFormSubmissions), sessionId, callerId)
-}
-
 // MocksessionGetter is a mock of sessionGetter interface.
 type MocksessionGetter struct {
 	ctrl     *gomock.Controller
@@ -91,31 +54,68 @@ func (mr *MocksessionGetterMockRecorder) GetOpenSessionsWithForm() *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOpenSessionsWithForm", reflect.TypeOf((*MocksessionGetter)(nil).GetOpenSessionsWithForm))
 }
 
-// MockLogger is a mock of Logger interface.
-type MockLogger struct {
+// MocksessionAttendanceApplier is a mock of sessionAttendanceApplier interface.
+type MocksessionAttendanceApplier struct {
 	ctrl     *gomock.Controller
-	recorder *MockLoggerMockRecorder
+	recorder *MocksessionAttendanceApplierMockRecorder
 }
 
-// MockLoggerMockRecorder is the mock recorder for MockLogger.
-type MockLoggerMockRecorder struct {
-	mock *MockLogger
+// MocksessionAttendanceApplierMockRecorder is the mock recorder for MocksessionAttendanceApplier.
+type MocksessionAttendanceApplierMockRecorder struct {
+	mock *MocksessionAttendanceApplier
 }
 
-// NewMockLogger creates a new mock instance.
-func NewMockLogger(ctrl *gomock.Controller) *MockLogger {
-	mock := &MockLogger{ctrl: ctrl}
-	mock.recorder = &MockLoggerMockRecorder{mock}
+// NewMocksessionAttendanceApplier creates a new mock instance.
+func NewMocksessionAttendanceApplier(ctrl *gomock.Controller) *MocksessionAttendanceApplier {
+	mock := &MocksessionAttendanceApplier{ctrl: ctrl}
+	mock.recorder = &MocksessionAttendanceApplierMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockLogger) EXPECT() *MockLoggerMockRecorder {
+func (m *MocksessionAttendanceApplier) EXPECT() *MocksessionAttendanceApplierMockRecorder {
+	return m.recorder
+}
+
+// ApplyAttendanceByFormSubmissions mocks base method.
+func (m *MocksessionAttendanceApplier) ApplyAttendanceByFormSubmissions(sessionId, callerId string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyAttendanceByFormSubmissions", sessionId, callerId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyAttendanceByFormSubmissions indicates an expected call of ApplyAttendanceByFormSubmissions.
+func (mr *MocksessionAttendanceApplierMockRecorder) ApplyAttendanceByFormSubmissions(sessionId, callerId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyAttendanceByFormSubmissions", reflect.TypeOf((*MocksessionAttendanceApplier)(nil).ApplyAttendanceByFormSubmissions), sessionId, callerId)
+}
+
+// Mocklogger is a mock of logger interface.
+type Mocklogger struct {
+	ctrl     *gomock.Controller
+	recorder *MockloggerMockRecorder
+}
+
+// MockloggerMockRecorder is the mock recorder for Mocklogger.
+type MockloggerMockRecorder struct {
+	mock *Mocklogger
+}
+
+// NewMocklogger creates a new mock instance.
+func NewMocklogger(ctrl *gomock.Controller) *Mocklogger {
+	mock := &Mocklogger{ctrl: ctrl}
+	mock.recorder = &MockloggerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *Mocklogger) EXPECT() *MockloggerMockRecorder {
 	return m.recorder
 }
 
 // Errorw mocks base method.
-func (m *MockLogger) Errorw(msg string, keysAndValues ...any) {
+func (m *Mocklogger) Errorw(msg string, keysAndValues ...any) {
 	m.ctrl.T.Helper()
 	varargs := []any{msg}
 	for _, a := range keysAndValues {
@@ -125,14 +125,14 @@ func (m *MockLogger) Errorw(msg string, keysAndValues ...any) {
 }
 
 // Errorw indicates an expected call of Errorw.
-func (mr *MockLoggerMockRecorder) Errorw(msg any, keysAndValues ...any) *gomock.Call {
+func (mr *MockloggerMockRecorder) Errorw(msg any, keysAndValues ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{msg}, keysAndValues...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorw", reflect.TypeOf((*MockLogger)(nil).Errorw), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorw", reflect.TypeOf((*Mocklogger)(nil).Errorw), varargs...)
 }
 
 // Infow mocks base method.
-func (m *MockLogger) Infow(msg string, keysAndValues ...any) {
+func (m *Mocklogger) Infow(msg string, keysAndValues ...any) {
 	m.ctrl.T.Helper()
 	varargs := []any{msg}
 	for _, a := range keysAndValues {
@@ -142,8 +142,8 @@ func (m *MockLogger) Infow(msg string, keysAndValues ...any) {
 }
 
 // Infow indicates an expected call of Infow.
-func (mr *MockLoggerMockRecorder) Infow(msg any, keysAndValues ...any) *gomock.Call {
+func (mr *MockloggerMockRecorder) Infow(msg any, keysAndValues ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{msg}, keysAndValues...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Infow", reflect.TypeOf((*MockLogger)(nil).Infow), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Infow", reflect.TypeOf((*Mocklogger)(nil).Infow), varargs...)
 }

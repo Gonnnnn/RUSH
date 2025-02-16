@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Returns the session for the admin. It includes all the information of the session.
 func (s *Server) AdminGetSession(id string) (SessionForAdmin, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
@@ -18,6 +19,7 @@ func (s *Server) AdminGetSession(id string) (SessionForAdmin, error) {
 	return fromSessionToSessionForAdmin(session), nil
 }
 
+// Returns the session for the user. It includes the information of the session that the user can see.
 func (s *Server) GetSession(id string) (Session, error) {
 	session, err := s.sessionRepo.Get(id)
 	if err != nil {
@@ -32,6 +34,7 @@ type AdminListSessionsResult struct {
 	TotalCount int               `json:"total_count"`
 }
 
+// Returns the list of sessions for the admin. It includes the sessions that the admin can see.
 func (s *Server) AdminListSessions(offset int, pageSize int) (*AdminListSessionsResult, error) {
 	listResult, err := s.sessionRepo.List(offset, pageSize)
 	if err != nil {
@@ -56,6 +59,7 @@ type ListSessionsResult struct {
 	TotalCount int       `json:"total_count"`
 }
 
+// Returns the list of sessions for the user. It includes the sessions that the user can see.
 func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, error) {
 	listResult, err := s.sessionRepo.List(offset, pageSize)
 	if err != nil {
@@ -74,6 +78,7 @@ func (s *Server) ListSessions(offset int, pageSize int) (*ListSessionsResult, er
 	}, nil
 }
 
+// Adds a new session.
 func (s *Server) AddSession(name string, description string, createdBy string, startsAt time.Time, score int) (string, error) {
 	id, err := s.sessionRepo.Add(name, description, createdBy, startsAt, score)
 	if err != nil {
@@ -82,6 +87,7 @@ func (s *Server) AddSession(name string, description string, createdBy string, s
 	return id, nil
 }
 
+// Deletes the session.
 func (s *Server) DeleteSession(id string) error {
 	if err := s.openSessionRepo.DeleteOpenSession(id); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to delete session: %w", err))
@@ -89,6 +95,7 @@ func (s *Server) DeleteSession(id string) error {
 	return nil
 }
 
+// Fetches the form submissions and applies the attendance by the form submissions.
 func (s *Server) ApplyAttendanceByFormSubmissions(sessionId string, calledBy string) error {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {

@@ -25,6 +25,9 @@ type ListUsersResult struct {
 	TotalCount int    `json:"total_count"`
 }
 
+// Returns the list of users.
+// If `all` is true, it returns all the users.
+// If `onlyActive` is true, it returns only the active users.
 func (s *Server) ListUsers(offset int, pageSize int, onlyActive bool, all bool) (*ListUsersResult, error) {
 	if all {
 		if onlyActive {
@@ -86,6 +89,7 @@ func (s *Server) ListUsers(offset int, pageSize int, onlyActive bool, all bool) 
 	}, nil
 }
 
+// Returns the user by the given ID.
 func (s *Server) GetUser(id string) (*User, error) {
 	user, err := s.userRepo.Get(id)
 	if err != nil {
@@ -94,6 +98,7 @@ func (s *Server) GetUser(id string) (*User, error) {
 	return fromUser(user), nil
 }
 
+// Adds a new user.
 func (s *Server) AddUser(name string, generation float64, isActive bool, email string) error {
 	if err := s.userAdder.Add(name, generation, isActive, email); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to add user: %w", err))
@@ -101,6 +106,7 @@ func (s *Server) AddUser(name string, generation float64, isActive bool, email s
 	return nil
 }
 
+// Updates the user.
 func (s *Server) UpdateUser(id string, externalName *string, generation *float64) error {
 	if externalName != nil && *externalName == "" {
 		return newBadRequestError(fmt.Errorf("external name is required"))

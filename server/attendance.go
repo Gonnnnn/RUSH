@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+// Creates attendance form for the given session.
+// Fails if the session is already closed or the form already exists.
 func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
@@ -66,6 +68,7 @@ func (s *Server) CreateAttendanceForm(sessionId string) (string, error) {
 	return attendanceForm.Uri, nil
 }
 
+// Returns the attendances of the given user.
 func (s *Server) GetAttendanceByUserId(userId string) ([]Attendance, error) {
 	attendances, err := s.attendanceRepo.FindByUserId(userId)
 	if err != nil {
@@ -78,6 +81,7 @@ func (s *Server) GetAttendanceByUserId(userId string) ([]Attendance, error) {
 	return converted, nil
 }
 
+// Returns the attendances of the given session.
 func (s *Server) GetAttendanceBySessionId(sessionId string) ([]Attendance, error) {
 	attendances, err := s.attendanceRepo.FindBySessionId(sessionId)
 	if err != nil {
@@ -110,6 +114,8 @@ type sessionForAttendance struct {
 	StartedAt time.Time `json:"started_at"`
 }
 
+// Returns the half year attendances. Half year is the amount of time that Rush handles the attendances for.
+// For example, 2024-1, 2024-2, etc.
 func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 	// TODO(#113): Save the data of each generation, startsAt, finishesAt, name, etc.
 	// And then replace it to a method to get attendance within certain period.
@@ -177,7 +183,10 @@ func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 	return halfYearAttendace, nil
 }
 
+// Marks the users as present for the given session.
+// Fails if the session is already closed or the users are not active.
 func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy string) error {
+	// TODO(#223): Simplify the method. Refactor it.
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
