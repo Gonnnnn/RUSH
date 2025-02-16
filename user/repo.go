@@ -12,23 +12,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type UpdateForm struct {
-	Name         *string
-	Role         *string
-	Generation   *float64
-	IsActive     *bool
-	Email        *string
-	ExternalName *string
-}
-
+// mongodbUser is the user model for MongoDB.
 type mongodbUser struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty"`
-	Name         string             `bson:"name"`
-	Role         string             `bson:"role"`
-	Generation   float64            `bson:"generation"`
-	IsActive     bool               `bson:"is_active"`
-	Email        string             `bson:"email"`
-	ExternalName string             `bson:"external_name"`
+	// The unique identifier of the user.
+	Id primitive.ObjectID `bson:"_id,omitempty"`
+	// The name of the user. E.g., "김건"
+	Name string `bson:"name"`
+	// The role of the user. E.g., "member"
+	Role string `bson:"role"`
+	// The generation of the user. E.g., 9
+	Generation float64 `bson:"generation"`
+	// The activity status of the user. E.g., true
+	IsActive bool `bson:"is_active"`
+	// The email address of the user. E.g., "kim.geon@gmail.com"
+	Email string `bson:"email"`
+	// The unique name consisting of the user name and a number.
+	// It's used as an external ID for the users so that
+	// it's easier for them to identify themselves such as in Google Forms.
+	ExternalName string `bson:"external_name"`
 }
 
 type mongodbRepo struct {
@@ -93,6 +94,8 @@ func (r *mongodbRepo) GetAllActive() ([]User, error) {
 	return converted, nil
 }
 
+// Returns the user by the given email.
+// If not found, it returns ErrNotFound.
 func (r *mongodbRepo) GetByEmail(email string) (*User, error) {
 	ctx := context.Background()
 
@@ -163,6 +166,8 @@ func (r *mongodbRepo) List(offset int, pageSize int) (*ListResult, error) {
 	}, nil
 }
 
+// Returns the user by the given ID.
+// If not found, it returns ErrNotFound.
 func (r *mongodbRepo) Get(id string) (*User, error) {
 	ctx := context.Background()
 
@@ -236,6 +241,16 @@ func (r *mongodbRepo) Add(user User) error {
 	}
 
 	return nil
+}
+
+// UpdateForm is the form to update the user.
+type UpdateForm struct {
+	Name         *string
+	Role         *string
+	Generation   *float64
+	IsActive     *bool
+	Email        *string
+	ExternalName *string
 }
 
 func (r *mongodbRepo) Update(id string, updateForm UpdateForm) error {

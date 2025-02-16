@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+// Signs in the user with the given token.
+// Returns the rush token if the sign in is successful.
 func (s *Server) SignIn(token string) (string, error) {
 	email, err := s.oauthClient.GetEmail(token)
 	if err != nil {

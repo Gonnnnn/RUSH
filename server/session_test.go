@@ -3,7 +3,6 @@ package server
 import (
 	"errors"
 	"rush/attendance"
-	"rush/server/mock"
 	"rush/session"
 	"rush/user"
 	"testing"
@@ -18,7 +17,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns not found error when session is not found", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 			// Do.
@@ -34,7 +33,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns bad request error when session is already closed", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 			// Do.
@@ -53,7 +52,7 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns bad request error when session cannot apply attendance by form submissions", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 			// Do.
@@ -74,8 +73,8 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when failed to get form submissions", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, mockAttendanceFormHandler, nil, nil, nil)
 
 			// Do.
@@ -97,9 +96,9 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Marks attendance as ignored when there are no submissions", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, nil, nil, nil)
 
@@ -120,9 +119,9 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when failed to mark attendance as ignored", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
 			server := New(nil, nil, nil, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, nil, nil, nil)
 
@@ -146,10 +145,10 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when failed to get users by external names", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, nil, nil, nil)
 
@@ -184,10 +183,10 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when there are users not found but failed to mark attendance as ignored", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, nil, nil, nil)
 
@@ -230,10 +229,10 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when there are not-found users and mark attendance as ignored successfully", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, nil, nil, nil)
 
@@ -275,11 +274,11 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when failed to bulk insert attendances", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
-			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
+			mockAttendanceRepo := NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
@@ -316,11 +315,11 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Returns internal server error when failed to mark open session as attendance applied", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
-			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
+			mockAttendanceRepo := NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
@@ -360,11 +359,11 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("When there is zero submission", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
-			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
+			mockAttendanceRepo := NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
@@ -389,11 +388,11 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("When there is one submission", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
-			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
+			mockAttendanceRepo := NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
@@ -444,11 +443,11 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("When there are multiple submissions", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
-			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
+			mockAttendanceRepo := NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 
@@ -539,11 +538,11 @@ func Test_applyAttendanceByFormSubmissions(t *testing.T) {
 		t.Run("Ignore submissions that are after the session starts", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockSessionRepo := mock.NewMocksessionRepo(ctrl)
-			mockAttendanceFormHandler := mock.NewMockattendanceFormHandler(ctrl)
-			mockOpenSessionRepo := mock.NewMockopenSessionRepo(ctrl)
-			mockUserRepo := mock.NewMockuserRepo(ctrl)
-			mockAttendanceRepo := mock.NewMockattendanceRepo(ctrl)
+			mockSessionRepo := NewMocksessionRepo(ctrl)
+			mockAttendanceFormHandler := NewMockattendanceFormHandler(ctrl)
+			mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+			mockUserRepo := NewMockuserRepo(ctrl)
+			mockAttendanceRepo := NewMockattendanceRepo(ctrl)
 			server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo,
 				mockAttendanceFormHandler, mockAttendanceRepo, nil, nil)
 

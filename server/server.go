@@ -11,7 +11,7 @@ import (
 	"github.com/benbjohnson/clock"
 )
 
-//go:generate mockgen -source=server.go -destination=mock/server_mock.go -package=mock
+//go:generate mockgen -source=server.go -destination=server_mock.go -package=server
 
 type User struct {
 	// The ID of the user. E.g., "abc123"

@@ -12,6 +12,9 @@ type updater struct {
 	attendanceRepo attendanceRepo
 }
 
+// User updater. User information is spread out through the system. Updater handles it by itself.
+// Recommended to use it rather than repository unless the data in the user repository has to be
+// handled separately.
 func NewUpdater(userRepo userRepo, attendanceRepo attendanceRepo) *updater {
 	return &updater{
 		userRepo:       userRepo,
@@ -19,6 +22,7 @@ func NewUpdater(userRepo userRepo, attendanceRepo attendanceRepo) *updater {
 	}
 }
 
+// Updates the user.
 func (u *updater) Update(id string, updateForm UpdateForm) error {
 	if updateForm.ExternalName != nil || updateForm.Generation != nil {
 		updateAttendanceForm := attendance.UpdateUserAttendanceForm{
