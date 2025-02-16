@@ -18,7 +18,7 @@ func TestGetUserSession(t *testing.T) {
 	t.Run("Returns bad request error if auth handler returns token expired error", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		mockAuthHandler := mock.NewMockauthHandler(controller)
-		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 		mockAuthHandler.EXPECT().GetSession("token").Return(auth.Session{}, &auth.TokenExpiredError{})
 		userSession, newToken, err := server.GetUserSession("token")
@@ -31,7 +31,7 @@ func TestGetUserSession(t *testing.T) {
 	t.Run("Returns bad request error if auth handler returns invalid token error", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		mockAuthHandler := mock.NewMockauthHandler(controller)
-		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 		mockAuthHandler.EXPECT().GetSession("token").Return(auth.Session{}, &auth.InvalidTokenError{})
 		userSession, newToken, err := server.GetUserSession("token")
@@ -44,7 +44,7 @@ func TestGetUserSession(t *testing.T) {
 	t.Run("Returns internal server error if auth handler returns other error", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		mockAuthHandler := mock.NewMockauthHandler(controller)
-		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 		mockAuthHandler.EXPECT().GetSession("token").Return(auth.Session{}, errors.New("unknown error"))
 		userSession, newToken, err := server.GetUserSession("token")
@@ -58,7 +58,7 @@ func TestGetUserSession(t *testing.T) {
 		controller := gomock.NewController(t)
 		mockAuthHandler := mock.NewMockauthHandler(controller)
 		mockClock := clock.NewMock()
-		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil, mockClock)
+		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, mockClock)
 
 		mockClock.Set(time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC))
 		mockAuthHandler.EXPECT().GetSession("token").Return(auth.Session{
@@ -82,7 +82,7 @@ func TestGetUserSession(t *testing.T) {
 		controller := gomock.NewController(t)
 		mockAuthHandler := mock.NewMockauthHandler(controller)
 		mockClock := clock.NewMock()
-		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil, mockClock)
+		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, mockClock)
 
 		mockClock.Set(time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC))
 		mockAuthHandler.EXPECT().GetSession("token").Return(auth.Session{
@@ -102,7 +102,7 @@ func TestGetUserSession(t *testing.T) {
 		controller := gomock.NewController(t)
 		mockAuthHandler := mock.NewMockauthHandler(controller)
 		mockClock := clock.NewMock()
-		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil, mockClock)
+		server := New(nil, mockAuthHandler, nil, nil, nil, nil, nil, nil, nil, nil, mockClock)
 
 		mockClock.Set(time.Date(2023, 12, 30, 23, 59, 59, 0, time.UTC))
 		mockAuthHandler.EXPECT().GetSession("token").Return(auth.Session{

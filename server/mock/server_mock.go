@@ -12,7 +12,6 @@ package mock
 import (
 	reflect "reflect"
 	attendance "rush/attendance"
-	aggregation "rush/attendance/aggregation"
 	auth "rush/auth"
 	permission "rush/permission"
 	session "rush/session"
@@ -596,42 +595,4 @@ func (m *MockattendanceRepo) GetAll() ([]attendance.Attendance, error) {
 func (mr *MockattendanceRepoMockRecorder) GetAll() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockattendanceRepo)(nil).GetAll))
-}
-
-// MockattendanceAggregationRepo is a mock of attendanceAggregationRepo interface.
-type MockattendanceAggregationRepo struct {
-	ctrl     *gomock.Controller
-	recorder *MockattendanceAggregationRepoMockRecorder
-}
-
-// MockattendanceAggregationRepoMockRecorder is the mock recorder for MockattendanceAggregationRepo.
-type MockattendanceAggregationRepoMockRecorder struct {
-	mock *MockattendanceAggregationRepo
-}
-
-// NewMockattendanceAggregationRepo creates a new mock instance.
-func NewMockattendanceAggregationRepo(ctrl *gomock.Controller) *MockattendanceAggregationRepo {
-	mock := &MockattendanceAggregationRepo{ctrl: ctrl}
-	mock.recorder = &MockattendanceAggregationRepoMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockattendanceAggregationRepo) EXPECT() *MockattendanceAggregationRepoMockRecorder {
-	return m.recorder
-}
-
-// AddAggregation mocks base method.
-func (m *MockattendanceAggregationRepo) AddAggregation(sessionIds []string, userInfos []aggregation.UserInfo) (aggregation.Aggregation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAggregation", sessionIds, userInfos)
-	ret0, _ := ret[0].(aggregation.Aggregation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AddAggregation indicates an expected call of AddAggregation.
-func (mr *MockattendanceAggregationRepoMockRecorder) AddAggregation(sessionIds, userInfos any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAggregation", reflect.TypeOf((*MockattendanceAggregationRepo)(nil).AddAggregation), sessionIds, userInfos)
 }
