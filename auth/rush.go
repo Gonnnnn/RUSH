@@ -29,6 +29,7 @@ func NewRushAuth(adminToken string, secretKey string, clock clock.Clock) *rushAu
 	return &rushAuth{adminToken: adminToken, secretKey: []byte(secretKey), clock: clock}
 }
 
+// Signs in the user embedding the given args into the token, and returns the token.
 func (r *rushAuth) SignIn(userId string, role permission.Role) (string, error) {
 	if userId == "" {
 		return "", errors.New("user ID is empty")
@@ -49,6 +50,9 @@ func (r *rushAuth) SignIn(userId string, role permission.Role) (string, error) {
 	return signedToken, nil
 }
 
+// Get the session information from the token.
+// It returns TokenExpiredError if the token has expired.
+// It returns InvalidTokenError if the token is invalid.
 func (r *rushAuth) GetSession(token string) (Session, error) {
 	if token == r.adminToken {
 		return Session{
@@ -74,23 +78,19 @@ func (r *rushAuth) GetSession(token string) (Session, error) {
 	claims := parsedToken.Claims
 	rushClaims, ok := claims.(*rushClaims)
 	if !ok {
-		return Session{}, errors.New("Failed to parse the token")
+		return Session{}, errors.New("failed to parse the token")
 	}
 	subject, err := rushClaims.GetSubject()
 	if err != nil {
-		return Session{}, fmt.Errorf("Failed to get information from the token: %w", err)
+		return Session{}, fmt.Errorf("failed to get information from the token: %w", err)
 	}
 	if subject == "" {
-		return Session{}, errors.New("The token does not have a subject")
+		return Session{}, errors.New("the token does not have a subject")
 	}
 
 	return Session{
 		Id:        subject,
-		Role:      rushClaims.GetRole(),
+		Role:      rushClaims.Role,
 		ExpiresAt: rushClaims.ExpiresAt.Time,
 	}, nil
-}
-
-func (r *rushClaims) GetRole() permission.Role {
-	return r.Role
 }

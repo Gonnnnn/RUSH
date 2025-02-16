@@ -1,3 +1,4 @@
+// Helper package to handle environment variables.
 package env
 
 import (
@@ -8,6 +9,8 @@ import (
 	"github.com/ridge/must/v2"
 )
 
+// The function that should be called first in the main function.
+// It loads the environment variables from the file.
 func Load(fileNameKey string) {
 	envFile := GetOptionalStringVariable(fileNameKey, "")
 	if envFile != "" {

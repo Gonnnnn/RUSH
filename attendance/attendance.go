@@ -1,3 +1,4 @@
+// It handles any actors or data structures that are related to attendance.
 package attendance
 
 import "time"
@@ -7,7 +8,7 @@ type Attendance struct {
 	Id string `json:"id"`
 	// The unique identifier for the session that the user joined. E.g. "1"
 	SessionId string `json:"session_id"`
-	// The name of the session that the user joined. E.g. "Yonsei University track"
+	// The name of the session that the user joined. E.g. "여의도 공원 정규런"
 	SessionName string `json:"session_name"`
 	// The score of the session. E.g. 2
 	SessionScore int `json:"session_score"`
@@ -15,7 +16,7 @@ type Attendance struct {
 	SessionStartedAt time.Time `json:"session_started_at"`
 	// The unique identifier for the user. E.g. "1"
 	UserId string `json:"user_id"`
-	// The name of the user. E.g. "Alice"
+	// The external name of the user. E.g. "김건3"
 	UserExternalName string `json:"user_external_name"`
 	// The generation of the user. E.g. 9.5
 	UserGeneration float64 `json:"user_generation"`
