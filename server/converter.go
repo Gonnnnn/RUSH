@@ -36,6 +36,7 @@ func fromSessionToSessionForAdmin(sessionData session.Session) SessionForAdmin {
 			if sessionData.AttendanceAppliedBy() == session.AttendanceAppliedByManual {
 				return SessionAttendanceAppliedByManual
 			}
+			// TODO(#54): Hard to test as the internal logic of session should be checked. Mock it or find another way.
 			if sessionData.AttendanceAppliedBy() == session.AttendanceAppliedByForm {
 				return SessionAttendanceAppliedByForm
 			}
