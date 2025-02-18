@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -44,6 +45,8 @@ type mongodbRepo struct {
 	collection *mongo.Collection
 }
 
+var ErrNotFound = errors.New("session not found")
+
 func NewMongoDbRepo(collection *mongo.Collection) *mongodbRepo {
 	return &mongodbRepo{
 		collection: collection,
@@ -60,7 +63,7 @@ func (r *mongodbRepo) Get(id string) (Session, error) {
 	err = r.collection.FindOne(context.Background(), bson.M{"_id": objectID, "is_deleted": false}).Decode(session)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return Session{}, fmt.Errorf("session not found")
+			return Session{}, ErrNotFound
 		}
 		return Session{}, fmt.Errorf("failed to get session: %w", err)
 	}

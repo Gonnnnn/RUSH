@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"rush/auth"
 	"rush/permission"
+	"rush/user"
 	"testing"
 	"time"
 
@@ -12,6 +13,86 @@ import (
 	"github.com/stretchr/testify/assert"
 	gomock "go.uber.org/mock/gomock"
 )
+
+func TestSignIn(t *testing.T) {
+	t.Run("Returns bad request error if failed to get user identifier", func(t *testing.T) {
+		controller := gomock.NewController(t)
+		mockOauthClient := NewMockoauthClient(controller)
+		server := New(mockOauthClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
+		mockOauthClient.EXPECT().GetEmail("token").Return("", assert.AnError)
+		token, err := server.SignIn("token")
+
+		assert.Equal(t, "", token)
+		assert.Equal(t, newBadRequestError(fmt.Errorf("failed to get user identifier: %w", assert.AnError)), err)
+	})
+
+	t.Run("Returns not found error if user is not found", func(t *testing.T) {
+		controller := gomock.NewController(t)
+		mockOauthClient := NewMockoauthClient(controller)
+		mockUserRepo := NewMockuserRepo(controller)
+		server := New(mockOauthClient, nil, mockUserRepo, nil, nil, nil, nil, nil, nil, nil, nil)
+
+		mockOauthClient.EXPECT().GetEmail("token").Return("email@example.com", nil)
+		mockUserRepo.EXPECT().GetByEmail("email@example.com").Return(nil, user.ErrNotFound)
+		token, err := server.SignIn("token")
+
+		assert.Equal(t, "", token)
+		assert.Equal(t, newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", "email@example.com", user.ErrNotFound)), err)
+	})
+
+	t.Run("Returns internal server error if failed to get user", func(t *testing.T) {
+		controller := gomock.NewController(t)
+		mockOauthClient := NewMockoauthClient(controller)
+		mockUserRepo := NewMockuserRepo(controller)
+		server := New(mockOauthClient, nil, mockUserRepo, nil, nil, nil, nil, nil, nil, nil, nil)
+
+		mockOauthClient.EXPECT().GetEmail("token").Return("email@example.com", nil)
+		mockUserRepo.EXPECT().GetByEmail("email@example.com").Return(nil, assert.AnError)
+		token, err := server.SignIn("token")
+
+		assert.Equal(t, "", token)
+		assert.Equal(t, newInternalServerError(fmt.Errorf("failed to get user by email (%s): %w", "email@example.com", assert.AnError)), err)
+	})
+
+	t.Run("Returns internal server error if failed to sign in", func(t *testing.T) {
+		controller := gomock.NewController(t)
+		mockOauthClient := NewMockoauthClient(controller)
+		mockUserRepo := NewMockuserRepo(controller)
+		mockAuthHandler := NewMockauthHandler(controller)
+		server := New(mockOauthClient, mockAuthHandler, mockUserRepo, nil, nil, nil, nil, nil, nil, nil, nil)
+
+		mockOauthClient.EXPECT().GetEmail("token").Return("email@example.com", nil)
+		mockUserRepo.EXPECT().GetByEmail("email@example.com").Return(&user.User{
+			Id:   "user_id",
+			Role: permission.RoleMember,
+		}, nil)
+		mockAuthHandler.EXPECT().SignIn("user_id", permission.RoleMember).Return("", assert.AnError)
+		token, err := server.SignIn("token")
+
+		assert.Equal(t, "", token)
+		assert.Equal(t, newInternalServerError(fmt.Errorf("failed to sign in: %w", assert.AnError)), err)
+	})
+
+	t.Run("Returns rush token if user is found and signed in", func(t *testing.T) {
+		controller := gomock.NewController(t)
+		mockOauthClient := NewMockoauthClient(controller)
+		mockUserRepo := NewMockuserRepo(controller)
+		mockAuthHandler := NewMockauthHandler(controller)
+		server := New(mockOauthClient, mockAuthHandler, mockUserRepo, nil, nil, nil, nil, nil, nil, nil, nil)
+
+		mockOauthClient.EXPECT().GetEmail("token").Return("email@example.com", nil)
+		mockUserRepo.EXPECT().GetByEmail("email@example.com").Return(&user.User{
+			Id:   "user_id",
+			Role: permission.RoleMember,
+		}, nil)
+		mockAuthHandler.EXPECT().SignIn("user_id", permission.RoleMember).Return("rush_token", nil)
+		token, err := server.SignIn("token")
+
+		assert.Equal(t, "rush_token", token)
+		assert.Nil(t, err)
+	})
+}
 
 func TestGetUserSession(t *testing.T) {
 	t.Run("Returns bad request error if auth handler returns token expired error", func(t *testing.T) {

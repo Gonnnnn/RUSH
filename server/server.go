@@ -136,6 +136,7 @@ type userRepo interface {
 	// Skips `offset` users and returns up to `pageSize` users, an indicator if it has more users and total count.
 	List(offset int, pageSize int) (*user.ListResult, error)
 	// Returns the user that has the email. Typically used to get the user by the email from the OAuth2.0 token.
+	// Returns ErrNotFound if the user is not found.
 	GetByEmail(email string) (*user.User, error)
 	// Returns the users that have the external names. Typically used to get users by the external names from the form.
 	GetAllByExternalNames(externalNames []string) ([]user.User, error)
