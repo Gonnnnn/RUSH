@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"rush/golang/array"
 	"rush/user"
@@ -25,11 +26,15 @@ func (s *Server) GetAllActiveUsers() ([]*User, error) {
 
 // Returns the user by the given ID.
 func (s *Server) GetUser(id string) (*User, error) {
-	user, err := s.userRepo.Get(id)
+	dbUser, err := s.userRepo.Get(id)
 	if err != nil {
-		return nil, newNotFoundError(fmt.Errorf("failed to get user: %w", err))
+		if errors.Is(err, user.ErrNotFound) {
+			return nil, newNotFoundError(fmt.Errorf("failed to get user: %w", err))
+		}
+		return nil, newInternalServerError(fmt.Errorf("failed to get user: %w", err))
 	}
-	return fromUser(user), nil
+
+	return fromUser(dbUser), nil
 }
 
 // Adds a new user.

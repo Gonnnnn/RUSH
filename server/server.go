@@ -128,6 +128,8 @@ type authHandler interface {
 }
 
 type userRepo interface {
+	// Returns the user by the given ID.
+	// If not found, it returns ErrNotFound.
 	Get(id string) (*user.User, error)
 	// Returns all the users.
 	GetAll() ([]user.User, error)
