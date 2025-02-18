@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"rush/attendance"
 	"rush/session"
 	"rush/user"
@@ -12,7 +13,131 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_applyAttendanceByFormSubmissions(t *testing.T) {
+func TestAdminGetSession(t *testing.T) {
+	t.Run("Returns not found error when session is not found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{}, session.ErrNotFound)
+		dbSession, err := server.AdminGetSession("session-id")
+
+		assert.Equal(t, SessionForAdmin{}, dbSession)
+		assert.Equal(t, &NotFoundError{originalError: fmt.Errorf("failed to get session: %w", session.ErrNotFound)}, err)
+	})
+
+	t.Run("Returns internal server error when failed to get session", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{}, assert.AnError)
+		dbSession, err := server.AdminGetSession("session-id")
+
+		assert.Equal(t, SessionForAdmin{}, dbSession)
+		assert.Equal(t, &InternalServerError{originalError: fmt.Errorf("failed to get session: %w", assert.AnError)}, err)
+	})
+
+	t.Run("Returns session when session is found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
+			Id:               "session-id",
+			Name:             "session-name",
+			Description:      "session-description",
+			CreatedBy:        "user-id",
+			GoogleFormId:     "google-form-id",
+			GoogleFormUri:    "google-form-uri",
+			CreatedAt:        time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			StartsAt:         time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			Score:            1,
+			AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+		}, nil)
+		dbSession, err := server.AdminGetSession("session-id")
+
+		assert.Equal(t, SessionForAdmin{
+			Id:                  "session-id",
+			Name:                "session-name",
+			Description:         "session-description",
+			CreatedBy:           "user-id",
+			GoogleFormId:        "google-form-id",
+			GoogleFormUri:       "google-form-uri",
+			CreatedAt:           time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			StartsAt:            time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			Score:               1,
+			AttendanceStatus:    session.AttendanceStatusNotAppliedYet,
+			AttendanceAppliedBy: SessionAttendanceAppliedByUnspecified,
+		}, dbSession)
+		assert.NoError(t, err)
+	})
+}
+
+func TestGetSession(t *testing.T) {
+	t.Run("Returns not found error when session is not found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{}, session.ErrNotFound)
+		dbSession, err := server.GetSession("session-id")
+
+		assert.Equal(t, Session{}, dbSession)
+		assert.Equal(t, &NotFoundError{originalError: fmt.Errorf("failed to get session: %w", session.ErrNotFound)}, err)
+	})
+
+	t.Run("Returns internal server error when failed to get session", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{}, assert.AnError)
+		dbSession, err := server.GetSession("session-id")
+
+		assert.Equal(t, Session{}, dbSession)
+		assert.Equal(t, &InternalServerError{originalError: fmt.Errorf("failed to get session: %w", assert.AnError)}, err)
+	})
+
+	t.Run("Returns session when session is found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Get("session-id").Return(session.Session{
+			Id:               "session-id",
+			Name:             "session-name",
+			Description:      "session-description",
+			CreatedBy:        "user-id",
+			GoogleFormId:     "google-form-id",
+			GoogleFormUri:    "google-form-uri",
+			CreatedAt:        time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			StartsAt:         time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			Score:            1,
+			AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+		}, nil)
+		dbSession, err := server.GetSession("session-id")
+
+		assert.Equal(t, Session{
+			Id:          "session-id",
+			Name:        "session-name",
+			Description: "session-description",
+			CreatedBy:   "user-id",
+			CreatedAt:   time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			StartsAt:    time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+			Score:       1,
+		}, dbSession)
+		assert.NoError(t, err)
+	})
+}
+
+func TestApplyAttendanceByFormSubmissions(t *testing.T) {
 	t.Run("Failures", func(t *testing.T) {
 		t.Run("Returns not found error when session is not found", func(t *testing.T) {
 			ctrl := gomock.NewController(t)

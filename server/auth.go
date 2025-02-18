@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"rush/auth"
+	"rush/user"
 	"time"
 )
 
@@ -15,12 +16,15 @@ func (s *Server) SignIn(token string) (string, error) {
 		return "", newBadRequestError(fmt.Errorf("failed to get user identifier: %w", err))
 	}
 
-	user, err := s.userRepo.GetByEmail(email)
+	dbUser, err := s.userRepo.GetByEmail(email)
 	if err != nil {
-		return "", newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
+		if errors.Is(err, user.ErrNotFound) {
+			return "", newNotFoundError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
+		}
+		return "", newInternalServerError(fmt.Errorf("failed to get user by email (%s): %w", email, err))
 	}
 
-	rushToken, err := s.authHandler.SignIn(user.Id, user.Role)
+	rushToken, err := s.authHandler.SignIn(dbUser.Id, dbUser.Role)
 	if err != nil {
 		return "", newInternalServerError(fmt.Errorf("failed to sign in: %w", err))
 	}

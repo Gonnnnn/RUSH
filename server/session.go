@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"rush/attendance"
 	"rush/golang/array"
+	"rush/session"
 	"rush/user"
 	"strings"
 	"time"
@@ -12,20 +13,26 @@ import (
 
 // Returns the session for the admin. It includes all the information of the session.
 func (s *Server) AdminGetSession(id string) (SessionForAdmin, error) {
-	session, err := s.sessionRepo.Get(id)
+	dbSession, err := s.sessionRepo.Get(id)
 	if err != nil {
-		return SessionForAdmin{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+		if errors.Is(err, session.ErrNotFound) {
+			return SessionForAdmin{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+		}
+		return SessionForAdmin{}, newInternalServerError(fmt.Errorf("failed to get session: %w", err))
 	}
-	return fromSessionToSessionForAdmin(session), nil
+	return fromSessionToSessionForAdmin(dbSession), nil
 }
 
 // Returns the session for the user. It includes the information of the session that the user can see.
 func (s *Server) GetSession(id string) (Session, error) {
-	session, err := s.sessionRepo.Get(id)
+	dbSession, err := s.sessionRepo.Get(id)
 	if err != nil {
-		return Session{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+		if errors.Is(err, session.ErrNotFound) {
+			return Session{}, newNotFoundError(fmt.Errorf("failed to get session: %w", err))
+		}
+		return Session{}, newInternalServerError(fmt.Errorf("failed to get session: %w", err))
 	}
-	return fromSessionToSessionForUser(session), nil
+	return fromSessionToSessionForUser(dbSession), nil
 }
 
 type AdminListSessionsResult struct {
