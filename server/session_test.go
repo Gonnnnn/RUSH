@@ -137,6 +137,230 @@ func TestGetSession(t *testing.T) {
 	})
 }
 
+func TestAdminListSessions(t *testing.T) {
+	t.Run("Returns internal server error when failed to list sessions", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().List(1, 2).Return(nil, assert.AnError)
+		listResult, err := server.AdminListSessions(1, 2)
+
+		assert.Nil(t, listResult)
+		assert.Equal(t, &InternalServerError{originalError: fmt.Errorf("failed to list sessions: %w", assert.AnError)}, err)
+	})
+
+	t.Run("Returns sessions when successfully fetches sessions", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().List(1, 2).Return(
+			&session.ListResult{
+				Sessions: []session.Session{
+					{
+						Id:               "session-id",
+						Name:             "session-name",
+						Description:      "session-description",
+						CreatedBy:        "user-id",
+						GoogleFormId:     "google-form-id",
+						GoogleFormUri:    "google-form-uri",
+						CreatedAt:        time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+						StartsAt:         time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+						Score:            1,
+						AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+					},
+					{
+						Id:               "session-id2",
+						Name:             "session-name2",
+						Description:      "session-description2",
+						CreatedBy:        "user-id2",
+						GoogleFormId:     "google-form-id2",
+						GoogleFormUri:    "google-form-uri2",
+						CreatedAt:        time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+						StartsAt:         time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+						Score:            2,
+						AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+					},
+				},
+				IsEnd:      true,
+				TotalCount: 2,
+			}, nil)
+		listResult, err := server.AdminListSessions(1, 2)
+
+		assert.Equal(t, &AdminListSessionsResult{
+			Sessions: []SessionForAdmin{
+				{
+					Id:                  "session-id",
+					Name:                "session-name",
+					Description:         "session-description",
+					CreatedBy:           "user-id",
+					GoogleFormId:        "google-form-id",
+					GoogleFormUri:       "google-form-uri",
+					CreatedAt:           time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+					StartsAt:            time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+					Score:               1,
+					AttendanceStatus:    session.AttendanceStatusNotAppliedYet,
+					AttendanceAppliedBy: SessionAttendanceAppliedByUnspecified,
+				},
+				{
+					Id:                  "session-id2",
+					Name:                "session-name2",
+					Description:         "session-description2",
+					CreatedBy:           "user-id2",
+					GoogleFormId:        "google-form-id2",
+					GoogleFormUri:       "google-form-uri2",
+					CreatedAt:           time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+					StartsAt:            time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+					Score:               2,
+					AttendanceStatus:    session.AttendanceStatusNotAppliedYet,
+					AttendanceAppliedBy: SessionAttendanceAppliedByUnspecified,
+				},
+			},
+			IsEnd:      true,
+			TotalCount: 2,
+		}, listResult)
+		assert.NoError(t, err)
+	})
+}
+
+func TestListSessions(t *testing.T) {
+	t.Run("Returns internal server error when failed to list sessions", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().List(1, 2).Return(nil, assert.AnError)
+		listResult, err := server.ListSessions(1, 2)
+
+		assert.Nil(t, listResult)
+		assert.Equal(t, &InternalServerError{originalError: fmt.Errorf("failed to list sessions: %w", assert.AnError)}, err)
+	})
+
+	t.Run("Returns sessions when successfully fetches sessions", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().List(1, 2).Return(
+			&session.ListResult{
+				Sessions: []session.Session{
+					{
+						Id:               "session-id",
+						Name:             "session-name",
+						Description:      "session-description",
+						CreatedBy:        "user-id",
+						GoogleFormId:     "google-form-id",
+						GoogleFormUri:    "google-form-uri",
+						CreatedAt:        time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+						StartsAt:         time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+						Score:            1,
+						AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+					},
+					{
+						Id:               "session-id2",
+						Name:             "session-name2",
+						Description:      "session-description2",
+						CreatedBy:        "user-id2",
+						GoogleFormId:     "google-form-id2",
+						GoogleFormUri:    "google-form-uri2",
+						CreatedAt:        time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+						StartsAt:         time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+						Score:            2,
+						AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+					},
+				},
+				IsEnd:      true,
+				TotalCount: 2,
+			}, nil)
+		listResult, err := server.ListSessions(1, 2)
+
+		assert.Equal(t, &ListSessionsResult{
+			Sessions: []Session{
+				{
+					Id:          "session-id",
+					Name:        "session-name",
+					Description: "session-description",
+					CreatedBy:   "user-id",
+					CreatedAt:   time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+					StartsAt:    time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC),
+					Score:       1,
+				},
+				{
+					Id:          "session-id2",
+					Name:        "session-name2",
+					Description: "session-description2",
+					CreatedBy:   "user-id2",
+					CreatedAt:   time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+					StartsAt:    time.Date(2024, 1, 1, 21, 0, 0, 0, time.UTC),
+					Score:       2,
+				},
+			},
+			IsEnd:      true,
+			TotalCount: 2,
+		}, listResult)
+		assert.NoError(t, err)
+	})
+}
+
+func TestAddSession(t *testing.T) {
+	t.Run("Returns internal server error when failed to add session", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Add("session-name", "session-description", "user-id", time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC), 1).Return("", assert.AnError)
+		id, err := server.AddSession("session-name", "session-description", "user-id", time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC), 1)
+
+		assert.Equal(t, "", id)
+		assert.Equal(t, &InternalServerError{originalError: fmt.Errorf("failed to add session: %w", assert.AnError)}, err)
+	})
+
+	t.Run("Returns session id when successfully adds session", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSessionRepo := NewMocksessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
+
+		mockSessionRepo.EXPECT().Add("session-name", "session-description", "user-id", time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC), 1).Return("session-id", nil)
+		id, err := server.AddSession("session-name", "session-description", "user-id", time.Date(2024, 1, 1, 20, 0, 0, 0, time.UTC), 1)
+
+		assert.Equal(t, "session-id", id)
+		assert.NoError(t, err)
+	})
+}
+
+func TestDeleteSession(t *testing.T) {
+	t.Run("Returns internal server error when failed to delete session", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, nil, mockOpenSessionRepo, nil, nil, nil, nil)
+
+		mockOpenSessionRepo.EXPECT().DeleteOpenSession("session-id").Return(assert.AnError)
+		err := server.DeleteSession("session-id")
+
+		assert.Equal(t, &InternalServerError{originalError: fmt.Errorf("failed to delete session: %w", assert.AnError)}, err)
+	})
+
+	t.Run("Returns nil when successfully deletes open session", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockOpenSessionRepo := NewMockopenSessionRepo(ctrl)
+		server := New(nil, nil, nil, nil, nil, nil, mockOpenSessionRepo, nil, nil, nil, nil)
+
+		mockOpenSessionRepo.EXPECT().DeleteOpenSession("session-id").Return(nil)
+		err := server.DeleteSession("session-id")
+
+		assert.NoError(t, err)
+	})
+}
+
 func TestApplyAttendanceByFormSubmissions(t *testing.T) {
 	t.Run("Failures", func(t *testing.T) {
 		t.Run("Returns not found error when session is not found", func(t *testing.T) {
