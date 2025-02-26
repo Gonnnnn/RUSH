@@ -17,7 +17,7 @@ client.interceptors.response.use(setToken);
 
 const AdminAllActiveUsersResponseSchema = z.array(UserSchema);
 
-export type AdminAllActiveUsersResponse = z.infer<typeof Users>;
+export type AdminAllActiveUsersResponse = z.infer<typeof AdminAllActiveUsersResponseSchema>;
 
 export const adminAllActiveUsers = async (): Promise<AdminAllActiveUsersResponse> => {
   const response = await client.get('/users');

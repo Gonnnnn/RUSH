@@ -146,7 +146,7 @@ const HalfYearAttendances = () => {
         disableColumnFilter
         initialState={{
           pagination: {
-            paginationModel: { pageSize: 10, page: 0 },
+            paginationModel: { pageSize: 20, page: 0 },
           },
         }}
       />
