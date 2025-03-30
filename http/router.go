@@ -46,6 +46,7 @@ func SetUpRouter(router *gin.Engine, server *server.Server) {
 				adminProtected.POST("/sessions/:id/attendance-form", handleCreateAttendanceForm(server))
 				adminProtected.POST("/sessions/:id/attendance/form", handleApplyAttendanceByFormSubmissions(server))
 				adminProtected.POST("/sessions/:id/attendance/manual", handleMarkUsersAsPresent(server))
+				adminProtected.POST("/sessions/:id/attendance/late", handleLateApplyAttendance(server))
 			}
 		}
 	}

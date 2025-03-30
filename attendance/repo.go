@@ -38,6 +38,8 @@ type mongodbAttendance struct {
 	// The user or service that created the attendance record.
 	// E.g. "auto-syncer", "user-id-123"
 	CreatedBy string `bson:"created_by"`
+	// Whether the attendance record was force applied.
+	ForceApply bool `bson:"force_apply"`
 }
 
 type mongodbRepo struct {
@@ -121,6 +123,7 @@ type AddAttendanceReq struct {
 	UserGeneration   float64
 	UserJoinedAt     time.Time
 	CreatedBy        string
+	ForceApply       bool
 }
 
 func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
@@ -143,6 +146,7 @@ func (m *mongodbRepo) BulkInsert(requests []AddAttendanceReq) error {
 			UserJoinedAt:     request.UserJoinedAt,
 			CreatedAt:        now,
 			CreatedBy:        request.CreatedBy,
+			ForceApply:       request.ForceApply,
 		})
 	}
 

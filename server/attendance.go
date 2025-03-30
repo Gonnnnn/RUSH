@@ -185,13 +185,14 @@ func (s *Server) GetHalfYearAttendance() (HalfYearAttendace, error) {
 
 // Marks the users as present for the given session.
 // Fails if the session is already closed or the users are not active.
-func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy string) error {
+// If forceApply is true, it will apply the attendance no matter what.
+func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, forceApply bool, calledBy string) error {
 	// TODO(#223): Simplify the method. Refactor it.
 	dbSession, err := s.sessionRepo.Get(sessionId)
 	if err != nil {
 		return newNotFoundError(fmt.Errorf("failed to get session: %w", err))
 	}
-	if !dbSession.CanApplyAttendanceManually() {
+	if !forceApply && !dbSession.CanApplyAttendanceManually() {
 		return newBadRequestError(errors.New("session is already closed"))
 	}
 
@@ -244,6 +245,7 @@ func (s *Server) MarkUsersAsPresent(sessionId string, userIds []string, calledBy
 			UserGeneration:   user.Generation,
 			UserJoinedAt:     s.clock.Now(),
 			CreatedBy:        calledBy,
+			ForceApply:       forceApply,
 		}
 	})); err != nil {
 		return newInternalServerError(fmt.Errorf("failed to bulk insert attendances: %w", err))
