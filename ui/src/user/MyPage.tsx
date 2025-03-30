@@ -14,23 +14,17 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Switch,
 } from '@mui/material';
-import { useAuth } from '../auth';
-import { Role } from '../auth/role';
 import { Attendance, User } from '../client/http/data';
 import { getUser, getUserAttendances, getUserAuth } from '../client/http/default';
 import { toYYslashMMslashDDspaceHHcolonMM } from '../common/date';
 import { useHeader } from '../contexts/header';
-import { useAdminMode } from '../mode';
 
 const MyPage = () => {
   useHeader({ newTitle: 'Me' });
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { role } = useAuth();
-  const { adminMode, setAdminMode } = useAdminMode();
 
   const [user, setUser] = useState<User>();
   const [attendances, setAttendances] = useState<Attendance[]>([]);
@@ -66,13 +60,6 @@ const MyPage = () => {
 
   return (
     <Container>
-      {role === Role.ADMIN && (
-        <Box display="flex" justifyContent="flex-end" alignItems="center">
-          <Switch checked={adminMode} onChange={() => setAdminMode(!adminMode)} />
-          <Typography>{adminMode ? 'Admin' : 'Member'}</Typography>
-        </Box>
-      )}
-
       <Paper sx={{ p: 2, mb: 3, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2 }}>
         <Typography variant="h6">
           {user.externalName} / {user.generation}기

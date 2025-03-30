@@ -18,11 +18,11 @@ import {
   LinearProgress,
   Typography,
 } from '@mui/material';
-import SessionCreate from '../SessionCreate';
 import { adminListSessions } from '../client/http/admin';
 import { AdminSession } from '../client/http/data';
 import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
 import { useHeader } from '../contexts/header';
+import SessionCreate from './SessionCreate';
 
 const AdminSessionList = () => {
   const navigate = useNavigate();

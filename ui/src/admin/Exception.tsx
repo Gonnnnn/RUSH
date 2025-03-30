@@ -17,10 +17,12 @@ import { adminLateApplyAttendance, adminListSessions } from '../client/http/admi
 import { AdminSession } from '../client/http/data';
 import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
 import useHandleError from '../common/error';
+import { useSnackbar } from '../contexts/snackbar';
 import AddAttendance from './SessionDetail/AddAttendance';
 
 const Exception = () => {
   const { handleError } = useHandleError();
+  const { showInfo } = useSnackbar();
 
   const [sessions, setSessions] = useState<AdminSession[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
@@ -78,7 +80,7 @@ const Exception = () => {
     try {
       await adminLateApplyAttendance(selectedSessionId, userIds);
       setShowUserSelection(false);
-      // Success message could be added here
+      showInfo('Exceptional attendance applied successfully');
     } catch (error) {
       handleError({
         error,

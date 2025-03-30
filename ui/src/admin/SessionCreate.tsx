@@ -4,8 +4,8 @@ import { Box, Button, Container, TextField, Typography } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
-import { useSnackbar } from './SnackbarContext';
-import { adminCreateSession } from './client/http/admin';
+import { adminCreateSession } from '../client/http/admin';
+import { useSnackbar } from '../contexts/snackbar';
 
 const SessionCreate = () => {
   const navigate = useNavigate();
