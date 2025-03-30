@@ -34,6 +34,7 @@ const AppRoutes = () => (
         <Route path="sessions" element={<AdminSessionList />} />
         <Route path="sessions/:id" element={<AdminSessionDetail />} />
         <Route path="exceptions" element={<AdminException />} />
+        <Route path="attendance" element={<HalfYearAttendances />} />
       </Route>
     </Route>
   </Routes>
