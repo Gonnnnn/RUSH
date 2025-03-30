@@ -1,10 +1,10 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
-import { Layout } from './Layout';
 import SignIn from './SignIn';
 import AdminLayout from './admin/Layout';
 import { useAuth } from './auth';
 import { Role } from './auth/role';
 import HalfYearAttendances from './user/Attendance';
+import UserLayout from './user/Layout';
 import MyPage from './user/MyPage';
 import { AdminSessionDetail, UserSessionDetail } from './user/SessionDetail';
 import { AdminSessionList, UserSessionList } from './user/SessionList';
@@ -12,7 +12,7 @@ import { AdminSessionList, UserSessionList } from './user/SessionList';
 const AppRoutes = () => (
   <Routes>
     <Route path="/">
-      <Route element={<Layout />}>
+      <Route element={<UserLayout />}>
         <Route index element={<UserSessionList />} />
         <Route path="/sessions" element={<UserSessionList />} />
         <Route path="/sessions/:id" element={<UserSessionDetail />} />

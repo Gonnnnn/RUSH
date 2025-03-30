@@ -16,12 +16,12 @@ import {
   TableBody,
   Switch,
 } from '@mui/material';
-import { useHeader } from '../Layout';
 import { useAuth } from '../auth';
 import { Role } from '../auth/role';
 import { Attendance, User } from '../client/http/data';
 import { getUser, getUserAttendances, getUserAuth } from '../client/http/default';
 import { toYYslashMMslashDDspaceHHcolonMM } from '../common/date';
+import { useHeader } from '../contexts/header';
 import { useAdminMode } from '../mode';
 
 const MyPage = () => {
