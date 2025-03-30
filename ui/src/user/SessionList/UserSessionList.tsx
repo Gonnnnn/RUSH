@@ -14,12 +14,12 @@ import {
   TablePagination,
 } from '@mui/material';
 import dayjs from 'dayjs';
-import { useHeader } from '../Layout';
-import { Session } from '../client/http/data';
-import { listSessions } from '../client/http/default';
-import { toYYYY년MM월DD일HH시MM분 } from '../common/date';
-import useHandleError from '../common/error';
-import { useAdminMode } from '../mode';
+import { useHeader } from '../../Layout';
+import { Session } from '../../client/http/data';
+import { listSessions } from '../../client/http/default';
+import { toYYYY년MM월DD일HH시MM분 } from '../../common/date';
+import useHandleError from '../../common/error';
+import { useAdminMode } from '../../mode';
 
 const UserSessionList = () => {
   const navigate = useNavigate();

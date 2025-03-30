@@ -11,9 +11,9 @@ import {
   Typography,
 } from '@mui/material';
 import { DataGrid, GridRowSelectionModel, GridToolbarContainer, GridToolbarQuickFilter } from '@mui/x-data-grid';
-import { adminAllActiveUsers } from '../../client/http/admin';
-import { User } from '../../client/http/data';
-import useHandleError from '../../common/error';
+import { adminAllActiveUsers } from '../../../client/http/admin';
+import { User } from '../../../client/http/data';
+import useHandleError from '../../../common/error';
 
 /**
  * It handles the addition of attendances. As it has to fetch all the users,

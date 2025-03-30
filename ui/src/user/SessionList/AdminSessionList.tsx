@@ -18,11 +18,11 @@ import {
   LinearProgress,
   Typography,
 } from '@mui/material';
-import { useHeader } from '../Layout';
-import SessionCreate from '../SessionCreate';
-import { adminListSessions } from '../client/http/admin';
-import { AdminSession } from '../client/http/data';
-import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
+import { useHeader } from '../../Layout';
+import SessionCreate from '../../SessionCreate';
+import { adminListSessions } from '../../client/http/admin';
+import { AdminSession } from '../../client/http/data';
+import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../../common/date';
 
 const AdminSessionList = () => {
   const navigate = useNavigate();
