@@ -77,3 +77,7 @@ export const adminCreateSessionForm = async (sessionId: string): Promise<string>
 export const adminMarkUsersAsPresent = async (sessionId: string, userIds: string[]): Promise<void> => {
   await client.post(`/sessions/${sessionId}/attendance/manual`, { user_ids: userIds });
 };
+
+export const adminLateApplyAttendance = async (sessionId: string, userIds: string[]): Promise<void> => {
+  await client.post(`/sessions/${sessionId}/attendance/late`, { user_ids: userIds });
+};
