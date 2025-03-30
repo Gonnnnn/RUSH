@@ -3,10 +3,10 @@ import { CheckCircleOutline, PersonOutlined, RunCircleOutlined } from '@mui/icon
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { Box, ListItemButton, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import Logo from '../assets/logo.svg';
 import { useAuth } from '../auth';
 import GoogleSignInButton from '../common/GoogleSignInButton';
 import GoogleSignOutButton from '../common/GoogleSignOutButton';
-import Logo from './assets/logo.svg';
 
 export const SIDEBAR_WIDTH = 280;
 

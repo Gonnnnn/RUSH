@@ -1,11 +1,11 @@
 import { Outlet } from 'react-router-dom';
 import { Box, Container, Typography, useMediaQuery, useTheme } from '@mui/material';
-import BottomNavigation, { BOTTOM_NAV_HEIGHT } from '../BottomNavigation';
-import Sidebar, { SIDEBAR_WIDTH } from '../Sidebar';
 import { useAuth } from '../auth';
 import GoogleSignInButton from '../common/GoogleSignInButton';
 import GoogleSignOutButton from '../common/GoogleSignOutButton';
 import { useHeader } from '../contexts/header';
+import BottomNavigation, { BOTTOM_NAV_HEIGHT } from './BottomNavigation';
+import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
 
 const Layout = () => {
   const theme = useTheme();
