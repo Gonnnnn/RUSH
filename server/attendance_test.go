@@ -150,7 +150,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 		server := New(nil, nil, nil, nil, nil, mockSessionRepo, nil, nil, nil, nil, nil)
 
 		mockSessionRepo.EXPECT().Get("session_id").Return(session.Session{}, errors.New("failed to get session"))
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newNotFoundError(fmt.Errorf("failed to get session: %w",
 			errors.New("failed to get session"))), err)
@@ -166,7 +166,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 			Id:               "session_id",
 			AttendanceStatus: session.AttendanceStatusApplied,
 		}, nil)
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newBadRequestError(errors.New("session is already closed")), err)
 	})
@@ -182,7 +182,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 			AttendanceStatus: session.AttendanceStatusNotAppliedYet,
 		}, nil)
 		mockAttendanceRepo.EXPECT().FindBySessionId("session_id").Return(nil, errors.New("failed to get attendances"))
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newInternalServerError(fmt.Errorf("failed to get attendances: %w",
 			errors.New("failed to get attendances"))), err)
@@ -203,7 +203,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 			{Id: "attendance_id_1", SessionId: "session_id", UserId: "user_id_1"},
 		}, nil)
 		mockUserRepo.EXPECT().GetAllActive().Return(nil, errors.New("failed to get users"))
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newInternalServerError(fmt.Errorf("failed to get users: %w",
 			errors.New("failed to get users"))), err)
@@ -228,7 +228,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 			{Id: "user_id_2", IsActive: true},
 			{Id: "user_id_3", IsActive: true},
 		}, nil)
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1", "user_id_2"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1", "user_id_2"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newBadRequestError(
 			fmt.Errorf(
@@ -254,7 +254,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 			{Id: "user_id_1", IsActive: true},
 		}, nil)
 		mockAttendanceRepo.EXPECT().BulkInsert(gomock.Any()).Return(errors.New("failed to insert attendances"))
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newInternalServerError(fmt.Errorf("failed to bulk insert attendances: %w",
 			errors.New("failed to insert attendances"))), err)
@@ -280,7 +280,7 @@ func TestMarkUsersAsPresent(t *testing.T) {
 		}, nil)
 		mockAttendanceRepo.EXPECT().BulkInsert(gomock.Any()).Return(nil)
 		mockOpenSessionRepo.EXPECT().MarkAsAttendanceApplied("session_id").Return(errors.New("failed to mark the session as attendance applied"))
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1"}, false /* =forceApply */, "caller")
 
 		assert.Equal(t, newInternalServerError(fmt.Errorf("failed to close the session: %w",
 			errors.New("failed to mark the session as attendance applied"))), err)
@@ -329,7 +329,49 @@ func TestMarkUsersAsPresent(t *testing.T) {
 		}).Return(nil)
 		mockOpenSessionRepo.EXPECT().MarkAsAttendanceApplied("session_id").Return(nil)
 
-		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1", "user_id_2"}, "caller")
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1", "user_id_2"}, false /* =forceApply */, "caller")
+		assert.NoError(t, err)
+	})
+
+	t.Run("Apply attendance with force apply even if the session is already closed", func(t *testing.T) {
+		controller := gomock.NewController(t)
+		mockSessionRepo := NewMocksessionRepo(controller)
+		mockAttendanceRepo := NewMockattendanceRepo(controller)
+		mockUserRepo := NewMockuserRepo(controller)
+		mockOpenSessionRepo := NewMockopenSessionRepo(controller)
+		mockClock := clock.NewMock()
+		server := New(nil, nil, mockUserRepo, nil, nil, mockSessionRepo, mockOpenSessionRepo, nil, mockAttendanceRepo, nil, mockClock)
+
+		mockClock.Set(time.Date(2024, 1, 5, 0, 0, 0, 0, time.UTC))
+		mockSessionRepo.EXPECT().Get("session_id").Return(session.Session{
+			Id:               "session_id",
+			AttendanceStatus: session.AttendanceStatusNotAppliedYet,
+			Name:             "session_name",
+			Score:            2,
+			StartsAt:         time.Date(2024, 1, 5, 0, 0, 0, 0, time.UTC),
+		}, nil)
+		mockAttendanceRepo.EXPECT().FindBySessionId("session_id").Return([]attendance.Attendance{}, nil)
+		mockUserRepo.EXPECT().GetAllActive().Return([]user.User{
+			{Id: "user_id_1", IsActive: true, ExternalName: "user_external_name_1",
+				Generation: 9, Name: "user_name_1"},
+		}, nil)
+		mockAttendanceRepo.EXPECT().BulkInsert([]attendance.AddAttendanceReq{
+			{
+				SessionId:        "session_id",
+				SessionName:      "session_name",
+				SessionScore:     2,
+				SessionStartedAt: time.Date(2024, 1, 5, 0, 0, 0, 0, time.UTC),
+				UserId:           "user_id_1",
+				UserExternalName: "user_external_name_1",
+				UserGeneration:   9,
+				UserJoinedAt:     time.Date(2024, 1, 5, 0, 0, 0, 0, time.UTC),
+				CreatedBy:        "caller",
+				ForceApply:       true,
+			},
+		}).Return(nil)
+		mockOpenSessionRepo.EXPECT().MarkAsAttendanceApplied("session_id").Return(nil)
+
+		err := server.MarkUsersAsPresent("session_id", []string{"user_id_1"}, true /* =forceApply */, "caller")
 		assert.NoError(t, err)
 	})
 }

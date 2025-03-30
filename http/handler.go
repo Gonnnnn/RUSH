@@ -442,7 +442,7 @@ func handleMarkUsersAsPresent(server *server.Server) gin.HandlerFunc {
 		}
 
 		callerId := c.GetString(userIdKey)
-		if err := server.MarkUsersAsPresent(sessionId, req.UserIds, callerId); err != nil {
+		if err := server.MarkUsersAsPresent(sessionId, req.UserIds, false /* =forceApply */, callerId); err != nil {
 			if isBadRequest(err) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
@@ -454,6 +454,30 @@ func handleMarkUsersAsPresent(server *server.Server) gin.HandlerFunc {
 			}
 
 			log.Printf("Error marking users as present: %+v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Users marked as present successfully"})
+	}
+}
+
+type lateApplyAttendanceRequest struct {
+	UserIds []string `json:"user_ids"`
+}
+
+func handleLateApplyAttendance(server *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sessionId := c.Param("id")
+		var req lateApplyAttendanceRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		callerId := c.GetString(userIdKey)
+		if err := server.MarkUsersAsPresent(sessionId, req.UserIds, true /* =forceApply */, callerId); err != nil {
+			log.Printf("Error late applying attendance: %+v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
