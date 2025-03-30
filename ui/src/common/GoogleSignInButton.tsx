@@ -1,9 +1,9 @@
 import { Button, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { signInWithPopup } from 'firebase/auth';
-import { useSnackbar } from '../SnackbarContext';
 import GoogleLogo from '../assets/google_logo.svg';
 import { useAuth } from '../auth';
+import { useSnackbar } from '../contexts/snackbar';
 import { auth, provider } from '../firebase';
 
 const GoogleSignInButton = ({ text = '', callBack }: { text?: string; callBack?: () => void }) => {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { AxiosError } from 'axios';
-import { useSnackbar } from '../SnackbarContext';
+import { useSnackbar } from '../contexts/snackbar';
 
 const useHandleError = () => {
   const { showWarning, showError } = useSnackbar();

@@ -6,10 +6,10 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import AppRoutes from './Routes';
-import { SnackbarProvider } from './SnackbarContext';
 import Logo from './assets/logo.svg';
 import { AuthProvider, useAuth } from './auth';
 import { HeaderProvider } from './contexts/header';
+import { SnackbarProvider } from './contexts/snackbar';
 import { AdminModeProvider } from './mode';
 
 dayjs.locale('ko');
