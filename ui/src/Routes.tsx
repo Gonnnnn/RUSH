@@ -1,25 +1,33 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
-import HalfYearAttendances from './Attendance';
 import { Layout } from './Layout';
-import MyPage from './MyPage';
-import { AdminSessionDetail, UserSessionDetail } from './SessionDetail';
-import { AdminSessionList, UserSessionList } from './SessionList';
 import SignIn from './SignIn';
+import AdminLayout from './admin/Layout';
 import { useAuth } from './auth';
 import { Role } from './auth/role';
+import HalfYearAttendances from './user/Attendance';
+import MyPage from './user/MyPage';
+import { AdminSessionDetail, UserSessionDetail } from './user/SessionDetail';
+import { AdminSessionList, UserSessionList } from './user/SessionList';
 
 const AppRoutes = () => (
   <Routes>
-    <Route element={<Layout />}>
-      <Route index element={<UserSessionList />} />
-      <Route path="/sessions" element={<UserSessionList />} />
-      <Route path="/sessions/:id" element={<UserSessionDetail />} />
-      <Route element={<AuthRoute />}>
-        <Route path="/me" element={<MyPage />} />
-        <Route path="/attendances" element={<HalfYearAttendances />} />
+    <Route path="/">
+      <Route element={<Layout />}>
+        <Route index element={<UserSessionList />} />
+        <Route path="/sessions" element={<UserSessionList />} />
+        <Route path="/sessions/:id" element={<UserSessionDetail />} />
+        <Route element={<AuthRoute />}>
+          <Route path="/me" element={<MyPage />} />
+          <Route path="/attendances" element={<HalfYearAttendances />} />
+        </Route>
       </Route>
       <Route path="/signin" element={<SignIn />} />
-      <Route path="/admin" element={<AdminRoute />}>
+    </Route>
+
+    <Route path="/admin" element={<AdminRoute />}>
+      <Route element={<AdminLayout />}>
+        <Route index element={<AdminSessionList />} />
+        <Route path="me" element={<MyPage />} />
         <Route path="sessions" element={<AdminSessionList />} />
         <Route path="sessions/:id" element={<AdminSessionDetail />} />
       </Route>

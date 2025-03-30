@@ -1,11 +1,11 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Box, Container, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useHeader } from '../Layout';
+import { useAuth } from '../auth';
+import GoogleSignInButton from '../common/GoogleSignInButton';
+import GoogleSignOutButton from '../common/GoogleSignOutButton';
 import BottomNavigation, { BOTTOM_NAV_HEIGHT } from './BottomNavigation';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
-import { useAuth } from './auth';
-import GoogleSignInButton from './common/GoogleSignInButton';
-import GoogleSignOutButton from './common/GoogleSignOutButton';
 
 const Layout = () => {
   const theme = useTheme();
@@ -55,34 +55,4 @@ const Layout = () => {
   );
 };
 
-// TODO(#57): Separate it and move only `Layout` component to `src/user`.
-const DEFAULT_TITLE = 'RU:SH';
-
-const HeaderContext = createContext<{
-  pageTitle: string;
-  setPageTitle: (pageTitle: string) => void;
-}>({ pageTitle: DEFAULT_TITLE, setPageTitle: () => {} });
-
-const HeaderProvider = ({ children }: { children: ReactNode }) => {
-  const [pageTitle, setPageTitle] = useState(DEFAULT_TITLE);
-
-  const value = useMemo(() => ({ pageTitle, setPageTitle }), [pageTitle, setPageTitle]);
-  return <HeaderContext.Provider value={value}>{children}</HeaderContext.Provider>;
-};
-
-const useHeader = ({ newTitle }: { newTitle?: string } = {}) => {
-  const { pageTitle, setPageTitle } = useContext(HeaderContext);
-
-  useEffect(() => {
-    if (newTitle) {
-      setPageTitle(newTitle);
-    }
-    return () => {
-      setPageTitle(DEFAULT_TITLE);
-    };
-  }, [newTitle, setPageTitle]);
-
-  return { pageTitle, setPageTitle };
-};
-
-export { Layout, HeaderProvider, useHeader };
+export default Layout;

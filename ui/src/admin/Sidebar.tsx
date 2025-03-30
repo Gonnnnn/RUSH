@@ -1,12 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { CheckCircleOutline, PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
+import { PersonOutlined, RunCircleOutlined } from '@mui/icons-material';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { Box, ListItemButton, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import Logo from './assets/logo.svg';
-import { useAuth } from './auth';
-import GoogleSignInButton from './common/GoogleSignInButton';
-import GoogleSignOutButton from './common/GoogleSignOutButton';
+import Logo from '../assets/logo.svg';
+import { useAuth } from '../auth';
+import GoogleSignInButton from '../common/GoogleSignInButton';
+import GoogleSignOutButton from '../common/GoogleSignOutButton';
 
 export const SIDEBAR_WIDTH = 280;
 
@@ -41,9 +41,8 @@ const Sidebar = () => {
       </Box>
 
       <Stack>
-        <NavigationButton title="Me" path="/me" icon={<PersonOutlined />} />
-        <NavigationButton title="Sessions" path="/sessions" icon={<RunCircleOutlined />} />
-        <NavigationButton title="Attendance" path="/attendances" icon={<CheckCircleOutline />} />
+        <NavigationButton title="Me" path="/admin/me" icon={<PersonOutlined />} />
+        <NavigationButton title="Sessions" path="/admin/sessions" icon={<RunCircleOutlined />} />
       </Stack>
       {authenticated ? <GoogleSignOutButton /> : <GoogleSignInButton />}
     </Stack>
