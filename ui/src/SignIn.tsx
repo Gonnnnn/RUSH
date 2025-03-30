@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Stack, Typography } from '@mui/material';
-import { useHeader } from './Layout';
 import GoogleSignInButton from './common/GoogleSignInButton';
+import { useHeader } from './contexts/header';
 
 const SignIn = () => {
   useHeader({ newTitle: 'Sign-In' });
