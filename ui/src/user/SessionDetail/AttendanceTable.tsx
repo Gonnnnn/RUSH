@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Typography, Paper, Box, CircularProgress } from '@mui/material';
-import { useAuth } from '../../../auth';
-import { Attendance } from '../../../client/http/data';
-import { getSessionAttendances } from '../../../client/http/default';
-import useHandleError from '../../../common/error';
-import UserAttendance from '../common/UserAttendance';
+import { useAuth } from '../../auth';
+import { Attendance } from '../../client/http/data';
+import { getSessionAttendances } from '../../client/http/default';
+import useHandleError from '../../common/error';
+import UserAttendance from './UserAttendance';
 
 /**
  * The attendance table for the session. It handles the attendance data view and the add attendance action.

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Typography, Paper, Box, CircularProgress, Tabs, Tab } from '@mui/material';
-import { useAuth } from '../../../auth';
-import { adminMarkUsersAsPresent } from '../../../client/http/admin';
-import { Attendance } from '../../../client/http/data';
-import { getSessionAttendances } from '../../../client/http/default';
-import useHandleError from '../../../common/error';
-import UserAttendance from '../common/UserAttendance';
+import { useAuth } from '../../auth';
+import { adminMarkUsersAsPresent } from '../../client/http/admin';
+import { Attendance } from '../../client/http/data';
+import { getSessionAttendances } from '../../client/http/default';
+import useHandleError from '../../common/error';
 import AddAttendance from './AddAttendance';
+import UserAttendance from './UserAttendance';
 
 type TabTypes = 'attendance' | 'addAttendance';
 
