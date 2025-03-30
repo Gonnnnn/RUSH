@@ -12,7 +12,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import { adminLateApplyAttendance, adminListSessions } from '../client/http/admin';
 import { AdminSession } from '../client/http/data';
 import { toYYslashMMslashDDspaceHHcolonMMwithDay } from '../common/date';
@@ -26,13 +26,22 @@ const Exception = () => {
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [showUserSelection, setShowUserSelection] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isEnd, setIsEnd] = useState(false);
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    pageSize: 20,
+    page: 0,
+  });
 
   useEffect(() => {
     const fetchSessions = async () => {
       try {
         setIsLoadingSessions(true);
-        const fetchedSessions = await adminListSessions(0, 100);
+        const offset = paginationModel.page * paginationModel.pageSize;
+        const fetchedSessions = await adminListSessions(offset, paginationModel.pageSize);
         setSessions(fetchedSessions.sessions);
+        setTotalCount(fetchedSessions.totalCount);
+        setIsEnd(fetchedSessions.isEnd);
       } catch (error) {
         handleError({
           error,
@@ -45,7 +54,14 @@ const Exception = () => {
     };
 
     fetchSessions();
-  }, [handleError]);
+  }, [handleError, paginationModel.page, paginationModel.pageSize]);
+
+  const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    if (isEnd && newPaginationModel.page > paginationModel.page) {
+      return;
+    }
+    setPaginationModel(newPaginationModel);
+  };
 
   const handleSessionSelect = (sessionId: string) => {
     setSelectedSessionId(sessionId);
@@ -73,7 +89,6 @@ const Exception = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
     { field: 'name', headerName: 'Name', width: 200 },
     {
       field: 'startsAt',
@@ -116,16 +131,18 @@ const Exception = () => {
             <DataGrid
               rows={sessions}
               columns={columns}
+              rowCount={totalCount}
+              loading={isLoadingSessions}
+              pageSizeOptions={[10, 25, 50]}
+              paginationModel={paginationModel}
+              paginationMode="server"
+              onPaginationModelChange={handlePaginationModelChange}
+              disableRowSelectionOnClick
               initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 25, page: 0 },
-                },
                 sorting: {
-                  sortModel: [{ field: 'date', sort: 'desc' }],
+                  sortModel: [{ field: 'startsAt', sort: 'desc' }],
                 },
               }}
-              pageSizeOptions={[10, 25, 50]}
-              disableRowSelectionOnClick
             />
           </Box>
         )}
