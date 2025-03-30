@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Container, Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
-import { adminCreateSessionForm, adminDeleteSession, adminGetSession } from '../../../client/http/admin';
-import { AdminSession, SessionAttendanceAppliedBy } from '../../../client/http/data';
-import useHandleError from '../../../common/error';
-import { useHeader } from '../../../contexts/header';
-import SessionInfo from '../common/SessionInfo';
+import { adminCreateSessionForm, adminDeleteSession, adminGetSession } from '../../client/http/admin';
+import { AdminSession, SessionAttendanceAppliedBy } from '../../client/http/data';
+import useHandleError from '../../common/error';
+import { useHeader } from '../../contexts/header';
 import AttendanceQrPanel from './AttendanceQrPanel';
 import SessionAttendanceTable from './AttendanceTable';
+import SessionInfo from './SessionInfo';
 
 const AdminSessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });

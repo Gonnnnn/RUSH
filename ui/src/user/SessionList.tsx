@@ -14,16 +14,14 @@ import {
   TablePagination,
 } from '@mui/material';
 import dayjs from 'dayjs';
-import { Session } from '../../client/http/data';
-import { listSessions } from '../../client/http/default';
-import { toYYYY년MM월DD일HH시MM분 } from '../../common/date';
-import useHandleError from '../../common/error';
-import { useHeader } from '../../contexts/header';
-import { useAdminMode } from '../../mode';
+import { Session } from '../client/http/data';
+import { listSessions } from '../client/http/default';
+import { toYYYY년MM월DD일HH시MM분 } from '../common/date';
+import useHandleError from '../common/error';
+import { useHeader } from '../contexts/header';
 
-const UserSessionList = () => {
+const SessionList = () => {
   const navigate = useNavigate();
-  const { adminMode } = useAdminMode();
   const { handleError } = useHandleError();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -35,11 +33,6 @@ const UserSessionList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isEnd, setIsEnd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // TODO(#209): Split user/admin UIs and routes all together.
-  if (adminMode) {
-    navigate('/admin/sessions');
-  }
 
   const fetchSessions = useCallback(
     async (page: number) => {
@@ -152,4 +145,4 @@ const SessionCard = ({ session, onClick }: { session: Session; onClick: () => vo
   );
 };
 
-export default UserSessionList;
+export default SessionList;

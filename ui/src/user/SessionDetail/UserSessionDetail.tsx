@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Container, Box, Button, CircularProgress } from '@mui/material';
-import { Session } from '../../../client/http/data';
-import { getSession } from '../../../client/http/default';
-import useHandleError from '../../../common/error';
-import { useHeader } from '../../../contexts/header';
-import SessionInfo from '../common/SessionInfo';
+import { Session } from '../../client/http/data';
+import { getSession } from '../../client/http/default';
+import useHandleError from '../../common/error';
+import { useHeader } from '../../contexts/header';
 import SessionAttendanceTable from './AttendanceTable';
+import SessionInfo from './SessionInfo';
 
 const UserSessionDetail = () => {
   useHeader({ newTitle: 'Session Detail' });

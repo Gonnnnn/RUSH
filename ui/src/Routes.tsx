@@ -1,13 +1,15 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import SignIn from './SignIn';
 import AdminLayout from './admin/Layout';
+import AdminSessionDetail from './admin/SessionDetail';
+import AdminSessionList from './admin/SessionList';
 import { useAuth } from './auth';
 import { Role } from './auth/role';
 import HalfYearAttendances from './user/Attendance';
 import UserLayout from './user/Layout';
 import MyPage from './user/MyPage';
-import { AdminSessionDetail, UserSessionDetail } from './user/SessionDetail';
-import { AdminSessionList, UserSessionList } from './user/SessionList';
+import UserSessionDetail from './user/SessionDetail';
+import UserSessionList from './user/SessionList';
 
 const AppRoutes = () => (
   <Routes>
