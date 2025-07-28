@@ -54,7 +54,7 @@ type formHandler struct {
 func NewFormHandler(googleFormService *forms.Service, googleDriveService *drive.Service) *formHandler {
 	delimiter := " - "
 	// 김건, 양현우
-	adminEmails := []string{"geonkim23@gmail.com", "hyeonyi30754@gmail.com"}
+	adminEmails := []string{"geonkim23@gmail.com", "alsrudrkd13@gmail.com"}
 	return &formHandler{
 		googleFormService:  googleFormService,
 		googleDriveService: googleDriveService,
