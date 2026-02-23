@@ -99,12 +99,22 @@ const MemberUpload = () => {
         const names = json.map((row) => (row.name || '').trim());
         const externalNames = generateExternalNames(names);
 
+        const seen = new Set<string>();
+        const duplicateKeys = new Set<string>();
+        for (const row of json) {
+          const key = `${(row.name || '').trim()}|${(row.generation || '').trim()}|${(row.email || '').trim()}`;
+          if (seen.has(key)) duplicateKeys.add(key);
+          seen.add(key);
+        }
+
         const parsed: MemberRow[] = json.map((row, idx) => {
           const name = (row.name || '').trim();
           const generation = (row.generation || '').trim();
           const email = (row.email || '').trim();
 
           const errors: string[] = [];
+          const rowKey = `${name}|${generation}|${email}`;
+          if (duplicateKeys.has(rowKey)) errors.push('Duplicate row');
           const nameErr = validateName(name);
           if (nameErr) errors.push(`Name: ${nameErr}`);
           const genErr = validateGeneration(generation);
