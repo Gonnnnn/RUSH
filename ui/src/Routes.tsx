@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import SignIn from './SignIn';
 import AdminException from './admin/Exception';
 import AdminLayout from './admin/Layout';
+import MemberUpload from './admin/MemberUpload';
 import AdminSessionDetail from './admin/SessionDetail';
 import AdminSessionList from './admin/SessionList';
 import { useAuth } from './auth';
@@ -34,6 +35,7 @@ const AppRoutes = () => (
         <Route path="sessions" element={<AdminSessionList />} />
         <Route path="sessions/:id" element={<AdminSessionDetail />} />
         <Route path="exceptions" element={<AdminException />} />
+        <Route path="members" element={<MemberUpload />} />
         <Route path="attendance" element={<HalfYearAttendances />} />
       </Route>
     </Route>
