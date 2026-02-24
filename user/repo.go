@@ -243,6 +243,31 @@ func (r *mongodbRepo) Add(user User) error {
 	return nil
 }
 
+func (r *mongodbRepo) AddMany(users []User) (int, error) {
+	if len(users) == 0 {
+		return 0, nil
+	}
+
+	docs := make([]interface{}, 0, len(users))
+	for _, u := range users {
+		docs = append(docs, mongodbUser{
+			Name:         u.Name,
+			Role:         string(u.Role),
+			Generation:   u.Generation,
+			IsActive:     u.IsActive,
+			Email:        u.Email,
+			ExternalName: u.ExternalName,
+		})
+	}
+
+	result, err := r.collection.InsertMany(context.Background(), docs)
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert users: %w", err)
+	}
+
+	return len(result.InsertedIDs), nil
+}
+
 // UpdateForm is the form to update the user.
 type UpdateForm struct {
 	Name         *string
